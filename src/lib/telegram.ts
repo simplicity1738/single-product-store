@@ -1,0 +1,139 @@
+import type { PaymentNetwork } from "@/lib/payment-wallets";
+import { escapeTelegramHtml } from "@/lib/sanitize";
+import {
+  getTelegramCredentials,
+  isTelegramConfiguredFromCredentials,
+} from "@/lib/store-config.server";
+
+const EXPLORER_URLS: Record<PaymentNetwork, (address: string) => string> = {
+  tron: (address) => `https://tronscan.org/#/address/${address}`,
+  bsc: (address) => `https://bscscan.com/address/${address}`,
+  bitcoin: (address) => `https://blockstream.info/address/${address}`,
+  ethereum: (address) => `https://etherscan.io/address/${address}`,
+};
+
+export function getExplorerUrl(
+  network: PaymentNetwork,
+  address: string,
+): string {
+  return EXPLORER_URLS[network](address);
+}
+
+type InlineKeyboard = {
+  inline_keyboard: Array<Array<{ text: string; url: string }>>;
+};
+
+type SendMessageOptions = {
+  text: string;
+  replyMarkup?: InlineKeyboard;
+  chatId?: string;
+};
+
+export async function sendTelegramMessage(
+  options: SendMessageOptions,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const { text, replyMarkup, chatId: targetChatId } = options;
+  const credentials = await getTelegramCredentials();
+
+  if (!isTelegramConfiguredFromCredentials(credentials)) {
+    console.info("[telegram:mock]", text);
+    if (replyMarkup) {
+      console.info("[telegram:mock:keyboard]", JSON.stringify(replyMarkup));
+    }
+    return { ok: true, mock: true };
+  }
+
+  const chatId = targetChatId ?? credentials.chatId;
+
+  const response = await fetch(
+    `https://api.telegram.org/bot${credentials.botToken}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: "HTML",
+        reply_markup: replyMarkup,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("[telegram:error]", errorBody);
+    return { ok: false, mock: false };
+  }
+
+  return { ok: true, mock: false };
+}
+
+export type OrderNotificationPayload = {
+  name: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  cartSummary: string;
+  totalSek: string;
+  cryptoTotal: string;
+  networkLabel: string;
+  network: PaymentNetwork;
+  walletAddress: string;
+  affiliateHandle?: string;
+  commissionSek?: number;
+  commissionPercent?: number;
+};
+
+export async function sendOrderNotification(
+  payload: OrderNotificationPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeName = escapeTelegramHtml(payload.name);
+  const safeEmail = escapeTelegramHtml(payload.email);
+  const safeAddress = escapeTelegramHtml(payload.address);
+  const safeZip = escapeTelegramHtml(payload.zip);
+  const safeCity = escapeTelegramHtml(payload.city);
+  const safeState = escapeTelegramHtml(payload.state);
+  const safeCartSummary = escapeTelegramHtml(payload.cartSummary);
+  const safeTotalSek = escapeTelegramHtml(payload.totalSek);
+  const safeCryptoTotal = escapeTelegramHtml(payload.cryptoTotal);
+  const safeNetworkLabel = escapeTelegramHtml(payload.networkLabel);
+  const safeAffiliateHandle = payload.affiliateHandle
+    ? escapeTelegramHtml(payload.affiliateHandle)
+    : undefined;
+
+  const fullAddress = `${safeAddress}, ${safeZip} ${safeCity}, ${safeState}, Sweden`;
+
+  const text = [
+    "🔔 NY BESTÄLLNING - SIMPLICITY STORE",
+    "",
+    `👤 Kund: ${safeName}`,
+    `📧 E-post: ${safeEmail}`,
+    `📦 Leveransadress: ${fullAddress}`,
+    `🛒 Varukorg: ${safeCartSummary}`,
+    `💰 Totalsumma: ${safeTotalSek} / ${safeCryptoTotal}`,
+    `🔗 Betalnätverk: ${safeNetworkLabel}`,
+    ...(safeAffiliateHandle &&
+    payload.commissionSek !== undefined &&
+    payload.commissionPercent !== undefined
+      ? [
+          "",
+          "📢 <b>AFFILIATE-SÄLJ</b>",
+          `👤 <b>Partner:</b> ${safeAffiliateHandle}`,
+          `💸 <b>Provision:</b> ${payload.commissionSek} kr (${payload.commissionPercent}%)`,
+        ]
+      : []),
+  ].join("\n");
+
+  const explorerUrl = getExplorerUrl(payload.network, payload.walletAddress);
+
+  return sendTelegramMessage({
+    text,
+    replyMarkup: {
+      inline_keyboard: [
+        [{ text: "🔗 Verifiera Betalning", url: explorerUrl }],
+      ],
+    },
+  });
+}

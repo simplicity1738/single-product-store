@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff1f2;
+  --foreground: #27272a;
+  --accent: #fb7185;
+  --accent-hover: #f43f5e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@keyframes banner-crossfade {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes banner-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.82;
+  }
+}
+
+@keyframes banner-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.animate-banner-crossfade {
+  animation: banner-crossfade 4s ease-in-out;
+}
+
+.animate-banner-pulse {
+  animation: banner-pulse 2.5s ease-in-out infinite;
+}
+
+.animate-banner-dot {
+  animation: banner-dot 1s ease-in-out infinite;
+}

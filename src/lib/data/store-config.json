@@ -1,0 +1,147 @@
+{
+  "siteSettings": {
+    "heroBadge": "I lager · Premium kvalitet",
+    "heroTitle": "Skönhet i sin enklaste form",
+    "heroSubtitle": "Upptäck vår kuraterade kollektion av premium wellness-produkter — utformade för klarhet, lyster och självsäkerhet i vardagen.",
+    "logoPath": "/logo.png"
+  },
+  "banner": {
+    "activeLines": [
+      "Fri frakt med PostNord!",
+      "Endast 3 st kvar i lager!"
+    ],
+    "style": "flash-sale-pulse",
+    "countdownEnabled": true,
+    "countdownEndsAt": "2026-06-14T18:23:00.000Z"
+  },
+  "marketingTracking": {
+    "googleAnalyticsId": "",
+    "tiktokPixelId": ""
+  },
+  "influencers": [
+    {
+      "id": "influencer-linn-beauty",
+      "handle": "@linn_beauty",
+      "promoCode": "",
+      "commissionPercent": 15
+    },
+    {
+      "id": "influencer-melo-vibe",
+      "handle": "@melo_vibe",
+      "promoCode": "",
+      "commissionPercent": 10
+    }
+  ],
+  "shippingFee": 140,
+  "freeShippingThreshold": 1500,
+  "telegramHandle": "@simplicity",
+  "cryptoWallets": {
+    "tron": "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "bsc": "0x0000000000000000000000000000000000000000",
+    "bitcoin": "bc1q7thr0uwmsn88vkg0t3jx2g3v8f40yn3t0a5js3",
+    "ethereum": "0x7709FD9F235103660F8a6CCBD7af350Da0c44a1B"
+  },
+  "systemIntegration": {
+    "telegramBotToken": "8969262769:AAENGuWfpqRq_Lo3jUPLLj0jZSg8wGRc6wE",
+    "telegramChatId": "5425326475"
+  },
+  "products": [
+    {
+      "id": "melo-spray",
+      "title": "Melanotan 2 (Nasal Spray)",
+      "description": "Premium Melanotan 2 i praktisk nässpray — snabb absorption och enkel dosering.",
+      "price": 550,
+      "image": "/melo-spray.png"
+    },
+    {
+      "id": "melanotan-vial",
+      "title": "Melanotan 2 (Vial)",
+      "description": "Melanotan 2 i injicerbar form — hög renhet och noggrant testad kvalitet.",
+      "price": 550,
+      "image": "/melanotan-vial.png"
+    },
+    {
+      "id": "retatrutide",
+      "title": "RetaTrutid",
+      "description": "Avancerad peptidformel med flera styrkor — välj den dos som passar ditt protokoll.",
+      "price": 1800,
+      "image": "/retatrutide.png"
+    },
+    {
+      "id": "tirzepatide",
+      "title": "TirzePatid",
+      "description": "Vår mest efterfrågade peptid med flexibla mg-alternativ — från 5 mg till 30 mg.",
+      "price": 900,
+      "image": "/tirzepatide.png"
+    },
+    {
+      "id": "helle2",
+      "title": "helle2",
+      "description": "helle bik",
+      "price": 4004,
+      "image": "https://static.vecteezy.com/system/resources/previews/025/894/618/non_2x/cute-word-hello-cartoon-style-illustration-vector.jpg",
+      "sizeLabel": "150 mg"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "sv": {
+        "heading": "Snabb leverans och snygg paketering",
+        "quote": "Paketet kom fram snabbare än förväntat och var väldigt fint paketerat. Hela upplevelsen från beställning till leverans kändes professionell och genomtänkt.",
+        "author": "Anna S."
+      },
+      "en": {
+        "heading": "Fast delivery and beautiful packaging",
+        "quote": "The package arrived faster than expected and was beautifully packed. The whole experience from ordering to delivery felt professional and thoughtful.",
+        "author": "Anna S."
+      }
+    },
+    {
+      "id": "review-2",
+      "sv": {
+        "heading": "Enkel beställning och tydlig kommunikation",
+        "quote": "Jag uppskattade hur smidigt allt gick. Beställningen var enkel att lägga, och jag fick tydlig information hela vägen tills paketet var hos mig.",
+        "author": "Erik L."
+      },
+      "en": {
+        "heading": "Easy ordering and clear communication",
+        "quote": "I appreciated how smooth everything was. Placing the order was simple, and I received clear updates all the way until the package arrived.",
+        "author": "Erik L."
+      }
+    },
+    {
+      "id": "review-3",
+      "sv": {
+        "heading": "Hög kvalitet som märks direkt",
+        "quote": "Produkten kändes genomtänkt och väl hanterad från start till mål. Leveransen var snabb och helhetsintrycket matchade förväntningarna.",
+        "author": "Sara M."
+      },
+      "en": {
+        "heading": "High quality you notice right away",
+        "quote": "The product felt carefully handled from start to finish. Delivery was fast and the overall experience matched my expectations.",
+        "author": "Sara M."
+      }
+    }
+  ],
+  "discounts": [
+    {
+      "id": "discount-simpli10",
+      "code": "SIMPLI10",
+      "type": "percent",
+      "value": 10,
+      "productScope": "all",
+      "usageLimit": 0,
+      "usageCount": 0
+    },
+    {
+      "id": "discount-rabatt100",
+      "code": "RABATT100",
+      "type": "flat",
+      "value": 100,
+      "productScope": "all",
+      "usageLimit": 0,
+      "usageCount": 0
+    }
+  ]
+}
