@@ -1,5 +1,6 @@
 import type { PaymentNetwork } from "@/lib/payment-wallets";
 import { escapeTelegramHtml } from "@/lib/sanitize";
+import { logServerError } from "@/lib/safe-log";
 import {
   getTelegramCredentials,
   isTelegramConfiguredFromCredentials,
@@ -36,9 +37,8 @@ export async function sendTelegramMessage(
   const credentials = await getTelegramCredentials();
 
   if (!isTelegramConfiguredFromCredentials(credentials)) {
-    console.info("[telegram:mock]", text);
-    if (replyMarkup) {
-      console.info("[telegram:mock:keyboard]", JSON.stringify(replyMarkup));
+    if (process.env.NODE_ENV === "development") {
+      console.info("[telegram:mock] message queued");
     }
     return { ok: true, mock: true };
   }
@@ -60,8 +60,7 @@ export async function sendTelegramMessage(
   );
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("[telegram:error]", errorBody);
+    logServerError("telegram:sendMessage", new Error("Telegram API request failed"));
     return { ok: false, mock: false };
   }
 

@@ -4,11 +4,22 @@ import {
   findInfluencerByRef,
   incrementInfluencerVisit,
 } from "@/lib/influencer-stats.server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sanitizeIdentifier } from "@/lib/sanitize";
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateLimit = checkRateLimit(`influencer-visit:${clientIp}`, 60, 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: "Rate limit exceeded." },
+        { status: 429 },
+      );
+    }
+
     const body = (await request.json()) as { ref?: string };
-    const ref = body.ref?.trim();
+    const ref = body.ref ? sanitizeIdentifier(body.ref, 64) : "";
 
     if (!ref) {
       return NextResponse.json(

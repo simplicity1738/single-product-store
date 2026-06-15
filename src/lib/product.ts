@@ -1,7 +1,9 @@
-export const CURRENCY = "SEK" as const;
+import type { ProductStockStatus } from "@/lib/product-stock";
 
 /** SimpliCity sells one-time purchases only — no subscriptions or recurring billing. */
 export const PURCHASE_MODEL = "one-time" as const;
+
+export const CURRENCY = "SEK" as const;
 
 export const SHIPPING_FLAT = 49;
 export const FREE_SHIPPING_THRESHOLD = 2;
@@ -24,6 +26,7 @@ export type Product = {
   badge?: "popular" | "premium";
   /** Admin-defined strength/spec label (e.g. "10 mg", "5 ml", "Kit"). Hidden when blank or "0". */
   sizeLabel?: string;
+  status: ProductStockStatus;
 };
 
 /** Returns true when a custom size/strength label should appear on product cards. */
@@ -45,16 +48,19 @@ export const PRODUCTS: Product[] = [
   {
     id: "melo-spray",
     image: "/melo-spray.png",
+    status: "i_lager",
     variants: [{ mg: 10, price: 550 }],
   },
   {
     id: "melanotan-vial",
     image: "/melanotan-vial.png",
+    status: "i_lager",
     variants: [{ mg: 10, price: 550 }],
   },
   {
     id: "retatrutide",
     image: "/retatrutide.png",
+    status: "i_lager",
     variants: [
       { mg: 10, price: 1800 },
       { mg: 20, price: 2400 },
@@ -64,6 +70,7 @@ export const PRODUCTS: Product[] = [
   {
     id: "tirzepatide",
     image: "/tirzepatide.png",
+    status: "i_lager",
     variants: [
       { mg: 5, price: 900 },
       { mg: 10, price: 1600 },

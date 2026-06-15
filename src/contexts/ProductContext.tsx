@@ -13,6 +13,7 @@ import {
   type CartItem,
   type ProductId,
 } from "@/lib/product";
+import { isProductPurchasable } from "@/lib/product-stock";
 
 type ProductContextValue = {
   cart: CartItem[];
@@ -62,6 +63,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const addToCart = useCallback(
     (productId: string, variantMg?: number) => {
       const product = catalogProducts.find((entry) => entry.id === productId);
+      if (!product || !isProductPurchasable(product.status)) return;
+
       const mg = variantMg ?? product?.variants[0]?.mg ?? 0;
 
       setCart((current) => {

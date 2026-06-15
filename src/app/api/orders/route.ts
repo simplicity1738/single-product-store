@@ -20,8 +20,9 @@ import { appendOrder, ORDER_STATUS, resolveAffiliateAttribution } from "@/lib/or
 import { sendOrderNotification } from "@/lib/telegram";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { appendSystemLog } from "@/lib/system-logs.server";
-import { CHECKOUT_FIELD_LIMITS, clampText } from "@/lib/sanitize";
+import { CHECKOUT_FIELD_LIMITS, sanitizeEmail, sanitizePlainText } from "@/lib/sanitize";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { logServerError } from "@/lib/safe-log";
 import {
   findInfluencerByPromoCode,
   incrementInfluencerPurchase,
@@ -62,29 +63,29 @@ export async function POST(request: Request) {
 
     const items = body.items;
     const discountCode = body.discountCode
-      ? clampText(body.discountCode, CHECKOUT_FIELD_LIMITS.discountCode) || null
+      ? sanitizePlainText(body.discountCode, CHECKOUT_FIELD_LIMITS.discountCode) ||
+        null
       : null;
     const name = body.name
-      ? clampText(body.name, CHECKOUT_FIELD_LIMITS.name)
+      ? sanitizePlainText(body.name, CHECKOUT_FIELD_LIMITS.name)
       : undefined;
-    const email = body.email
-      ? clampText(body.email, CHECKOUT_FIELD_LIMITS.email)
-      : undefined;
+    const email = body.email ? sanitizeEmail(body.email) : null;
     const address = body.address
-      ? clampText(body.address, CHECKOUT_FIELD_LIMITS.address)
+      ? sanitizePlainText(body.address, CHECKOUT_FIELD_LIMITS.address)
       : undefined;
     const city = body.city
-      ? clampText(body.city, CHECKOUT_FIELD_LIMITS.city)
+      ? sanitizePlainText(body.city, CHECKOUT_FIELD_LIMITS.city)
       : undefined;
     const state = body.state
-      ? clampText(body.state, CHECKOUT_FIELD_LIMITS.state)
+      ? sanitizePlainText(body.state, CHECKOUT_FIELD_LIMITS.state)
       : undefined;
     const zip = body.zip
-      ? clampText(body.zip, CHECKOUT_FIELD_LIMITS.zip)
+      ? sanitizePlainText(body.zip, CHECKOUT_FIELD_LIMITS.zip)
       : undefined;
     const paymentNetwork = body.paymentNetwork;
     const cryptoTotal = body.cryptoTotal
-      ? clampText(body.cryptoTotal, CHECKOUT_FIELD_LIMITS.cryptoTotal) || "—"
+      ? sanitizePlainText(body.cryptoTotal, CHECKOUT_FIELD_LIMITS.cryptoTotal) ||
+        "—"
       : "—";
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -270,10 +271,8 @@ export async function POST(request: Request) {
       paymentWallets,
     });
   } catch (error) {
-    const detail =
-      error instanceof Error ? error.message : "Okänt serverfel vid checkout.";
-
-    await appendSystemLog(`Checkout-fel: ${detail}`, "checkout");
+    logServerError("checkout", error);
+    await appendSystemLog("Checkout-fel: oväntat serverfel.", "checkout");
 
     return NextResponse.json(
       {

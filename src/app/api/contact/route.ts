@@ -2,16 +2,29 @@ import { NextResponse } from "next/server";
 import { translations } from "@/lib/i18n/translations";
 import { appendSystemLog } from "@/lib/system-logs.server";
 import { sendContactNotification } from "@/lib/telegram";
-import { clampText } from "@/lib/sanitize";
-
-const CONTACT_FIELD_LIMITS = {
-  name: 120,
-  email: 254,
-  message: 2000,
-} as const;
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  CONTACT_FIELD_LIMITS,
+  sanitizeEmail,
+  sanitizePlainText,
+} from "@/lib/sanitize";
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request);
+    const rateLimit = checkRateLimit(`contact:${clientIp}`, 6, 60 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: translations.sv.contact.errors.serverError },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+          },
+        },
+      );
+    }
+
     const locale =
       request.headers.get("accept-language")?.startsWith("en") ? "en" : "sv";
     const messages = translations[locale].contact.errors;
@@ -23,13 +36,11 @@ export async function POST(request: Request) {
     };
 
     const name = body.name
-      ? clampText(body.name, CONTACT_FIELD_LIMITS.name)
+      ? sanitizePlainText(body.name, CONTACT_FIELD_LIMITS.name)
       : "";
-    const email = body.email
-      ? clampText(body.email, CONTACT_FIELD_LIMITS.email)
-      : "";
+    const email = body.email ? sanitizeEmail(body.email) : null;
     const message = body.message
-      ? clampText(body.message, CONTACT_FIELD_LIMITS.message)
+      ? sanitizePlainText(body.message, CONTACT_FIELD_LIMITS.message)
       : "";
 
     if (!name || !email || !message) {

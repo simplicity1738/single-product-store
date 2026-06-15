@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/admin-auth.server";
 import {
   approveOrder,
   deleteOrder,
@@ -7,19 +8,26 @@ import {
   readOrders,
   revertOrderToPending,
 } from "@/lib/orders.server";
+import { sanitizeOrderId } from "@/lib/sanitize";
 
 export async function GET() {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   const orders = await readOrders();
   return NextResponse.json({ orders });
 }
 
 export async function PATCH(request: Request) {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = (await request.json()) as {
       orderId?: string;
       action?: "approve" | "revert";
     };
-    const orderId = body.orderId?.trim();
+    const orderId = body.orderId ? sanitizeOrderId(body.orderId) : "";
     const action = body.action === "revert" ? "revert" : "approve";
 
     if (!orderId) {
@@ -67,9 +75,12 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = (await request.json()) as { orderId?: string };
-    const orderId = body.orderId?.trim();
+    const orderId = body.orderId ? sanitizeOrderId(body.orderId) : "";
 
     if (!orderId) {
       return NextResponse.json(

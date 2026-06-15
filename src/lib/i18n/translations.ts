@@ -36,6 +36,15 @@ export const translations = {
       oneTime: "Engångsköp",
       addToCart: "Lägg i varukorg",
       inStock: "I lager",
+      outOfStock: "Ej i lager",
+      comingSoon: "Kommer snart",
+      soldOut: "Slutsåld",
+      comingSoonButton: "Kommer snart",
+      stockStatus: {
+        i_lager: "I lager",
+        ej_i_lager: "Ej i lager",
+        kommer_snart: "Kommer snart",
+      },
       variantLabel: "Styrka",
       badges: {
         popular: "Bästsäljare",
@@ -474,6 +483,15 @@ export const translations = {
       oneTime: "One-time purchase",
       addToCart: "Add to Cart",
       inStock: "In Stock",
+      outOfStock: "Out of Stock",
+      comingSoon: "Coming Soon",
+      soldOut: "Sold Out",
+      comingSoonButton: "Coming Soon",
+      stockStatus: {
+        i_lager: "In Stock",
+        ej_i_lager: "Out of Stock",
+        kommer_snart: "Coming Soon",
+      },
       variantLabel: "Strength",
       badges: {
         popular: "Best Seller",

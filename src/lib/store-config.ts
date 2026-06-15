@@ -1,5 +1,9 @@
 import type { CartItem, Product, ProductVariant } from "@/lib/product";
 import {
+  DEFAULT_PRODUCT_STOCK_STATUS,
+  type ProductStockStatus,
+} from "@/lib/product-stock";
+import {
   PRODUCTS as FALLBACK_PRODUCTS,
   REVIEWS as FALLBACK_REVIEWS,
   type OrderLineItem,
@@ -16,6 +20,7 @@ export type ConfigProduct = {
   image: string;
   /** Optional strength/spec label shown on storefront cards (e.g. "10 mg", "Kit"). */
   sizeLabel?: string;
+  status: ProductStockStatus;
 };
 
 export type ConfigReview = {
@@ -323,6 +328,7 @@ function configProductToCatalogEntry(
     image: entry.image,
     badge: resolveProductBadge(config, entry.id),
     sizeLabel,
+    status: entry.status ?? DEFAULT_PRODUCT_STOCK_STATUS,
     variants: variants.map((variant) => ({
       ...variant,
       price: fallback ? variant.price : entry.price,
@@ -335,6 +341,7 @@ export function getCatalogProducts(config: StoreConfig): Product[] {
     return FALLBACK_PRODUCTS.map((product) => ({
       ...product,
       badge: resolveProductBadge(config, product.id),
+      status: DEFAULT_PRODUCT_STOCK_STATUS,
     }));
   }
 
@@ -396,6 +403,7 @@ export function isValidStoreCartItem(
   const catalog = getCatalogProducts(config);
   const product = catalog.find((entry) => entry.id === item.productId);
   if (!product) return false;
+  if (product.status !== "i_lager") return false;
   if (!product.variants.some((variant) => variant.mg === item.variantMg)) {
     return false;
   }

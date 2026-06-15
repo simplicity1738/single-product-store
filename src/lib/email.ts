@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { env, isSmtpConfigured } from "@/lib/env";
 import { escapeHtml } from "@/lib/sanitize";
+import { logServerError, redactEmail } from "@/lib/safe-log";
 
 const NEWSLETTER_SUBJECT = "SimpliCity — Nyheter";
 
@@ -49,7 +50,13 @@ export async function sendBroadcastEmail(
   text: string,
 ): Promise<{ ok: boolean; mock: boolean }> {
   if (!isSmtpConfigured()) {
-    console.info("[email:mock]", { to, subject, text });
+    if (process.env.NODE_ENV === "development") {
+      console.info("[email:mock]", {
+        to: redactEmail(to),
+        subject,
+        mock: true,
+      });
+    }
     return { ok: true, mock: true };
   }
 
@@ -91,7 +98,7 @@ export async function broadcastToSubscribers(
         failed += 1;
       }
     } catch (error) {
-      console.error("[email:error]", email, error);
+      logServerError("email:broadcast", error);
       failed += 1;
     }
   }
@@ -241,11 +248,13 @@ export async function sendOrderConfirmationEmail(
   const text = formatOrderConfirmationText(payload);
 
   if (!isSmtpConfigured()) {
-    console.info("[email:order-confirmation:mock]", {
-      to: payload.customerEmail,
-      subject,
-      text,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.info("[email:order-confirmation:mock]", {
+        to: redactEmail(payload.customerEmail),
+        subject,
+        mock: true,
+      });
+    }
     return { ok: true, mock: true };
   }
 

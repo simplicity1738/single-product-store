@@ -19,6 +19,11 @@ import {
   type InfluencerPartner,
   type StoreConfig,
 } from "@/lib/store-config";
+import {
+  DEFAULT_PRODUCT_STOCK_STATUS,
+  normalizeProductStockStatus,
+  type ProductStockStatus,
+} from "@/lib/product-stock";
 
 function normalizeDiscount(entry: Partial<ConfigDiscount>): ConfigDiscount {
   return {
@@ -105,6 +110,7 @@ function normalizeConfigProduct(
       ? Math.max(0, Number(entry.price))
       : 0,
     image: String(entry.image ?? "").trim() || "/logo.png",
+    status: normalizeProductStockStatus(entry.status),
     ...(sizeLabel ? { sizeLabel } : {}),
   };
 }
@@ -142,7 +148,14 @@ function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
       ...DEFAULT_STORE_CONFIG.systemIntegration,
       ...parsed.systemIntegration,
     },
-    products: Array.isArray(parsed.products) ? parsed.products : [],
+    products: Array.isArray(parsed.products)
+      ? parsed.products.map((entry) =>
+          normalizeConfigProduct(
+            entry,
+            entry.id?.trim() || `product-${Date.now()}`,
+          ),
+        )
+      : [],
     reviews:
       Array.isArray(parsed.reviews) && parsed.reviews.length > 0
         ? parsed.reviews
@@ -194,6 +207,11 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
     faqs: Array.isArray(config.faqs)
       ? config.faqs.map((entry) => normalizeFaq(entry)).filter((entry) => entry.question)
       : [],
+    products: Array.isArray(config.products)
+      ? config.products.map((entry) =>
+          normalizeConfigProduct(entry, entry.id?.trim() || `product-${Date.now()}`),
+        )
+      : [],
   };
   await writeKvData(KV_KEYS.STORE_CONFIG, "store-config.json", normalized);
 }
@@ -214,6 +232,7 @@ export async function updateStoreProduct(
     sizeLabel?: string;
     bestSeller?: boolean;
     premium?: boolean;
+    status?: ProductStockStatus;
   },
 ): Promise<UpdateStoreProductResult | null> {
   const config = await readStoreConfig();

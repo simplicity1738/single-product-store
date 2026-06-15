@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { broadcastToSubscribers } from "@/lib/email";
+import { env } from "@/lib/env";
 import { readSubscribers } from "@/lib/subscribers.server";
 import { getTelegramCredentials } from "@/lib/store-config.server";
 import { sendTelegramMessage } from "@/lib/telegram";
+import { sanitizePlainText } from "@/lib/sanitize";
+import { logServerError } from "@/lib/safe-log";
 
 const BROADCAST_COMMAND_PATTERN = /^\/broadcast(?:@[A-Za-z0-9_]+)?\s+/;
+const BROADCAST_BODY_LIMIT = 4000;
 
 type TelegramUpdate = {
   message?: {
@@ -29,8 +33,21 @@ async function replyToOperator(chatId: string, text: string): Promise<void> {
   await sendTelegramMessage({ text, chatId });
 }
 
+function isWebhookAuthorized(request: Request): boolean {
+  const configuredSecret = env.telegramWebhookSecret;
+  if (!configuredSecret) return true;
+
+  const headerSecret =
+    request.headers.get("x-telegram-bot-api-secret-token")?.trim() ?? "";
+  return headerSecret === configuredSecret;
+}
+
 export async function POST(request: Request) {
   try {
+    if (!isWebhookAuthorized(request)) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+
     const update = (await request.json()) as TelegramUpdate;
     const chatId = update.message?.chat?.id;
     const text = update.message?.text?.trim() ?? "";
@@ -49,7 +66,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    if (!broadcastBody) {
+    const sanitizedBroadcastBody = sanitizePlainText(
+      broadcastBody,
+      BROADCAST_BODY_LIMIT,
+    );
+
+    if (!sanitizedBroadcastBody) {
       await replyToOperator(
         ownerChatId,
         "ℹ️ Använd: <code>/broadcast Ditt meddelande här</code>",
@@ -68,7 +90,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    const result = await broadcastToSubscribers(broadcastBody, emails);
+    const result = await broadcastToSubscribers(sanitizedBroadcastBody, emails);
     const deliveredCount = result.mock ? emails.length : result.sent;
 
     await replyToOperator(
@@ -76,9 +98,14 @@ export async function POST(request: Request) {
       buildBroadcastConfirmation(deliveredCount),
     );
 
-    return NextResponse.json({ ok: true, ...result });
+    return NextResponse.json({
+      ok: true,
+      sent: result.sent,
+      failed: result.failed,
+      mock: result.mock,
+    });
   } catch (error) {
-    console.error("[telegram:webhook]", error);
+    logServerError("telegram:webhook", error);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

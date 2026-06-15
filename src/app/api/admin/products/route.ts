@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/admin-auth.server";
 import { updateStoreProduct } from "@/lib/store-config.server";
+import type { ProductStockStatus } from "@/lib/product-stock";
+import {
+  ADMIN_PRODUCT_FIELD_LIMITS,
+  sanitizeIdentifier,
+  sanitizePlainText,
+} from "@/lib/sanitize";
 
 export async function PATCH(request: Request) {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = (await request.json()) as {
       productId?: string;
@@ -12,9 +22,12 @@ export async function PATCH(request: Request) {
       sizeLabel?: string;
       bestSeller?: boolean;
       premium?: boolean;
+      status?: ProductStockStatus;
     };
 
-    const productId = body.productId?.trim();
+    const productId = body.productId
+      ? sanitizeIdentifier(body.productId, ADMIN_PRODUCT_FIELD_LIMITS.productId)
+      : "";
     if (!productId) {
       return NextResponse.json(
         { success: false, message: "Produkt-ID saknas." },
@@ -22,7 +35,9 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const title = body.title?.trim();
+    const title = body.title
+      ? sanitizePlainText(body.title, ADMIN_PRODUCT_FIELD_LIMITS.title)
+      : "";
     if (!title) {
       return NextResponse.json(
         { success: false, message: "Produkttitel krävs." },
@@ -32,12 +47,23 @@ export async function PATCH(request: Request) {
 
     const result = await updateStoreProduct(productId, {
       title,
-      description: body.description?.trim() ?? "",
+      description: body.description
+        ? sanitizePlainText(
+            body.description,
+            ADMIN_PRODUCT_FIELD_LIMITS.description,
+          )
+        : "",
       price: Number(body.price),
-      image: body.image?.trim() || "/logo.png",
-      sizeLabel: body.sizeLabel?.trim() ?? "",
+      image: body.image
+        ? sanitizePlainText(body.image, ADMIN_PRODUCT_FIELD_LIMITS.image) ||
+          "/logo.png"
+        : "/logo.png",
+      sizeLabel: body.sizeLabel
+        ? sanitizePlainText(body.sizeLabel, ADMIN_PRODUCT_FIELD_LIMITS.sizeLabel)
+        : "",
       bestSeller: body.bestSeller,
       premium: body.premium,
+      status: body.status,
     });
 
     if (!result) {

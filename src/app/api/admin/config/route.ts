@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
+import { requireAdminSession } from "@/lib/admin-auth.server";
 import { readStoreConfig, writeStoreConfig } from "@/lib/store-config.server";
 import type { StoreConfig } from "@/lib/store-config";
 
 export async function GET() {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   const config = await readStoreConfig();
   return NextResponse.json(config);
 }
 
 async function saveConfig(request: Request) {
+  const unauthorized = await requireAdminSession();
+  if (unauthorized) return unauthorized;
+
   try {
     const body = (await request.json()) as StoreConfig;
 

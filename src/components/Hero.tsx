@@ -7,6 +7,7 @@ import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { formatCurrency, getProductVariant } from "@/lib/product";
 import { getLowestCatalogPrice } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import StockStatusBadge from "@/components/StockStatusBadge";
 
 export default function Hero() {
   const { locale, t } = useLanguage();
@@ -110,9 +111,12 @@ export default function Hero() {
                   <p className="text-sm font-semibold text-zinc-900">
                     {productLineLabel}
                   </p>
-                  <p className="text-xs text-zinc-500">
-                    {t.products.inStock}
-                  </p>
+                  <div className="mt-1">
+                    <StockStatusBadge
+                      status={featuredProduct.status}
+                      label={t.products.stockStatus[featuredProduct.status]}
+                    />
+                  </div>
                 </div>
                 <p className="text-lg font-bold text-zinc-900">
                   {formatCurrency(featuredVariant.price, localeCode)}

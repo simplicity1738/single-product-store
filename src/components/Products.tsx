@@ -13,6 +13,8 @@ import {
 import type { Product } from "@/lib/product";
 import { formatMgOption } from "@/lib/i18n/translations";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import { isProductPurchasable } from "@/lib/product-stock";
+import StockStatusBadge from "@/components/StockStatusBadge";
 
 const selectClassName =
   "mt-2 w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-9 text-sm font-medium text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -66,6 +68,13 @@ export default function Products() {
             const activeVariant =
               getProductVariant(product.id, variantMg) ?? product.variants[0];
             const hasMultipleVariants = product.variants.length > 1;
+            const purchasable = isProductPurchasable(product.status);
+            const buttonLabel =
+              product.status === "kommer_snart"
+                ? t.products.comingSoonButton
+                : product.status === "ej_i_lager"
+                  ? t.products.soldOut
+                  : t.products.addToCart;
 
             return (
               <article
@@ -79,9 +88,10 @@ export default function Products() {
                 )}
 
                 <div className="mb-4 flex items-center justify-end gap-2">
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200">
-                    {t.products.inStock}
-                  </span>
+                  <StockStatusBadge
+                    status={product.status}
+                    label={t.products.stockStatus[product.status]}
+                  />
                 </div>
 
                 <div
@@ -148,9 +158,10 @@ export default function Products() {
                   <button
                     type="button"
                     onClick={() => addToCart(product.id, variantMg)}
-                    className="rounded-full bg-rose-400 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500"
+                    disabled={!purchasable}
+                    className="rounded-full bg-rose-400 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:hover:bg-zinc-300"
                   >
-                    {t.products.addToCart}
+                    {buttonLabel}
                   </button>
                 </div>
               </article>

@@ -1,14 +1,28 @@
 import { NextResponse } from "next/server";
 import { addSubscriber } from "@/lib/subscribers.server";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sanitizeEmail } from "@/lib/sanitize";
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { email?: string };
-    const email = body.email?.trim().toLowerCase();
+    const clientIp = getClientIp(request);
+    const rateLimit = checkRateLimit(`newsletter:${clientIp}`, 8, 60 * 60 * 1000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: "För många försök. Försök igen senare." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rateLimit.retryAfterSeconds),
+          },
+        },
+      );
+    }
 
-    if (!email || !EMAIL_PATTERN.test(email)) {
+    const body = (await request.json()) as { email?: string };
+    const email = body.email ? sanitizeEmail(body.email) : null;
+
+    if (!email) {
       return NextResponse.json(
         { success: false, message: "Ange en giltig e-postadress." },
         { status: 400 },

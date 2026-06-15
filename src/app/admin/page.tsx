@@ -16,6 +16,10 @@ import {
   type OrderStatus,
 } from "@/lib/order-status";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import {
+  PRODUCT_STOCK_STATUS_OPTIONS,
+  type ProductStockStatus,
+} from "@/lib/product-stock";
 
 type EditProductForm = {
   title: string;
@@ -25,6 +29,7 @@ type EditProductForm = {
   sizeLabel: string;
   bestSeller: boolean;
   premium: boolean;
+  status: ProductStockStatus;
 };
 
 type AdminOrder = {
@@ -44,6 +49,7 @@ const emptyProduct = (): ConfigProduct => ({
   price: 0,
   image: "/logo.png",
   sizeLabel: "",
+  status: "i_lager",
 });
 
 const emptyDiscount = (): ConfigDiscount => ({
@@ -638,6 +644,7 @@ export default function AdminPage() {
       sizeLabel: product.sizeLabel ?? "",
       bestSeller: config.bestSellerProductIds.includes(product.id),
       premium: config.premiumProductIds.includes(product.id),
+      status: product.status ?? "i_lager",
     });
   }
 
@@ -663,6 +670,7 @@ export default function AdminPage() {
           sizeLabel: editProduct.sizeLabel,
           bestSeller: editProduct.bestSeller,
           premium: editProduct.premium,
+          status: editProduct.status,
         }),
       });
       const data = await response.json();
@@ -861,6 +869,7 @@ export default function AdminPage() {
       description: newProduct.description.trim(),
       price: Number(newProduct.price) || 0,
       image: newProduct.image.trim() || "/logo.png",
+      status: newProduct.status ?? "i_lager",
       ...(sizeLabel ? { sizeLabel } : {}),
     };
 
@@ -1032,6 +1041,32 @@ export default function AdminPage() {
                   placeholder="t.ex. 10 mg"
                   className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Lagerstatus
+                </span>
+                <select
+                  value={editProduct.status}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? {
+                            ...current,
+                            status: event.target.value as ProductStockStatus,
+                          }
+                        : current,
+                    )
+                  }
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                >
+                  {PRODUCT_STOCK_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <div className="flex flex-wrap gap-4">
@@ -1696,7 +1731,11 @@ export default function AdminPage() {
                   <p className="font-semibold text-zinc-900">{product.title}</p>
                   <p className="text-sm text-zinc-600">{product.description}</p>
                   <p className="mt-1 text-xs text-zinc-500">
-                    {product.price} SEK · {product.image}
+                    {product.price} SEK ·{" "}
+                    {PRODUCT_STOCK_STATUS_OPTIONS.find(
+                      (option) => option.value === product.status,
+                    )?.label ?? "I lager"}{" "}
+                    · {product.image}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-4">
                     <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
@@ -1809,6 +1848,31 @@ export default function AdminPage() {
                   placeholder="t.ex. 10 mg eller 50 mg"
                   className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
                 />
+              </div>
+              <div className="sm:col-span-2">
+                <label
+                  htmlFor="new-product-status"
+                  className="mb-1.5 block text-xs font-medium text-zinc-600"
+                >
+                  Lagerstatus
+                </label>
+                <select
+                  id="new-product-status"
+                  value={newProduct.status ?? "i_lager"}
+                  onChange={(event) =>
+                    setNewProduct((current) => ({
+                      ...current,
+                      status: event.target.value as ProductStockStatus,
+                    }))
+                  }
+                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                >
+                  {PRODUCT_STOCK_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <button
