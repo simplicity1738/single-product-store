@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import { getVariantPrice } from "@/lib/store-config";
 import {
   getCartItemKey,
   type CartItem,
@@ -18,16 +19,9 @@ import { isProductPurchasable } from "@/lib/product-stock";
 type ProductContextValue = {
   cart: CartItem[];
   cardVariants: Record<string, number>;
-  cardStrengths: Record<string, string>;
   setCardVariantMg: (productId: string, mg: number) => void;
   getCardVariantMg: (productId: string) => number;
-  setCardStrength: (productId: string, strength: string) => void;
-  getCardStrength: (productId: string, strengths?: string[]) => string;
-  addToCart: (
-    productId: string,
-    variantMg?: number,
-    selectedStrength?: string,
-  ) => void;
+  addToCart: (productId: string, variantMg?: number, selectedStrength?: string) => void;
   updateCartQuantity: (
     productId: string,
     variantMg: number,
@@ -45,9 +39,6 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const [cardVariantOverrides, setCardVariantOverrides] = useState<
     Record<string, number>
   >({});
-  const [cardStrengthOverrides, setCardStrengthOverrides] = useState<
-    Record<string, string>
-  >({});
 
   const defaultCardVariants = useMemo(() => {
     const next: Record<string, number> = {};
@@ -57,24 +48,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     return next;
   }, [catalogProducts]);
 
-  const defaultCardStrengths = useMemo(() => {
-    const next: Record<string, string> = {};
-    for (const product of catalogProducts) {
-      if (product.strengths?.[0]) {
-        next[product.id] = product.strengths[0];
-      }
-    }
-    return next;
-  }, [catalogProducts]);
-
   const cardVariants = useMemo(
     () => ({ ...defaultCardVariants, ...cardVariantOverrides }),
     [defaultCardVariants, cardVariantOverrides],
-  );
-
-  const cardStrengths = useMemo(
-    () => ({ ...defaultCardStrengths, ...cardStrengthOverrides }),
-    [defaultCardStrengths, cardStrengthOverrides],
   );
 
   const setCardVariantMg = useCallback((productId: string, mg: number) => {
@@ -86,31 +62,21 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [cardVariants],
   );
 
-  const setCardStrength = useCallback((productId: string, strength: string) => {
-    setCardStrengthOverrides((current) => ({
-      ...current,
-      [productId]: strength,
-    }));
-  }, []);
-
-  const getCardStrength = useCallback(
-    (productId: string, strengths?: string[]) => {
-      if (cardStrengths[productId]) return cardStrengths[productId];
-      return strengths?.[0] ?? "";
-    },
-    [cardStrengths],
-  );
-
   const addToCart = useCallback(
     (productId: string, variantMg?: number, selectedStrength?: string) => {
       const product = catalogProducts.find((entry) => entry.id === productId);
       if (!product || !isProductPurchasable(product.status)) return;
 
-      const mg = variantMg ?? product?.variants[0]?.mg ?? 0;
+      const labels = product.variantLabels ?? [];
+      const mg =
+        variantMg ??
+        (labels.length > 0
+          ? (product.variants[0]?.mg ?? 0)
+          : (product.variants[0]?.mg ?? 0));
       const strength =
         selectedStrength?.trim() ||
-        getCardStrength(productId, product.strengths) ||
-        undefined;
+        (labels.length > 0 ? labels[mg] ?? labels[0] : undefined);
+      const unitPrice = getVariantPrice(product, mg, strength);
 
       setCart((current) => {
         const key = getCartItemKey(
@@ -130,7 +96,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         if (existingIndex >= 0) {
           return current.map((item, index) =>
             index === existingIndex
-              ? { ...item, quantity: Math.min(99, item.quantity + 1) }
+              ? { ...item, quantity: Math.min(99, item.quantity + 1), unitPrice }
               : item,
           );
         }
@@ -141,6 +107,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             productId: productId as ProductId,
             variantMg: mg,
             quantity: 1,
+            unitPrice,
             ...(strength ? { selectedStrength: strength } : {}),
           },
         ];
@@ -152,7 +119,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           ?.scrollIntoView({ behavior: "smooth" });
       });
     },
-    [catalogProducts, getCardStrength],
+    [catalogProducts],
   );
 
   const updateCartQuantity = useCallback(
@@ -203,11 +170,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     () => ({
       cart,
       cardVariants,
-      cardStrengths,
       setCardVariantMg,
       getCardVariantMg,
-      setCardStrength,
-      getCardStrength,
       addToCart,
       updateCartQuantity,
       cartItemCount,
@@ -215,11 +179,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [
       cart,
       cardVariants,
-      cardStrengths,
       setCardVariantMg,
       getCardVariantMg,
-      setCardStrength,
-      getCardStrength,
       addToCart,
       updateCartQuantity,
       cartItemCount,

@@ -12,47 +12,110 @@ import {
 export const DEFAULT_SHIPPING_FEE = 49;
 export const DEFAULT_FREE_SHIPPING_THRESHOLD = 1000;
 
+export type ConfigProductVariant = {
+  name: string;
+  price: number;
+};
+
 export type ConfigProduct = {
   id: string;
   title: string;
   description: string;
   price: number;
   image: string;
-  /** Buyer-selectable strength/spec options (e.g. ["10 mg", "20 mg"]). */
+  /** Buyer-selectable variants with per-option pricing. */
+  variants?: ConfigProductVariant[];
+  /** @deprecated Migrated to variants on read. */
   strengths?: string[];
-  /** @deprecated Legacy single label — migrated to strengths on read. */
+  /** @deprecated Legacy single label — migrated to variants on read. */
   sizeLabel?: string;
   status: ProductStockStatus;
 };
 
-/** Split comma-separated admin input into trimmed strength options. */
-export function parseStrengthsInput(input: string): string[] {
+/** Parse admin input like "10 mg:550, 20 mg:850" into structured variants. */
+export function parseVariantsInput(
+  input: string,
+  fallbackPrice = 0,
+): ConfigProductVariant[] {
   return input
     .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const colonIndex = part.indexOf(":");
+      if (colonIndex === -1) {
+        const name = part.trim();
+        return name
+          ? { name, price: Math.max(0, Math.round(fallbackPrice)) }
+          : null;
+      }
+
+      const name = part.slice(0, colonIndex).trim();
+      const parsedPrice = Number(part.slice(colonIndex + 1).trim());
+      const price = Number.isFinite(parsedPrice)
+        ? Math.max(0, Math.round(parsedPrice))
+        : Math.max(0, Math.round(fallbackPrice));
+
+      return name ? { name, price } : null;
+    })
+    .filter((entry): entry is ConfigProductVariant => entry !== null);
 }
 
-/** Join strengths for admin text input display. */
-export function formatStrengthsInput(
-  strengths: string[] | undefined,
-  sizeLabel?: string,
+/** Format structured variants for admin text input. */
+export function formatVariantsInput(
+  variants: ConfigProductVariant[] | undefined,
 ): string {
-  if (strengths?.length) return strengths.join(", ");
-  return sizeLabel?.trim() ?? "";
+  return variants?.map((entry) => `${entry.name}:${entry.price}`).join(", ") ?? "";
 }
 
-/** Resolve strengths from stored array or legacy sizeLabel field. */
-export function resolveConfigStrengths(
-  entry: Pick<ConfigProduct, "strengths" | "sizeLabel">,
-): string[] {
+/** Resolve variants from stored data or legacy strength/sizeLabel fields. */
+export function resolveConfigVariants(entry: ConfigProduct): ConfigProductVariant[] {
+  if (Array.isArray(entry.variants) && entry.variants.length > 0) {
+    return entry.variants
+      .map((variant) => ({
+        name: String(variant.name ?? "").trim(),
+        price: Number.isFinite(variant.price)
+          ? Math.max(0, Math.round(Number(variant.price)))
+          : Math.max(0, Math.round(entry.price)),
+      }))
+      .filter((variant) => variant.name);
+  }
+
   if (Array.isArray(entry.strengths) && entry.strengths.length > 0) {
-    return entry.strengths.map((value) => String(value).trim()).filter(Boolean);
+    return entry.strengths
+      .map((name) => String(name).trim())
+      .filter(Boolean)
+      .map((name) => ({
+        name,
+        price: Math.max(0, Math.round(entry.price)),
+      }));
   }
+
   if (entry.sizeLabel?.trim()) {
-    return parseStrengthsInput(entry.sizeLabel);
+    return parseVariantsInput(entry.sizeLabel, entry.price);
   }
+
   return [];
+}
+
+export function getVariantPrice(
+  product: Pick<Product, "variants" | "variantLabels">,
+  variantMg: number,
+  selectedStrength?: string,
+): number {
+  const labels = product.variantLabels ?? [];
+  if (labels.length > 0 && selectedStrength?.trim()) {
+    const index = labels.indexOf(selectedStrength.trim());
+    if (index >= 0) {
+      return product.variants[index]?.price ?? product.variants[0]?.price ?? 0;
+    }
+  }
+
+  return (
+    product.variants.find((variant) => variant.mg === variantMg)?.price ??
+    product.variants[0]?.price ??
+    0
+  );
 }
 
 export type ConfigReview = {
@@ -349,18 +412,32 @@ function configProductToCatalogEntry(
   config: StoreConfig,
 ): Product {
   const fallback = FALLBACK_PRODUCTS.find((product) => product.id === entry.id);
+  const optionVariants = resolveConfigVariants(entry);
+
+  if (optionVariants.length > 0) {
+    return {
+      id: entry.id as Product["id"],
+      image: entry.image,
+      badge: resolveProductBadge(config, entry.id),
+      variants: optionVariants.map((variant, index) => ({
+        mg: index,
+        price: variant.price,
+      })),
+      variantLabels: optionVariants.map((variant) => variant.name),
+      sizeLabel: optionVariants[0].name,
+      status: entry.status ?? DEFAULT_PRODUCT_STOCK_STATUS,
+    };
+  }
+
   const variants: ProductVariant[] = fallback?.variants ?? [
     { mg: 10, price: entry.price },
   ];
-
-  const strengths = resolveConfigStrengths(entry);
-  const sizeLabel = strengths[0] || entry.sizeLabel?.trim() || undefined;
+  const sizeLabel = entry.sizeLabel?.trim() || undefined;
 
   return {
     id: entry.id as Product["id"],
     image: entry.image,
     badge: resolveProductBadge(config, entry.id),
-    strengths: strengths.length > 0 ? strengths : undefined,
     sizeLabel,
     status: entry.status ?? DEFAULT_PRODUCT_STOCK_STATUS,
     variants: variants.map((variant) => ({
@@ -405,14 +482,14 @@ export function getProductLineLabelFromConfig(
 ): string {
   const title = getProductTitle(config, productId);
   const entry = config.products.find((product) => product.id === productId);
-  const strengths = entry ? resolveConfigStrengths(entry) : [];
+  const variants = entry ? resolveConfigVariants(entry) : [];
   const trimmedStrength = selectedStrength?.trim();
 
   if (trimmedStrength) {
     return `${title} (${trimmedStrength})`;
   }
-  if (strengths.length === 1) {
-    return `${title} (${strengths[0]})`;
+  if (variants.length === 1) {
+    return `${title} (${variants[0].name})`;
   }
   return `${title} (${variantMg} mg)`;
 }
@@ -449,22 +526,32 @@ export function isValidStoreCartItem(
   const product = catalog.find((entry) => entry.id === item.productId);
   if (!product) return false;
   if (product.status !== "i_lager") return false;
-  if (!product.variants.some((variant) => variant.mg === item.variantMg)) {
-    return false;
-  }
-  const strengths = product.strengths ?? [];
-  if (strengths.length > 1) {
-    const selected = item.selectedStrength?.trim();
-    if (!selected || !strengths.includes(selected)) {
+
+  const labels = product.variantLabels ?? [];
+  if (labels.length > 0) {
+    const selected = item.selectedStrength?.trim() || labels[0];
+    if (labels.length > 1) {
+      if (!item.selectedStrength?.trim() || !labels.includes(item.selectedStrength.trim())) {
+        return false;
+      }
+    }
+
+    const variantIndex = labels.indexOf(selected);
+    if (variantIndex < 0 || product.variants[variantIndex]?.mg !== item.variantMg) {
       return false;
     }
-  } else if (
-    item.selectedStrength?.trim() &&
-    strengths.length === 1 &&
-    item.selectedStrength.trim() !== strengths[0]
-  ) {
+
+    const expectedPrice = getVariantPrice(product, item.variantMg, selected);
+    if (
+      item.unitPrice !== undefined &&
+      Math.round(item.unitPrice) !== Math.round(expectedPrice)
+    ) {
+      return false;
+    }
+  } else if (!product.variants.some((variant) => variant.mg === item.variantMg)) {
     return false;
   }
+
   if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
     return false;
   }
@@ -515,10 +602,11 @@ export function calculateStoreOrderTotal(
   const lineItems: OrderLineItem[] = cart.map((item) => {
     const product =
       catalog.find((entry) => entry.id === item.productId) ?? catalog[0];
-    const variant =
-      product.variants.find((entry) => entry.mg === item.variantMg) ??
-      product.variants[0];
-    const unitPrice = variant.price;
+    const unitPrice = getVariantPrice(
+      product,
+      item.variantMg,
+      item.selectedStrength,
+    );
 
     return {
       ...item,

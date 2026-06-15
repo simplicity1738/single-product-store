@@ -16,8 +16,8 @@ import {
   type OrderStatus,
 } from "@/lib/order-status";
 import {
-  formatStrengthsInput,
-  parseStrengthsInput,
+  formatVariantsInput,
+  parseVariantsInput,
 } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import {
@@ -25,16 +25,30 @@ import {
   type ProductStockStatus,
 } from "@/lib/product-stock";
 
-type EditProductForm = {
+type ProductDraft = {
+  id: string;
   title: string;
   description: string;
   price: number;
   image: string;
-  sizeLabel: string;
-  bestSeller: boolean;
-  premium: boolean;
+  variantsInput: string;
   status: ProductStockStatus;
 };
+
+type EditProductForm = Omit<ProductDraft, "id"> & {
+  bestSeller: boolean;
+  premium: boolean;
+};
+
+const emptyProduct = (): ProductDraft => ({
+  id: "",
+  title: "",
+  description: "",
+  price: 0,
+  image: "/logo.png",
+  variantsInput: "",
+  status: "i_lager",
+});
 
 type AdminOrder = {
   id: string;
@@ -45,16 +59,6 @@ type AdminOrder = {
   commissionSek?: number;
   commissionPercent?: number;
 };
-
-const emptyProduct = (): ConfigProduct => ({
-  id: "",
-  title: "",
-  description: "",
-  price: 0,
-  image: "/logo.png",
-  sizeLabel: "",
-  status: "i_lager",
-});
 
 const emptyDiscount = (): ConfigDiscount => ({
   id: "",
@@ -180,7 +184,7 @@ const BANNER_STYLE_OPTIONS: { value: BannerStyle; label: string }[] = [
 
 export default function AdminPage() {
   const [config, setConfig] = useState<StoreConfig | null>(null);
-  const [newProduct, setNewProduct] = useState<ConfigProduct>(emptyProduct());
+  const [newProduct, setNewProduct] = useState<ProductDraft>(emptyProduct());
   const [newDiscount, setNewDiscount] = useState<ConfigDiscount>(emptyDiscount());
   const [toast, setToast] = useState<ToastState>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -645,7 +649,7 @@ export default function AdminPage() {
       description: product.description,
       price: product.price,
       image: product.image,
-      sizeLabel: formatStrengthsInput(product.strengths, product.sizeLabel),
+      variantsInput: formatVariantsInput(product.variants),
       bestSeller: config.bestSellerProductIds.includes(product.id),
       premium: config.premiumProductIds.includes(product.id),
       status: product.status ?? "i_lager",
@@ -671,7 +675,7 @@ export default function AdminPage() {
           description: editProduct.description,
           price: editProduct.price,
           image: editProduct.image,
-          sizeLabel: editProduct.sizeLabel,
+          variantsInput: editProduct.variantsInput,
           bestSeller: editProduct.bestSeller,
           premium: editProduct.premium,
           status: editProduct.status,
@@ -866,7 +870,10 @@ export default function AdminPage() {
     }
 
     const id = slugify(title) || `product-${Date.now()}`;
-    const strengths = parseStrengthsInput(newProduct.sizeLabel ?? "");
+    const variants = parseVariantsInput(
+      newProduct.variantsInput ?? "",
+      Number(newProduct.price) || 0,
+    );
     const entry: ConfigProduct = {
       id,
       title,
@@ -874,7 +881,7 @@ export default function AdminPage() {
       price: Number(newProduct.price) || 0,
       image: newProduct.image.trim() || "/logo.png",
       status: newProduct.status ?? "i_lager",
-      ...(strengths.length > 0 ? { strengths } : {}),
+      ...(variants.length > 0 ? { variants } : {}),
     };
 
     setConfig((current) =>
@@ -1034,20 +1041,20 @@ export default function AdminPage() {
                   Styrka / Val
                 </span>
                 <input
-                  value={editProduct.sizeLabel}
+                  value={editProduct.variantsInput}
                   onChange={(event) =>
                     setEditProduct((current) =>
                       current
-                        ? { ...current, sizeLabel: event.target.value }
+                        ? { ...current, variantsInput: event.target.value }
                         : current,
                     )
                   }
-                  placeholder="Ange val separerade med kommatecken för flera alternativ (t.ex. 10 mg, 20 mg, 50 mg)"
+                  placeholder="10 mg:550, 20 mg:850, 50 mg:1200"
                   className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 />
                 <p className="mt-1.5 text-xs text-zinc-500">
-                  Ange val separerade med kommatecken för flera alternativ (t.ex.
-                  10 mg, 20 mg, 50 mg). Lämna tom om produkten saknar styrka.
+                  Ange varianter som namn:pris separerade med kommatecken (t.ex.
+                  10 mg:550, 20 mg:850). Lämna tom om produkten saknar val.
                 </p>
               </label>
 
@@ -1846,19 +1853,19 @@ export default function AdminPage() {
                 </label>
                 <input
                   id="new-product-size-label"
-                  value={newProduct.sizeLabel ?? ""}
+                  value={newProduct.variantsInput ?? ""}
                   onChange={(event) =>
                     setNewProduct((current) => ({
                       ...current,
-                      sizeLabel: event.target.value,
+                      variantsInput: event.target.value,
                     }))
                   }
-                  placeholder="Ange val separerade med kommatecken för flera alternativ (t.ex. 10 mg, 20 mg, 50 mg)"
+                  placeholder="10 mg:550, 20 mg:850, 50 mg:1200"
                   className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
                 />
                 <p className="mt-1.5 text-xs text-zinc-500">
-                  Ange val separerade med kommatecken för flera alternativ (t.ex.
-                  10 mg, 20 mg, 50 mg). Lämna tom om produkten saknar styrka.
+                  Ange varianter som namn:pris separerade med kommatecken (t.ex.
+                  10 mg:550, 20 mg:850). Lämna tom om produkten saknar val.
                 </p>
               </div>
               <div className="sm:col-span-2">

@@ -19,6 +19,7 @@ export async function PATCH(request: Request) {
       description?: string;
       price?: number;
       image?: string;
+      variantsInput?: string;
       sizeLabel?: string;
       bestSeller?: boolean;
       premium?: boolean;
@@ -45,6 +46,16 @@ export async function PATCH(request: Request) {
       );
     }
 
+    const variantsInput =
+      body.variantsInput !== undefined
+        ? sanitizePlainText(
+            body.variantsInput,
+            ADMIN_PRODUCT_FIELD_LIMITS.variantsInput,
+          )
+        : body.sizeLabel !== undefined
+          ? sanitizePlainText(body.sizeLabel, ADMIN_PRODUCT_FIELD_LIMITS.sizeLabel)
+          : undefined;
+
     const result = await updateStoreProduct(productId, {
       title,
       description: body.description
@@ -58,9 +69,7 @@ export async function PATCH(request: Request) {
         ? sanitizePlainText(body.image, ADMIN_PRODUCT_FIELD_LIMITS.image) ||
           "/logo.png"
         : "/logo.png",
-      sizeLabel: body.sizeLabel
-        ? sanitizePlainText(body.sizeLabel, ADMIN_PRODUCT_FIELD_LIMITS.sizeLabel)
-        : "",
+      ...(variantsInput !== undefined ? { variantsInput } : {}),
       bestSeller: body.bestSeller,
       premium: body.premium,
       status: body.status,

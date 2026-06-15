@@ -12,11 +12,13 @@ import {
   normalizeDiscountCode,
   normalizeInfluencerHandle,
   normalizeTelegramHandle,
-  parseStrengthsInput,
+  parseVariantsInput,
+  resolveConfigVariants,
   type BannerConfig,
   type ConfigDiscount,
   type ConfigFaq,
   type ConfigProduct,
+  type ConfigProductVariant,
   type InfluencerPartner,
   type StoreConfig,
 } from "@/lib/store-config";
@@ -98,33 +100,38 @@ function normalizeProductIdList(value: unknown): string[] {
     .filter(Boolean);
 }
 
+type ConfigProductNormalizeInput = Partial<ConfigProduct> & {
+  variantsInput?: string;
+};
+
 function normalizeConfigProduct(
-  entry: Partial<ConfigProduct>,
+  entry: ConfigProductNormalizeInput,
   id: string,
 ): ConfigProduct {
-  let strengths: string[];
-  if (entry.sizeLabel !== undefined) {
-    strengths = entry.sizeLabel.trim()
-      ? parseStrengthsInput(entry.sizeLabel)
-      : [];
-  } else if (Array.isArray(entry.strengths)) {
-    strengths = entry.strengths
-      .map((value) => String(value).trim())
-      .filter(Boolean);
+  const fallbackPrice = Number.isFinite(entry.price)
+    ? Math.max(0, Number(entry.price))
+    : 0;
+
+  let variants: ConfigProductVariant[];
+  if (entry.variantsInput !== undefined) {
+    variants = parseVariantsInput(entry.variantsInput, fallbackPrice);
+  } else if (entry.sizeLabel !== undefined) {
+    variants = parseVariantsInput(entry.sizeLabel, fallbackPrice);
   } else {
-    strengths = [];
+    variants = resolveConfigVariants({
+      ...entry,
+      price: fallbackPrice,
+    } as ConfigProduct);
   }
 
   return {
     id,
     title: String(entry.title ?? "").trim(),
     description: String(entry.description ?? "").trim(),
-    price: Number.isFinite(entry.price)
-      ? Math.max(0, Number(entry.price))
-      : 0,
+    price: fallbackPrice,
     image: String(entry.image ?? "").trim() || "/logo.png",
     status: normalizeProductStockStatus(entry.status),
-    ...(strengths.length > 0 ? { strengths } : {}),
+    ...(variants.length > 0 ? { variants } : {}),
   };
 }
 
@@ -242,6 +249,7 @@ export async function updateStoreProduct(
     description?: string;
     price?: number;
     image?: string;
+    variantsInput?: string;
     sizeLabel?: string;
     bestSeller?: boolean;
     premium?: boolean;

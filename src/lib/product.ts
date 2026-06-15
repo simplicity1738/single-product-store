@@ -26,8 +26,8 @@ export type Product = {
   badge?: "popular" | "premium";
   /** Admin-defined strength/spec label (e.g. "10 mg", "5 ml", "Kit"). Hidden when blank or "0". */
   sizeLabel?: string;
-  /** Buyer-selectable strength options from admin (e.g. ["10 mg", "20 mg"]). */
-  strengths?: string[];
+  /** Parallel labels for indexed variants from admin (e.g. ["10 mg", "20 mg"]). */
+  variantLabels?: string[];
   status: ProductStockStatus;
 };
 
@@ -44,8 +44,10 @@ export type CartItem = {
   productId: ProductId;
   variantMg: number;
   quantity: number;
-  /** Selected strength label when product has configurable options. */
+  /** Selected variant label when product has named options. */
   selectedStrength?: string;
+  /** Price captured for the selected variant at add-to-cart time. */
+  unitPrice?: number;
 };
 
 export const PRODUCTS: Product[] = [

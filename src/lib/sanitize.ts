@@ -69,5 +69,6 @@ export const ADMIN_PRODUCT_FIELD_LIMITS = {
   description: 2000,
   image: 500,
   sizeLabel: 80,
+  variantsInput: 300,
   productId: 80,
 } as const;
