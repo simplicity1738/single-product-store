@@ -6,6 +6,7 @@ import { ProductProvider } from "@/contexts/ProductContext";
 import { StoreConfigProvider } from "@/contexts/StoreConfigContext";
 import AnalyticsScripts from "@/components/AnalyticsScripts";
 import RefTracker from "@/components/RefTracker";
+import Faq from "@/components/Faq";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +16,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <Suspense fallback={null}>
           <RefTracker />
         </Suspense>
-        <ProductProvider>{children}</ProductProvider>
+        <ProductProvider>
+          {children}
+          <Faq />
+        </ProductProvider>
       </StoreConfigProvider>
     </LanguageProvider>
   );

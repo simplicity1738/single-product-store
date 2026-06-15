@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { formatCurrency, getProductVariant } from "@/lib/product";
 import { getLowestCatalogPrice } from "@/lib/store-config";
+import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 
 export default function Hero() {
   const { locale, t } = useLanguage();
@@ -91,7 +92,9 @@ export default function Hero() {
           <div className="relative mx-auto w-full max-w-md lg:max-w-none">
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-rose-200/50 via-transparent to-rose-100/60 blur-2xl" />
             <div className="relative overflow-hidden rounded-3xl border border-rose-100 bg-white p-8 shadow-xl shadow-rose-900/5">
-              <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-gradient-to-br from-[#FFF5F5] to-rose-50">
+              <div
+                className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+              >
                 <ProductImage
                   src={featuredProduct.image}
                   alt={productLineLabel}

@@ -10,6 +10,7 @@ import {
   formatCurrency,
 } from "@/lib/product";
 import type { OrderFormData } from "@/lib/order";
+import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 
 const inputClassName =
   "w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -305,7 +306,9 @@ export default function OrderForm() {
                         key={`${line.productId}-${line.variantMg}`}
                         className="flex items-start justify-between gap-3"
                       >
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-rose-100 bg-gradient-to-br from-[#FFF5F5] to-rose-50">
+                        <div
+                          className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+                        >
                           <ProductImage
                             src={productImage}
                             alt={label}

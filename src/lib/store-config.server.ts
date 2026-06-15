@@ -15,6 +15,7 @@ import {
   type BannerConfig,
   type ConfigDiscount,
   type ConfigFaq,
+  type ConfigProduct,
   type InfluencerPartner,
   type StoreConfig,
 } from "@/lib/store-config";
@@ -89,6 +90,23 @@ function normalizeProductIdList(value: unknown): string[] {
   return value
     .map((entry) => String(entry).trim())
     .filter(Boolean);
+}
+
+function normalizeConfigProduct(
+  entry: Partial<ConfigProduct>,
+  id: string,
+): ConfigProduct {
+  const sizeLabel = entry.sizeLabel?.trim();
+  return {
+    id,
+    title: String(entry.title ?? "").trim(),
+    description: String(entry.description ?? "").trim(),
+    price: Number.isFinite(entry.price)
+      ? Math.max(0, Number(entry.price))
+      : 0,
+    image: String(entry.image ?? "").trim() || "/logo.png",
+    ...(sizeLabel ? { sizeLabel } : {}),
+  };
 }
 
 function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
@@ -178,6 +196,62 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
       : [],
   };
   await writeKvData(KV_KEYS.STORE_CONFIG, "store-config.json", normalized);
+}
+
+export type UpdateStoreProductResult = {
+  product: ConfigProduct;
+  bestSellerProductIds: string[];
+  premiumProductIds: string[];
+};
+
+export async function updateStoreProduct(
+  productId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    price?: number;
+    image?: string;
+    sizeLabel?: string;
+    bestSeller?: boolean;
+    premium?: boolean;
+  },
+): Promise<UpdateStoreProductResult | null> {
+  const config = await readStoreConfig();
+  const index = config.products.findIndex((product) => product.id === productId);
+  if (index === -1) return null;
+
+  const existing = config.products[index];
+  const nextProduct = normalizeConfigProduct(
+    {
+      ...existing,
+      ...updates,
+    },
+    productId,
+  );
+
+  config.products[index] = nextProduct;
+
+  if (updates.bestSeller !== undefined) {
+    const without = config.bestSellerProductIds.filter((id) => id !== productId);
+    config.bestSellerProductIds = updates.bestSeller
+      ? [...without, productId]
+      : without;
+  }
+
+  if (updates.premium !== undefined) {
+    const without = config.premiumProductIds.filter((id) => id !== productId);
+    config.premiumProductIds = updates.premium
+      ? [...without, productId]
+      : without;
+  }
+
+  await writeStoreConfig(config);
+
+  return {
+    product: nextProduct,
+    bestSellerProductIds: config.bestSellerProductIds,
+    premiumProductIds: config.premiumProductIds,
+  };
 }
 
 export async function incrementDiscountUsage(code: string): Promise<void> {

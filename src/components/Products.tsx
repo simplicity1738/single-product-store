@@ -12,6 +12,7 @@ import {
 } from "@/lib/product";
 import type { Product } from "@/lib/product";
 import { formatMgOption } from "@/lib/i18n/translations";
+import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 
 const selectClassName =
   "mt-2 w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-9 text-sm font-medium text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -83,7 +84,9 @@ export default function Products() {
                   </span>
                 </div>
 
-                <div className="relative mb-5 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-gradient-to-br from-[#FFF5F5] to-rose-50">
+                <div
+                  className={`relative mb-5 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+                >
                   <ProductImage
                     src={product.image}
                     alt={product.displayName}

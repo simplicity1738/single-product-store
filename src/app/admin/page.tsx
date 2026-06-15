@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import ProductImage from "@/components/ProductImage";
 import type {
   BannerStyle,
   ConfigDiscount,
@@ -14,6 +15,17 @@ import {
   ORDER_STATUS,
   type OrderStatus,
 } from "@/lib/order-status";
+import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+
+type EditProductForm = {
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  sizeLabel: string;
+  bestSeller: boolean;
+  premium: boolean;
+};
 
 type AdminOrder = {
   id: string;
@@ -187,6 +199,9 @@ export default function AdminPage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [newFaq, setNewFaq] = useState<ConfigFaq>(emptyFaq());
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editProduct, setEditProduct] = useState<EditProductForm | null>(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   const showToast = useCallback((next: ToastState) => {
     setToast(next);
@@ -612,6 +627,81 @@ export default function AdminPage() {
     );
   }
 
+  function openEditProduct(product: ConfigProduct) {
+    if (!config) return;
+    setEditingProductId(product.id);
+    setEditProduct({
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      image: product.image,
+      sizeLabel: product.sizeLabel ?? "",
+      bestSeller: config.bestSellerProductIds.includes(product.id),
+      premium: config.premiumProductIds.includes(product.id),
+    });
+  }
+
+  function closeEditProduct() {
+    setEditingProductId(null);
+    setEditProduct(null);
+  }
+
+  async function saveEditProduct() {
+    if (!editProduct || !editingProductId) return;
+    setIsSavingProduct(true);
+
+    try {
+      const response = await fetch("/api/admin/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: editingProductId,
+          title: editProduct.title,
+          description: editProduct.description,
+          price: editProduct.price,
+          image: editProduct.image,
+          sizeLabel: editProduct.sizeLabel,
+          bestSeller: editProduct.bestSeller,
+          premium: editProduct.premium,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Update failed");
+      }
+
+      setConfig((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          products: current.products.map((product) =>
+            product.id === editingProductId ? data.product : product,
+          ),
+          bestSellerProductIds: Array.isArray(data.bestSellerProductIds)
+            ? data.bestSellerProductIds
+            : current.bestSellerProductIds,
+          premiumProductIds: Array.isArray(data.premiumProductIds)
+            ? data.premiumProductIds
+            : current.premiumProductIds,
+        };
+      });
+
+      closeEditProduct();
+      showToast({
+        type: "success",
+        message: data.message ?? "Produkten uppdaterades.",
+      });
+    } catch {
+      showToast({
+        type: "error",
+        message: "Kunde inte spara produktändringarna.",
+      });
+    } finally {
+      setIsSavingProduct(false);
+    }
+  }
+
   function removeProduct(id: string) {
     setConfig((current) =>
       current
@@ -808,6 +898,194 @@ export default function AdminPage() {
           role="status"
         >
           {toast.message}
+        </div>
+      )}
+
+      {editingProductId && editProduct && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-product-title"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+                  Redigera produkt
+                </p>
+                <h2
+                  id="edit-product-title"
+                  className="mt-1 text-xl font-bold text-zinc-900"
+                >
+                  {editProduct.title || "Produkt"}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeEditProduct}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-lg font-semibold text-zinc-500 transition hover:bg-rose-100"
+                aria-label="Stäng"
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              className={`relative mx-auto mt-5 flex h-36 w-36 items-center justify-center overflow-hidden rounded-2xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+            >
+              <ProductImage
+                src={editProduct.image || "/logo.png"}
+                alt={editProduct.title || "Produkt"}
+                fill
+                sizes="144px"
+                className="object-contain p-4"
+              />
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Titel
+                </span>
+                <input
+                  value={editProduct.title}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, title: event.target.value }
+                        : current,
+                    )
+                  }
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Pris (kr)
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={editProduct.price || ""}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, price: Number(event.target.value) }
+                        : current,
+                    )
+                  }
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Beskrivning
+                </span>
+                <textarea
+                  value={editProduct.description}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, description: event.target.value }
+                        : current,
+                    )
+                  }
+                  rows={3}
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Bild-URL
+                </span>
+                <input
+                  value={editProduct.image}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, image: event.target.value }
+                        : current,
+                    )
+                  }
+                  placeholder="/produkt.png"
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Styrka / Specifikation
+                </span>
+                <input
+                  value={editProduct.sizeLabel}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, sizeLabel: event.target.value }
+                        : current,
+                    )
+                  }
+                  placeholder="t.ex. 10 mg"
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <div className="flex flex-wrap gap-4">
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <input
+                    type="checkbox"
+                    checked={editProduct.bestSeller}
+                    onChange={(event) =>
+                      setEditProduct((current) =>
+                        current
+                          ? { ...current, bestSeller: event.target.checked }
+                          : current,
+                      )
+                    }
+                    className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                  />
+                  Bästsäljare
+                </label>
+                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                  <input
+                    type="checkbox"
+                    checked={editProduct.premium}
+                    onChange={(event) =>
+                      setEditProduct((current) =>
+                        current
+                          ? { ...current, premium: event.target.checked }
+                          : current,
+                      )
+                    }
+                    className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                  />
+                  Premium
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeEditProduct}
+                className="rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-rose-50"
+              >
+                Avbryt
+              </button>
+              <button
+                type="button"
+                onClick={() => void saveEditProduct()}
+                disabled={isSavingProduct || !editProduct.title.trim()}
+                className="rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60"
+              >
+                {isSavingProduct ? "Sparar…" : "Spara ändringar"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1403,6 +1681,17 @@ export default function AdminPage() {
                 key={product.id}
                 className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
+                <div
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+                >
+                  <ProductImage
+                    src={product.image}
+                    alt={product.title}
+                    fill
+                    sizes="80px"
+                    className="object-contain p-2"
+                  />
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-zinc-900">{product.title}</p>
                   <p className="text-sm text-zinc-600">{product.description}</p>
@@ -1430,13 +1719,22 @@ export default function AdminPage() {
                     </label>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeProduct(product.id)}
-                  className="shrink-0 rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                >
-                  Ta bort
-                </button>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openEditProduct(product)}
+                    className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                  >
+                    Redigera
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeProduct(product.id)}
+                    className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                  >
+                    Ta bort
+                  </button>
+                </div>
               </div>
             ))}
           </div>
