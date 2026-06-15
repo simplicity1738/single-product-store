@@ -137,3 +137,27 @@ export async function sendOrderNotification(
     },
   });
 }
+
+export type ContactNotificationPayload = {
+  name: string;
+  email: string;
+  message: string;
+};
+
+export async function sendContactNotification(
+  payload: ContactNotificationPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeName = escapeTelegramHtml(payload.name);
+  const safeEmail = escapeTelegramHtml(payload.email);
+  const safeMessage = escapeTelegramHtml(payload.message);
+
+  const text = [
+    "📩 NYTT MEDDELANDE FRÅN BUTIKEN",
+    `👤 Namn: ${safeName}`,
+    `✉️ E-post: ${safeEmail}`,
+    "📝 Meddelande:",
+    safeMessage,
+  ].join("\n");
+
+  return sendTelegramMessage({ text });
+}
