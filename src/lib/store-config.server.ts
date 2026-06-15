@@ -12,6 +12,7 @@ import {
   normalizeDiscountCode,
   normalizeInfluencerHandle,
   normalizeTelegramHandle,
+  parseStrengthsInput,
   type BannerConfig,
   type ConfigDiscount,
   type ConfigFaq,
@@ -101,7 +102,19 @@ function normalizeConfigProduct(
   entry: Partial<ConfigProduct>,
   id: string,
 ): ConfigProduct {
-  const sizeLabel = entry.sizeLabel?.trim();
+  let strengths: string[];
+  if (entry.sizeLabel !== undefined) {
+    strengths = entry.sizeLabel.trim()
+      ? parseStrengthsInput(entry.sizeLabel)
+      : [];
+  } else if (Array.isArray(entry.strengths)) {
+    strengths = entry.strengths
+      .map((value) => String(value).trim())
+      .filter(Boolean);
+  } else {
+    strengths = [];
+  }
+
   return {
     id,
     title: String(entry.title ?? "").trim(),
@@ -111,7 +124,7 @@ function normalizeConfigProduct(
       : 0,
     image: String(entry.image ?? "").trim() || "/logo.png",
     status: normalizeProductStockStatus(entry.status),
-    ...(sizeLabel ? { sizeLabel } : {}),
+    ...(strengths.length > 0 ? { strengths } : {}),
   };
 }
 

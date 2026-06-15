@@ -295,7 +295,11 @@ export default function OrderForm() {
               ) : (
                 <ul className="mt-6 space-y-4 border-b border-rose-100 pb-5">
                   {summary.lineItems.map((line) => {
-                    const label = getLineLabel(line.productId, line.variantMg);
+                    const label = getLineLabel(
+                      line.productId,
+                      line.variantMg,
+                      line.selectedStrength,
+                    );
                     const productImage =
                       catalogProducts.find(
                         (product) => product.id === line.productId,
@@ -303,7 +307,7 @@ export default function OrderForm() {
 
                     return (
                       <li
-                        key={`${line.productId}-${line.variantMg}`}
+                        key={`${line.productId}-${line.variantMg}-${line.selectedStrength ?? ""}`}
                         className="flex items-start justify-between gap-3"
                       >
                         <div
@@ -330,6 +334,7 @@ export default function OrderForm() {
                                   line.productId,
                                   line.variantMg,
                                   line.quantity - 1,
+                                  line.selectedStrength,
                                 )
                               }
                               className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
@@ -347,6 +352,7 @@ export default function OrderForm() {
                                   line.productId,
                                   line.variantMg,
                                   line.quantity + 1,
+                                  line.selectedStrength,
                                 )
                               }
                               className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"

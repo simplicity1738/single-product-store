@@ -271,7 +271,12 @@ export default function PaymentStep({
         quantity: line.quantity,
         unitPrice: line.unitPrice,
         lineSubtotal: line.lineSubtotal,
-        productName: getLineLabel(line.productId, line.variantMg),
+        selectedStrength: line.selectedStrength,
+        productName: getLineLabel(
+          line.productId,
+          line.variantMg,
+          line.selectedStrength,
+        ),
       }));
 
       const address =

@@ -18,13 +18,21 @@ import { isProductPurchasable } from "@/lib/product-stock";
 type ProductContextValue = {
   cart: CartItem[];
   cardVariants: Record<string, number>;
+  cardStrengths: Record<string, string>;
   setCardVariantMg: (productId: string, mg: number) => void;
   getCardVariantMg: (productId: string) => number;
-  addToCart: (productId: string, variantMg?: number) => void;
+  setCardStrength: (productId: string, strength: string) => void;
+  getCardStrength: (productId: string, strengths?: string[]) => string;
+  addToCart: (
+    productId: string,
+    variantMg?: number,
+    selectedStrength?: string,
+  ) => void;
   updateCartQuantity: (
     productId: string,
     variantMg: number,
     quantity: number,
+    selectedStrength?: string,
   ) => void;
   cartItemCount: number;
 };
@@ -37,6 +45,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
   const [cardVariantOverrides, setCardVariantOverrides] = useState<
     Record<string, number>
   >({});
+  const [cardStrengthOverrides, setCardStrengthOverrides] = useState<
+    Record<string, string>
+  >({});
 
   const defaultCardVariants = useMemo(() => {
     const next: Record<string, number> = {};
@@ -46,9 +57,24 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     return next;
   }, [catalogProducts]);
 
+  const defaultCardStrengths = useMemo(() => {
+    const next: Record<string, string> = {};
+    for (const product of catalogProducts) {
+      if (product.strengths?.[0]) {
+        next[product.id] = product.strengths[0];
+      }
+    }
+    return next;
+  }, [catalogProducts]);
+
   const cardVariants = useMemo(
     () => ({ ...defaultCardVariants, ...cardVariantOverrides }),
     [defaultCardVariants, cardVariantOverrides],
+  );
+
+  const cardStrengths = useMemo(
+    () => ({ ...defaultCardStrengths, ...cardStrengthOverrides }),
+    [defaultCardStrengths, cardStrengthOverrides],
   );
 
   const setCardVariantMg = useCallback((productId: string, mg: number) => {
@@ -60,18 +86,45 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [cardVariants],
   );
 
+  const setCardStrength = useCallback((productId: string, strength: string) => {
+    setCardStrengthOverrides((current) => ({
+      ...current,
+      [productId]: strength,
+    }));
+  }, []);
+
+  const getCardStrength = useCallback(
+    (productId: string, strengths?: string[]) => {
+      if (cardStrengths[productId]) return cardStrengths[productId];
+      return strengths?.[0] ?? "";
+    },
+    [cardStrengths],
+  );
+
   const addToCart = useCallback(
-    (productId: string, variantMg?: number) => {
+    (productId: string, variantMg?: number, selectedStrength?: string) => {
       const product = catalogProducts.find((entry) => entry.id === productId);
       if (!product || !isProductPurchasable(product.status)) return;
 
       const mg = variantMg ?? product?.variants[0]?.mg ?? 0;
+      const strength =
+        selectedStrength?.trim() ||
+        getCardStrength(productId, product.strengths) ||
+        undefined;
 
       setCart((current) => {
-        const key = getCartItemKey(productId as ProductId, mg);
+        const key = getCartItemKey(
+          productId as ProductId,
+          mg,
+          strength,
+        );
         const existingIndex = current.findIndex(
           (item) =>
-            getCartItemKey(item.productId, item.variantMg) === key,
+            getCartItemKey(
+              item.productId,
+              item.variantMg,
+              item.selectedStrength,
+            ) === key,
         );
 
         if (existingIndex >= 0) {
@@ -84,7 +137,12 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
         return [
           ...current,
-          { productId: productId as ProductId, variantMg: mg, quantity: 1 },
+          {
+            productId: productId as ProductId,
+            variantMg: mg,
+            quantity: 1,
+            ...(strength ? { selectedStrength: strength } : {}),
+          },
         ];
       });
 
@@ -94,23 +152,40 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           ?.scrollIntoView({ behavior: "smooth" });
       });
     },
-    [catalogProducts],
+    [catalogProducts, getCardStrength],
   );
 
   const updateCartQuantity = useCallback(
-    (productId: string, variantMg: number, quantity: number) => {
-      const key = getCartItemKey(productId as ProductId, variantMg);
+    (
+      productId: string,
+      variantMg: number,
+      quantity: number,
+      selectedStrength?: string,
+    ) => {
+      const key = getCartItemKey(
+        productId as ProductId,
+        variantMg,
+        selectedStrength,
+      );
 
       setCart((current) => {
         if (quantity <= 0) {
           return current.filter(
             (item) =>
-              getCartItemKey(item.productId, item.variantMg) !== key,
+              getCartItemKey(
+                item.productId,
+                item.variantMg,
+                item.selectedStrength,
+              ) !== key,
           );
         }
 
         return current.map((item) =>
-          getCartItemKey(item.productId, item.variantMg) === key
+          getCartItemKey(
+            item.productId,
+            item.variantMg,
+            item.selectedStrength,
+          ) === key
             ? { ...item, quantity: Math.min(99, quantity) }
             : item,
         );
@@ -128,8 +203,11 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     () => ({
       cart,
       cardVariants,
+      cardStrengths,
       setCardVariantMg,
       getCardVariantMg,
+      setCardStrength,
+      getCardStrength,
       addToCart,
       updateCartQuantity,
       cartItemCount,
@@ -137,8 +215,11 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [
       cart,
       cardVariants,
+      cardStrengths,
       setCardVariantMg,
       getCardVariantMg,
+      setCardStrength,
+      getCardStrength,
       addToCart,
       updateCartQuantity,
       cartItemCount,

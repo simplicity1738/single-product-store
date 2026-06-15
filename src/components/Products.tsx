@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import ProductImage from "@/components/ProductImage";
+import StrengthSelector from "@/components/StrengthSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
@@ -27,7 +28,8 @@ type DisplayProduct = Product & {
 export default function Products() {
   const { locale, t } = useLanguage();
   const { products: configProducts, catalogProducts } = useStoreConfig();
-  const { cardVariants, setCardVariantMg, addToCart } = useProductSelection();
+  const { cardVariants, cardStrengths, setCardVariantMg, setCardStrength, addToCart } =
+    useProductSelection();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
   const displayProducts = useMemo<DisplayProduct[]>(() => {
@@ -68,6 +70,10 @@ export default function Products() {
             const activeVariant =
               getProductVariant(product.id, variantMg) ?? product.variants[0];
             const hasMultipleVariants = product.variants.length > 1;
+            const strengths = product.strengths ?? [];
+            const hasMultipleStrengths = strengths.length > 1;
+            const activeStrength =
+              cardStrengths[product.id] ?? strengths[0] ?? "";
             const purchasable = isProductPurchasable(product.status);
             const buttonLabel =
               product.status === "kommer_snart"
@@ -143,6 +149,14 @@ export default function Products() {
                       ▾
                     </span>
                   </div>
+                ) : hasMultipleStrengths ? (
+                  <StrengthSelector
+                    productId={product.id}
+                    strengths={strengths}
+                    activeStrength={activeStrength}
+                    onSelect={(strength) => setCardStrength(product.id, strength)}
+                    label={t.products.variantLabel}
+                  />
                 ) : shouldShowSizeLabel(product.sizeLabel) ? (
                   <p className="mt-4 text-sm font-medium text-rose-600">
                     {product.sizeLabel!.trim()}
@@ -157,7 +171,13 @@ export default function Products() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => addToCart(product.id, variantMg)}
+                    onClick={() =>
+                      addToCart(
+                        product.id,
+                        variantMg,
+                        hasMultipleStrengths ? activeStrength : undefined,
+                      )
+                    }
                     disabled={!purchasable}
                     className="rounded-full bg-rose-400 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:hover:bg-zinc-300"
                   >

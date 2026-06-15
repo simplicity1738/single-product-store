@@ -10,6 +10,7 @@ import {
 } from "@/lib/store-config.server";
 import {
   getProductTitle,
+  getProductLineLabelFromConfig,
   isValidStoreCartItem,
   calculateStoreOrderTotal,
   validateStoreDiscount,
@@ -177,8 +178,13 @@ export async function POST(request: Request) {
 
     const cartSummary = lineItems
       .map((line) => {
-        const title = getProductTitle(storeConfig, line.productId);
-        return `${title} (${line.variantMg} mg) × ${line.quantity}`;
+        const label = getProductLineLabelFromConfig(
+          storeConfig,
+          line.productId,
+          line.variantMg,
+          line.selectedStrength,
+        );
+        return `${label} × ${line.quantity}`;
       })
       .join(", ");
 
@@ -204,7 +210,12 @@ export async function POST(request: Request) {
         customerEmail: email,
         customerName: name,
         lines: lineItems.map((line) => ({
-          label: `${getProductTitle(storeConfig, line.productId)} (${line.variantMg} mg)`,
+          label: getProductLineLabelFromConfig(
+            storeConfig,
+            line.productId,
+            line.variantMg,
+            line.selectedStrength,
+          ),
           quantity: line.quantity,
           lineSubtotal: line.lineSubtotal,
         })),

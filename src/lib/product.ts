@@ -26,6 +26,8 @@ export type Product = {
   badge?: "popular" | "premium";
   /** Admin-defined strength/spec label (e.g. "10 mg", "5 ml", "Kit"). Hidden when blank or "0". */
   sizeLabel?: string;
+  /** Buyer-selectable strength options from admin (e.g. ["10 mg", "20 mg"]). */
+  strengths?: string[];
   status: ProductStockStatus;
 };
 
@@ -42,6 +44,8 @@ export type CartItem = {
   productId: ProductId;
   variantMg: number;
   quantity: number;
+  /** Selected strength label when product has configurable options. */
+  selectedStrength?: string;
 };
 
 export const PRODUCTS: Product[] = [
@@ -103,8 +107,15 @@ export function isValidVariant(productId: string, mg: number): boolean {
   return getProductVariant(productId as ProductId, mg) !== undefined;
 }
 
-export function getCartItemKey(productId: ProductId, variantMg: number): string {
-  return `${productId}:${variantMg}`;
+export function getCartItemKey(
+  productId: ProductId,
+  variantMg: number,
+  selectedStrength?: string,
+): string {
+  const strengthPart = selectedStrength?.trim()
+    ? `:${selectedStrength.trim()}`
+    : "";
+  return `${productId}:${variantMg}${strengthPart}`;
 }
 
 export function getLowestPrice(): number {

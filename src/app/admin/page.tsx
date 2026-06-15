@@ -15,6 +15,10 @@ import {
   ORDER_STATUS,
   type OrderStatus,
 } from "@/lib/order-status";
+import {
+  formatStrengthsInput,
+  parseStrengthsInput,
+} from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import {
   PRODUCT_STOCK_STATUS_OPTIONS,
@@ -641,7 +645,7 @@ export default function AdminPage() {
       description: product.description,
       price: product.price,
       image: product.image,
-      sizeLabel: product.sizeLabel ?? "",
+      sizeLabel: formatStrengthsInput(product.strengths, product.sizeLabel),
       bestSeller: config.bestSellerProductIds.includes(product.id),
       premium: config.premiumProductIds.includes(product.id),
       status: product.status ?? "i_lager",
@@ -862,7 +866,7 @@ export default function AdminPage() {
     }
 
     const id = slugify(title) || `product-${Date.now()}`;
-    const sizeLabel = newProduct.sizeLabel?.trim();
+    const strengths = parseStrengthsInput(newProduct.sizeLabel ?? "");
     const entry: ConfigProduct = {
       id,
       title,
@@ -870,7 +874,7 @@ export default function AdminPage() {
       price: Number(newProduct.price) || 0,
       image: newProduct.image.trim() || "/logo.png",
       status: newProduct.status ?? "i_lager",
-      ...(sizeLabel ? { sizeLabel } : {}),
+      ...(strengths.length > 0 ? { strengths } : {}),
     };
 
     setConfig((current) =>
@@ -1027,7 +1031,7 @@ export default function AdminPage() {
 
               <label className="block">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Styrka / Specifikation
+                  Styrka / Val
                 </span>
                 <input
                   value={editProduct.sizeLabel}
@@ -1038,9 +1042,13 @@ export default function AdminPage() {
                         : current,
                     )
                   }
-                  placeholder="t.ex. 10 mg"
+                  placeholder="Ange val separerade med kommatecken för flera alternativ (t.ex. 10 mg, 20 mg, 50 mg)"
                   className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 />
+                <p className="mt-1.5 text-xs text-zinc-500">
+                  Ange val separerade med kommatecken för flera alternativ (t.ex.
+                  10 mg, 20 mg, 50 mg). Lämna tom om produkten saknar styrka.
+                </p>
               </label>
 
               <label className="block">
@@ -1834,7 +1842,7 @@ export default function AdminPage() {
                   htmlFor="new-product-size-label"
                   className="mb-1.5 block text-xs font-medium text-zinc-600"
                 >
-                  Styrka / Specifikation (Lämna tom om produkten saknar mg)
+                  Styrka / Val
                 </label>
                 <input
                   id="new-product-size-label"
@@ -1845,9 +1853,13 @@ export default function AdminPage() {
                       sizeLabel: event.target.value,
                     }))
                   }
-                  placeholder="t.ex. 10 mg eller 50 mg"
+                  placeholder="Ange val separerade med kommatecken för flera alternativ (t.ex. 10 mg, 20 mg, 50 mg)"
                   className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
                 />
+                <p className="mt-1.5 text-xs text-zinc-500">
+                  Ange val separerade med kommatecken för flera alternativ (t.ex.
+                  10 mg, 20 mg, 50 mg). Lämna tom om produkten saknar styrka.
+                </p>
               </div>
               <div className="sm:col-span-2">
                 <label

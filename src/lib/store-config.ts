@@ -18,10 +18,42 @@ export type ConfigProduct = {
   description: string;
   price: number;
   image: string;
-  /** Optional strength/spec label shown on storefront cards (e.g. "10 mg", "Kit"). */
+  /** Buyer-selectable strength/spec options (e.g. ["10 mg", "20 mg"]). */
+  strengths?: string[];
+  /** @deprecated Legacy single label — migrated to strengths on read. */
   sizeLabel?: string;
   status: ProductStockStatus;
 };
+
+/** Split comma-separated admin input into trimmed strength options. */
+export function parseStrengthsInput(input: string): string[] {
+  return input
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+/** Join strengths for admin text input display. */
+export function formatStrengthsInput(
+  strengths: string[] | undefined,
+  sizeLabel?: string,
+): string {
+  if (strengths?.length) return strengths.join(", ");
+  return sizeLabel?.trim() ?? "";
+}
+
+/** Resolve strengths from stored array or legacy sizeLabel field. */
+export function resolveConfigStrengths(
+  entry: Pick<ConfigProduct, "strengths" | "sizeLabel">,
+): string[] {
+  if (Array.isArray(entry.strengths) && entry.strengths.length > 0) {
+    return entry.strengths.map((value) => String(value).trim()).filter(Boolean);
+  }
+  if (entry.sizeLabel?.trim()) {
+    return parseStrengthsInput(entry.sizeLabel);
+  }
+  return [];
+}
 
 export type ConfigReview = {
   id: string;
@@ -321,12 +353,14 @@ function configProductToCatalogEntry(
     { mg: 10, price: entry.price },
   ];
 
-  const sizeLabel = entry.sizeLabel?.trim() || undefined;
+  const strengths = resolveConfigStrengths(entry);
+  const sizeLabel = strengths[0] || entry.sizeLabel?.trim() || undefined;
 
   return {
     id: entry.id as Product["id"],
     image: entry.image,
     badge: resolveProductBadge(config, entry.id),
+    strengths: strengths.length > 0 ? strengths : undefined,
     sizeLabel,
     status: entry.status ?? DEFAULT_PRODUCT_STOCK_STATUS,
     variants: variants.map((variant) => ({
@@ -367,8 +401,19 @@ export function getProductLineLabelFromConfig(
   config: StoreConfig,
   productId: string,
   variantMg: number,
+  selectedStrength?: string,
 ): string {
   const title = getProductTitle(config, productId);
+  const entry = config.products.find((product) => product.id === productId);
+  const strengths = entry ? resolveConfigStrengths(entry) : [];
+  const trimmedStrength = selectedStrength?.trim();
+
+  if (trimmedStrength) {
+    return `${title} (${trimmedStrength})`;
+  }
+  if (strengths.length === 1) {
+    return `${title} (${strengths[0]})`;
+  }
   return `${title} (${variantMg} mg)`;
 }
 
@@ -405,6 +450,19 @@ export function isValidStoreCartItem(
   if (!product) return false;
   if (product.status !== "i_lager") return false;
   if (!product.variants.some((variant) => variant.mg === item.variantMg)) {
+    return false;
+  }
+  const strengths = product.strengths ?? [];
+  if (strengths.length > 1) {
+    const selected = item.selectedStrength?.trim();
+    if (!selected || !strengths.includes(selected)) {
+      return false;
+    }
+  } else if (
+    item.selectedStrength?.trim() &&
+    strengths.length === 1 &&
+    item.selectedStrength.trim() !== strengths[0]
+  ) {
     return false;
   }
   if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
