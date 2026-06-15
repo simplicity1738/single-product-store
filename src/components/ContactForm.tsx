@@ -10,7 +10,7 @@ const inputClassName =
 
 export default function ContactForm() {
   const { locale, t } = useLanguage();
-  const { telegramHandle, telegramUrl } = useStoreConfig();
+  const { telegramHandle, telegramUrl, contactEmail } = useStoreConfig();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,7 +199,7 @@ export default function ContactForm() {
               </a>
 
               <a
-                href={`mailto:${CONTACT.email}`}
+                href={`mailto:${contactEmail || CONTACT.email}`}
                 className="flex items-center gap-4 rounded-xl border border-rose-100 bg-rose-50/50 p-4 transition hover:border-rose-200 hover:bg-rose-50"
               >
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-400 text-white">
@@ -222,7 +222,9 @@ export default function ContactForm() {
                   <p className="text-sm font-semibold text-zinc-900">
                     {t.contact.emailLink}
                   </p>
-                  <p className="text-sm text-zinc-500">{CONTACT.email}</p>
+                  <p className="text-sm text-zinc-500">
+                    {contactEmail || CONTACT.email}
+                  </p>
                 </div>
               </a>
             </div>

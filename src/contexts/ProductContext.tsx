@@ -84,6 +84,12 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           { productId: productId as ProductId, variantMg: mg, quantity: 1 },
         ];
       });
+
+      window.requestAnimationFrame(() => {
+        document
+          .getElementById("checkout-form")
+          ?.scrollIntoView({ behavior: "smooth" });
+      });
     },
     [catalogProducts],
   );

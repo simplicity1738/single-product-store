@@ -12,10 +12,14 @@ export async function GET() {
       shippingFee: config.shippingFee,
       freeShippingThreshold: config.freeShippingThreshold,
       telegramHandle: config.telegramHandle,
+      contactEmail: config.contactEmail,
       cryptoWallets: config.cryptoWallets,
       products: config.products,
       reviews: config.reviews,
       discounts: config.discounts,
+      faqs: config.faqs,
+      bestSellerProductIds: config.bestSellerProductIds,
+      premiumProductIds: config.premiumProductIds,
     },
     {
       headers: {

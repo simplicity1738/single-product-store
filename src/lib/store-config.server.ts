@@ -14,6 +14,7 @@ import {
   normalizeTelegramHandle,
   type BannerConfig,
   type ConfigDiscount,
+  type ConfigFaq,
   type InfluencerPartner,
   type StoreConfig,
 } from "@/lib/store-config";
@@ -75,6 +76,21 @@ function normalizeFreeShippingThreshold(value: unknown): number {
     : DEFAULT_FREE_SHIPPING_THRESHOLD;
 }
 
+function normalizeFaq(entry: Partial<ConfigFaq>): ConfigFaq {
+  return {
+    id: entry.id?.trim() || `faq-${Date.now()}`,
+    question: String(entry.question ?? "").trim(),
+    answer: String(entry.answer ?? "").trim(),
+  };
+}
+
+function normalizeProductIdList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => String(entry).trim())
+    .filter(Boolean);
+}
+
 function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
   return {
     siteSettings: {
@@ -96,6 +112,10 @@ function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
     telegramHandle: normalizeTelegramHandle(
       parsed.telegramHandle ?? DEFAULT_STORE_CONFIG.telegramHandle,
     ),
+    contactEmail:
+      typeof parsed.contactEmail === "string" && parsed.contactEmail.trim()
+        ? parsed.contactEmail.trim()
+        : DEFAULT_STORE_CONFIG.contactEmail,
     cryptoWallets: {
       ...DEFAULT_STORE_CONFIG.cryptoWallets,
       ...parsed.cryptoWallets,
@@ -113,6 +133,11 @@ function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
       Array.isArray(parsed.discounts) && parsed.discounts.length > 0
         ? parsed.discounts.map((entry) => normalizeDiscount(entry))
         : DEFAULT_DISCOUNTS,
+    bestSellerProductIds: normalizeProductIdList(parsed.bestSellerProductIds),
+    premiumProductIds: normalizeProductIdList(parsed.premiumProductIds),
+    faqs: Array.isArray(parsed.faqs)
+      ? parsed.faqs.map((entry) => normalizeFaq(entry)).filter((entry) => entry.question)
+      : [],
   };
 }
 
@@ -141,10 +166,16 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
       config.freeShippingThreshold,
     ),
     telegramHandle: normalizeTelegramHandle(config.telegramHandle),
+    contactEmail: config.contactEmail?.trim() || DEFAULT_STORE_CONFIG.contactEmail,
     reviews: Array.isArray(config.reviews) ? config.reviews : DEFAULT_REVIEWS,
     discounts: Array.isArray(config.discounts)
       ? config.discounts.map((entry) => normalizeDiscount(entry))
       : DEFAULT_DISCOUNTS,
+    bestSellerProductIds: normalizeProductIdList(config.bestSellerProductIds),
+    premiumProductIds: normalizeProductIdList(config.premiumProductIds),
+    faqs: Array.isArray(config.faqs)
+      ? config.faqs.map((entry) => normalizeFaq(entry)).filter((entry) => entry.question)
+      : [],
   };
   await writeKvData(KV_KEYS.STORE_CONFIG, "store-config.json", normalized);
 }

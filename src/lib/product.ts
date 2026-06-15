@@ -55,7 +55,6 @@ export const PRODUCTS: Product[] = [
   {
     id: "retatrutide",
     image: "/retatrutide.png",
-    badge: "popular",
     variants: [
       { mg: 10, price: 1800 },
       { mg: 20, price: 2400 },
@@ -65,7 +64,6 @@ export const PRODUCTS: Product[] = [
   {
     id: "tirzepatide",
     image: "/tirzepatide.png",
-    badge: "premium",
     variants: [
       { mg: 5, price: 900 },
       { mg: 10, price: 1600 },

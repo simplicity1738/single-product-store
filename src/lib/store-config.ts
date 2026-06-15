@@ -76,6 +76,12 @@ export type InfluencerPartner = {
   commissionPercent: number;
 };
 
+export type ConfigFaq = {
+  id: string;
+  question: string;
+  answer: string;
+};
+
 export type StoreConfig = {
   siteSettings: {
     heroBadge: string;
@@ -89,11 +95,18 @@ export type StoreConfig = {
   shippingFee: number;
   freeShippingThreshold: number;
   telegramHandle: string;
+  /** Store contact email shown on the storefront and used for customer communication. */
+  contactEmail: string;
   cryptoWallets: CryptoWallets;
   systemIntegration: SystemIntegration;
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
+  /** Product IDs manually marked as bestsellers (Bästsäljare). */
+  bestSellerProductIds: string[];
+  /** Product IDs manually marked as premium. */
+  premiumProductIds: string[];
+  faqs: ConfigFaq[];
 };
 
 export const DEFAULT_DISCOUNTS: ConfigDiscount[] = [
@@ -176,6 +189,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   shippingFee: DEFAULT_SHIPPING_FEE,
   freeShippingThreshold: DEFAULT_FREE_SHIPPING_THRESHOLD,
   telegramHandle: "@simplicity",
+  contactEmail: "hello@simplicity.se",
   cryptoWallets: {
     tron: "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     bsc: "0x0000000000000000000000000000000000000000",
@@ -189,6 +203,9 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   products: [],
   reviews: DEFAULT_REVIEWS,
   discounts: DEFAULT_DISCOUNTS,
+  bestSellerProductIds: [],
+  premiumProductIds: [],
+  faqs: [],
 };
 
 export function normalizeTelegramHandle(handle: string): string {
@@ -281,7 +298,19 @@ export function calculateStoreDiscountAmount(
   return Math.min(discount.value, applicableSubtotal);
 }
 
-function configProductToCatalogEntry(entry: ConfigProduct): Product {
+export function resolveProductBadge(
+  config: StoreConfig,
+  productId: string,
+): Product["badge"] {
+  if (config.premiumProductIds.includes(productId)) return "premium";
+  if (config.bestSellerProductIds.includes(productId)) return "popular";
+  return undefined;
+}
+
+function configProductToCatalogEntry(
+  entry: ConfigProduct,
+  config: StoreConfig,
+): Product {
   const fallback = FALLBACK_PRODUCTS.find((product) => product.id === entry.id);
   const variants: ProductVariant[] = fallback?.variants ?? [
     { mg: 10, price: entry.price },
@@ -292,7 +321,7 @@ function configProductToCatalogEntry(entry: ConfigProduct): Product {
   return {
     id: entry.id as Product["id"],
     image: entry.image,
-    badge: fallback?.badge,
+    badge: resolveProductBadge(config, entry.id),
     sizeLabel,
     variants: variants.map((variant) => ({
       ...variant,
@@ -303,10 +332,15 @@ function configProductToCatalogEntry(entry: ConfigProduct): Product {
 
 export function getCatalogProducts(config: StoreConfig): Product[] {
   if (config.products.length === 0) {
-    return FALLBACK_PRODUCTS;
+    return FALLBACK_PRODUCTS.map((product) => ({
+      ...product,
+      badge: resolveProductBadge(config, product.id),
+    }));
   }
 
-  return config.products.map(configProductToCatalogEntry);
+  return config.products.map((entry) =>
+    configProductToCatalogEntry(entry, config),
+  );
 }
 
 export function getConfigReviews(config: StoreConfig): ConfigReview[] {

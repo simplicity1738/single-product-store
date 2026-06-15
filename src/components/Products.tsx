@@ -77,16 +77,13 @@ export default function Products() {
                   </span>
                 )}
 
-                <div className="mb-4 flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
-                    {t.products.oneTime}
-                  </span>
+                <div className="mb-4 flex items-center justify-end gap-2">
                   <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 ring-1 ring-emerald-200">
                     {t.products.inStock}
                   </span>
                 </div>
 
-                <div className="relative mb-5 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-rose-50">
+                <div className="relative mb-5 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-gradient-to-br from-[#FFF5F5] to-rose-50">
                   <ProductImage
                     src={product.image}
                     alt={product.displayName}
@@ -144,7 +141,6 @@ export default function Products() {
                     <p className="text-xl font-bold text-zinc-900">
                       {formatCurrency(activeVariant.price, localeCode)}
                     </p>
-                    <p className="text-xs text-zinc-500">{t.products.oneTime}</p>
                   </div>
                   <button
                     type="button"

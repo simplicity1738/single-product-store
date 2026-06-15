@@ -18,6 +18,7 @@ import {
 import { REF_COOKIE_NAME } from "@/lib/ref-tracking";
 import { appendOrder, ORDER_STATUS, resolveAffiliateAttribution } from "@/lib/orders.server";
 import { sendOrderNotification } from "@/lib/telegram";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 import { appendSystemLog } from "@/lib/system-logs.server";
 import { CHECKOUT_FIELD_LIMITS, clampText } from "@/lib/sanitize";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -27,8 +28,12 @@ import {
 } from "@/lib/influencer-stats.server";
 
 function generateOrderId(): string {
-  const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
-  return `SC-${Date.now().toString(36).toUpperCase()}-${suffix}`;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let suffix = "";
+  for (let index = 0; index < 5; index += 1) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `SIMP-${suffix}`;
 }
 
 export async function POST(request: Request) {
@@ -191,6 +196,28 @@ export async function POST(request: Request) {
           }
         : {}),
     });
+
+    try {
+      await sendOrderConfirmationEmail({
+        orderId,
+        customerEmail: email,
+        customerName: name,
+        lines: lineItems.map((line) => ({
+          label: `${getProductTitle(storeConfig, line.productId)} (${line.variantMg} mg)`,
+          quantity: line.quantity,
+          lineSubtotal: line.lineSubtotal,
+        })),
+        subtotal,
+        shipping,
+        discount,
+        total,
+      });
+    } catch {
+      await appendSystemLog(
+        `Orderbekräftelse via e-post misslyckades för ${orderId}.`,
+        "email",
+      );
+    }
 
     if (paymentNetwork && paymentWallets[paymentNetwork]) {
       const networkInfo = paymentWallets[paymentNetwork];

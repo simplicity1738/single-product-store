@@ -15,7 +15,7 @@ export default function Header() {
     { href: "/#products", label: t.nav.products },
     { href: "/#features", label: t.nav.features },
     { href: "/#quality", label: t.nav.quality },
-    { href: "/#order", label: t.nav.order },
+    { href: "/#checkout-form", label: t.nav.order },
     { href: "/#contact", label: t.nav.contact },
   ];
 
@@ -52,7 +52,7 @@ export default function Header() {
         <div className="flex items-center gap-2 sm:gap-3">
           <LanguageSwitcher />
           <Link
-            href="/#order"
+            href="/#checkout-form"
             className="inline-flex h-10 items-center justify-center rounded-full bg-rose-400 px-4 text-sm font-semibold text-white transition hover:bg-rose-500 sm:px-5"
           >
             {t.nav.buyNow}

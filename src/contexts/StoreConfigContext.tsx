@@ -24,6 +24,7 @@ import {
   validateStoreDiscount,
   type BannerConfig,
   type ConfigDiscount,
+  type ConfigFaq,
   type ConfigProduct,
   type ConfigReview,
   type CryptoWallets,
@@ -42,10 +43,14 @@ type PublicStoreConfig = {
   shippingFee: number;
   freeShippingThreshold: number;
   telegramHandle: string;
+  contactEmail: string;
   cryptoWallets: CryptoWallets;
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
+  faqs: ConfigFaq[];
+  bestSellerProductIds: string[];
+  premiumProductIds: string[];
 };
 
 const DEFAULT_SETTINGS: SiteSettings = {
@@ -64,10 +69,12 @@ type StoreConfigContextValue = {
   freeShippingThreshold: number;
   telegramHandle: string;
   telegramUrl: string;
+  contactEmail: string;
   cryptoWallets: CryptoWallets;
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
+  faqs: ConfigFaq[];
   catalogProducts: Product[];
   storeConfig: StoreConfig;
   isLoading: boolean;
@@ -92,6 +99,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   const [marketingTracking, setMarketingTracking] =
     useState<MarketingTracking>(DEFAULT_MARKETING_TRACKING);
   const [telegramHandle, setTelegramHandle] = useState("@simplicity");
+  const [contactEmail, setContactEmail] = useState("hello@simplicity.se");
   const [cryptoWallets, setCryptoWallets] = useState<CryptoWallets>({
     tron: "",
     bsc: "",
@@ -101,6 +109,9 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<ConfigProduct[]>([]);
   const [reviews, setReviews] = useState<ConfigReview[]>([]);
   const [discounts, setDiscounts] = useState<ConfigDiscount[]>([]);
+  const [faqs, setFaqs] = useState<ConfigFaq[]>([]);
+  const [bestSellerProductIds, setBestSellerProductIds] = useState<string[]>([]);
+  const [premiumProductIds, setPremiumProductIds] = useState<string[]>([]);
   const [shippingFee, setShippingFee] = useState(DEFAULT_SHIPPING_FEE);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(
     DEFAULT_FREE_SHIPPING_THRESHOLD,
@@ -119,6 +130,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
         ...data.marketingTracking,
       });
       setTelegramHandle(data.telegramHandle || "@simplicity");
+      setContactEmail(data.contactEmail || "hello@simplicity.se");
       setCryptoWallets(
         data.cryptoWallets ?? {
           tron: "",
@@ -130,6 +142,15 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       setProducts(Array.isArray(data.products) ? data.products : []);
       setReviews(Array.isArray(data.reviews) ? data.reviews : []);
       setDiscounts(Array.isArray(data.discounts) ? data.discounts : []);
+      setFaqs(Array.isArray(data.faqs) ? data.faqs : []);
+      setBestSellerProductIds(
+        Array.isArray(data.bestSellerProductIds)
+          ? data.bestSellerProductIds
+          : [],
+      );
+      setPremiumProductIds(
+        Array.isArray(data.premiumProductIds) ? data.premiumProductIds : [],
+      );
       setShippingFee(
         Number.isFinite(data.shippingFee)
           ? Math.max(0, data.shippingFee)
@@ -173,11 +194,15 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       shippingFee,
       freeShippingThreshold,
       telegramHandle,
+      contactEmail,
       cryptoWallets,
       systemIntegration: { telegramBotToken: "", telegramChatId: "" },
       products,
       reviews,
       discounts,
+      bestSellerProductIds,
+      premiumProductIds,
+      faqs,
     }),
     [
       siteSettings,
@@ -186,10 +211,14 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       shippingFee,
       freeShippingThreshold,
       telegramHandle,
+      contactEmail,
       cryptoWallets,
       products,
       reviews,
       discounts,
+      bestSellerProductIds,
+      premiumProductIds,
+      faqs,
     ],
   );
 
@@ -242,10 +271,12 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       freeShippingThreshold,
       telegramHandle,
       telegramUrl,
+      contactEmail,
       cryptoWallets,
       products,
       reviews: resolvedReviews,
       discounts,
+      faqs,
       catalogProducts,
       storeConfig,
       isLoading,
@@ -263,10 +294,12 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       freeShippingThreshold,
       telegramHandle,
       telegramUrl,
+      contactEmail,
       cryptoWallets,
       products,
       resolvedReviews,
       discounts,
+      faqs,
       catalogProducts,
       storeConfig,
       isLoading,

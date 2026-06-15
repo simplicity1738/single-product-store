@@ -187,7 +187,7 @@ export default function SuccessReceipt() {
               <div className="py-8 text-center">
                 <p className="text-zinc-600">{t.success.noOrder}</p>
                 <Link
-                  href="/#order"
+                  href="/#checkout-form"
                   className="mt-4 inline-flex text-sm font-semibold text-rose-600 hover:text-rose-700"
                 >
                   {t.success.placeNew}

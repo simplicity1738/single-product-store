@@ -108,7 +108,7 @@ export default function OrderForm() {
   }
 
   return (
-    <section id="order" className="scroll-mt-24 bg-rose-50 py-20 sm:py-24">
+    <section id="checkout-form" className="scroll-mt-24 bg-rose-50 py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
@@ -305,7 +305,7 @@ export default function OrderForm() {
                         key={`${line.productId}-${line.variantMg}`}
                         className="flex items-start justify-between gap-3"
                       >
-                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-rose-100 bg-rose-50">
+                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-rose-100 bg-gradient-to-br from-[#FFF5F5] to-rose-50">
                           <ProductImage
                             src={productImage}
                             alt={label}
@@ -317,8 +317,7 @@ export default function OrderForm() {
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-zinc-900">{label}</p>
                           <p className="mt-0.5 text-xs text-zinc-500">
-                            {formatCurrency(line.unitPrice, localeCode)} ·{" "}
-                            {t.products.oneTime}
+                            {formatCurrency(line.unitPrice, localeCode)}
                           </p>
                           <div className="mt-2 flex items-center gap-2">
                             <button

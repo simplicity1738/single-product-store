@@ -71,6 +71,14 @@ export async function updateOrderStatus(
   return updatedOrder;
 }
 
+export async function deleteOrder(orderId: string): Promise<boolean> {
+  const orders = await readOrders();
+  const nextOrders = orders.filter((order) => order.id !== orderId);
+  if (nextOrders.length === orders.length) return false;
+  await writeOrders(nextOrders);
+  return true;
+}
+
 export async function approveOrder(orderId: string): Promise<StoredOrder | null> {
   const orders = await readOrders();
   const order = orders.find((entry) => entry.id === orderId);

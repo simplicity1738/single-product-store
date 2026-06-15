@@ -91,7 +91,7 @@ export default function Hero() {
           <div className="relative mx-auto w-full max-w-md lg:max-w-none">
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-rose-200/50 via-transparent to-rose-100/60 blur-2xl" />
             <div className="relative overflow-hidden rounded-3xl border border-rose-100 bg-white p-8 shadow-xl shadow-rose-900/5">
-              <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-rose-50">
+              <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-gradient-to-br from-[#FFF5F5] to-rose-50">
                 <ProductImage
                   src={featuredProduct.image}
                   alt={productLineLabel}
@@ -108,7 +108,7 @@ export default function Hero() {
                     {productLineLabel}
                   </p>
                   <p className="text-xs text-zinc-500">
-                    {t.products.inStock} · {t.products.oneTime}
+                    {t.products.inStock}
                   </p>
                 </div>
                 <p className="text-lg font-bold text-zinc-900">

@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Products, { Features } from "@/components/Products";
 import OrderForm from "@/components/OrderForm";
+import Faq from "@/components/Faq";
 import ContactForm from "@/components/ContactForm";
 import TrustBar from "@/components/TrustBar";
 import Reviews from "@/components/Reviews";
@@ -15,6 +16,7 @@ export default function Home() {
         <Hero />
         <Products />
         <Features />
+        <Faq />
         <OrderForm />
         <ContactForm />
         <TrustBar />

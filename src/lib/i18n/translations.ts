@@ -394,6 +394,12 @@ export const translations = {
       eyebrow: "Kundomdömen",
       title: "Det här säger våra kunder",
     },
+    faq: {
+      eyebrow: "Vanliga frågor",
+      title: "Frågor & svar",
+      subtitle:
+        "Här hittar du svar på de vanligaste frågorna om beställning, leverans och produkter.",
+    },
     contact: {
       eyebrow: "Kontakta oss",
       title: "Vi finns här för dig",
@@ -822,6 +828,12 @@ export const translations = {
     reviews: {
       eyebrow: "Customer reviews",
       title: "What our customers say",
+    },
+    faq: {
+      eyebrow: "FAQ",
+      title: "Questions & answers",
+      subtitle:
+        "Find answers to the most common questions about ordering, shipping, and our products.",
     },
     contact: {
       eyebrow: "Contact us",

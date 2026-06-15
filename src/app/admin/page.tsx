@@ -5,6 +5,7 @@ import Link from "next/link";
 import type {
   BannerStyle,
   ConfigDiscount,
+  ConfigFaq,
   ConfigProduct,
   InfluencerPartner,
   StoreConfig,
@@ -55,6 +56,12 @@ type ToastState = {
   type: "success" | "error" | "info";
   message: string;
 } | null;
+
+const emptyFaq = (): ConfigFaq => ({
+  id: "",
+  question: "",
+  answer: "",
+});
 
 const emptyInfluencer = (): InfluencerPartner => ({
   id: "",
@@ -178,6 +185,8 @@ export default function AdminPage() {
   const [removingEmail, setRemovingEmail] = useState<string | null>(null);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const [newFaq, setNewFaq] = useState<ConfigFaq>(emptyFaq());
 
   const showToast = useCallback((next: ToastState) => {
     setToast(next);
@@ -342,6 +351,47 @@ export default function AdminPage() {
       });
     } finally {
       setUpdatingOrderId(null);
+    }
+  }
+
+  async function handleDeleteOrder(orderId: string) {
+    setDeletingOrderId(orderId);
+    try {
+      const response = await fetch("/api/admin/orders", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Delete failed");
+      }
+
+      setOrders((current) => current.filter((order) => order.id !== orderId));
+      if (typeof data.totalRevenue === "number") {
+        setAnalytics((current) => ({
+          ...current,
+          totalRevenue: data.totalRevenue,
+          orderCount:
+            typeof data.orderCount === "number"
+              ? data.orderCount
+              : current.orderCount - 1,
+        }));
+      } else {
+        void loadAnalytics();
+      }
+      showToast({
+        type: "success",
+        message: data.message ?? "Order borttagen.",
+      });
+    } catch {
+      showToast({
+        type: "error",
+        message: "Kunde inte ta bort ordern.",
+      });
+    } finally {
+      setDeletingOrderId(null);
     }
   }
 
@@ -568,9 +618,94 @@ export default function AdminPage() {
         ? {
             ...current,
             products: current.products.filter((product) => product.id !== id),
+            bestSellerProductIds: current.bestSellerProductIds.filter(
+              (productId) => productId !== id,
+            ),
+            premiumProductIds: current.premiumProductIds.filter(
+              (productId) => productId !== id,
+            ),
           }
         : current,
     );
+  }
+
+  function toggleBestSeller(productId: string) {
+    setConfig((current) => {
+      if (!current) return current;
+      const ids = current.bestSellerProductIds ?? [];
+      const isSelected = ids.includes(productId);
+      return {
+        ...current,
+        bestSellerProductIds: isSelected
+          ? ids.filter((id) => id !== productId)
+          : [...ids, productId],
+      };
+    });
+  }
+
+  function togglePremium(productId: string) {
+    setConfig((current) => {
+      if (!current) return current;
+      const ids = current.premiumProductIds ?? [];
+      const isSelected = ids.includes(productId);
+      return {
+        ...current,
+        premiumProductIds: isSelected
+          ? ids.filter((id) => id !== productId)
+          : [...ids, productId],
+      };
+    });
+  }
+
+  function updateFaq(id: string, field: "question" | "answer", value: string) {
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            faqs: current.faqs.map((entry) =>
+              entry.id === id ? { ...entry, [field]: value } : entry,
+            ),
+          }
+        : current,
+    );
+  }
+
+  function removeFaq(id: string) {
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            faqs: current.faqs.filter((entry) => entry.id !== id),
+          }
+        : current,
+    );
+  }
+
+  function addFaq() {
+    const question = newFaq.question.trim();
+    const answer = newFaq.answer.trim();
+    if (!question || !answer) {
+      showToast({
+        type: "info",
+        message: "Ange både fråga och svar innan du lägger till.",
+      });
+      return;
+    }
+
+    const entry: ConfigFaq = {
+      id: `faq-${Date.now()}`,
+      question,
+      answer,
+    };
+
+    setConfig((current) =>
+      current ? { ...current, faqs: [...current.faqs, entry] } : current,
+    );
+    setNewFaq(emptyFaq());
+    showToast({
+      type: "info",
+      message: "FAQ tillagd — spara för att publicera.",
+    });
   }
 
   function addDiscount() {
@@ -830,36 +965,48 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-right">
-                          {order.status === ORDER_STATUS.PENDING ? (
+                          <div className="flex flex-col items-end gap-2">
+                            {order.status === ORDER_STATUS.PENDING ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void updateOrderStatus(order.id, "approve")
+                                }
+                                disabled={updatingOrderId === order.id}
+                                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
+                              >
+                                {updatingOrderId === order.id
+                                  ? "Godkänner…"
+                                  : "Godkänn & Markera som betald"}
+                              </button>
+                            ) : order.status === ORDER_STATUS.APPROVED ||
+                              order.status === ORDER_STATUS.COMPLETED ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void updateOrderStatus(order.id, "revert")
+                                }
+                                disabled={updatingOrderId === order.id}
+                                className="rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
+                              >
+                                {updatingOrderId === order.id
+                                  ? "Återställer…"
+                                  : "Häv godkännande"}
+                              </button>
+                            ) : (
+                              <span className="text-xs text-zinc-400">—</span>
+                            )}
                             <button
                               type="button"
-                              onClick={() =>
-                                void updateOrderStatus(order.id, "approve")
-                              }
-                              disabled={updatingOrderId === order.id}
-                              className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
+                              onClick={() => void handleDeleteOrder(order.id)}
+                              disabled={deletingOrderId === order.id}
+                              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-60"
                             >
-                              {updatingOrderId === order.id
-                                ? "Godkänner…"
-                                : "Godkänn & Markera som betald"}
+                              {deletingOrderId === order.id
+                                ? "Tar bort…"
+                                : "Ta bort order"}
                             </button>
-                          ) : order.status === ORDER_STATUS.APPROVED ||
-                            order.status === ORDER_STATUS.COMPLETED ? (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                void updateOrderStatus(order.id, "revert")
-                              }
-                              disabled={updatingOrderId === order.id}
-                              className="rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
-                            >
-                              {updatingOrderId === order.id
-                                ? "Återställer…"
-                                : "Häv godkännande"}
-                            </button>
-                          ) : (
-                            <span className="text-xs text-zinc-400">—</span>
-                          )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1119,6 +1266,28 @@ export default function AdminPage() {
 
             <label className="block sm:col-span-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Butikens E-postadress
+              </span>
+              <input
+                type="email"
+                value={config.contactEmail}
+                onChange={(event) =>
+                  setConfig((current) =>
+                    current
+                      ? { ...current, contactEmail: event.target.value }
+                      : current,
+                  )
+                }
+                placeholder="hello@simplicity.se"
+                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+              <p className="mt-2 text-xs text-zinc-500">
+                Visas i kontaktsektionen och används för kundkommunikation.
+              </p>
+            </label>
+
+            <label className="block sm:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 TELEGRAM SUPPORT HANDLE (Boutique länk)
               </span>
               <input
@@ -1234,17 +1403,37 @@ export default function AdminPage() {
                 key={product.id}
                 className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold text-zinc-900">{product.title}</p>
                   <p className="text-sm text-zinc-600">{product.description}</p>
                   <p className="mt-1 text-xs text-zinc-500">
                     {product.price} SEK · {product.image}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-4">
+                    <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                      <input
+                        type="checkbox"
+                        checked={config.bestSellerProductIds.includes(product.id)}
+                        onChange={() => toggleBestSeller(product.id)}
+                        className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                      />
+                      Bästsäljare
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                      <input
+                        type="checkbox"
+                        checked={config.premiumProductIds.includes(product.id)}
+                        onChange={() => togglePremium(product.id)}
+                        className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                      />
+                      Premium
+                    </label>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeProduct(product.id)}
-                  className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                  className="shrink-0 rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                 >
                   Ta bort
                 </button>
@@ -1739,6 +1928,99 @@ export default function AdminPage() {
                 className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
               />
             </label>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">FAQ-hantering</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Hantera frågor och svar som visas i accordionen på startsidan.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            {config.faqs.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+                Inga FAQ-poster ännu.
+              </p>
+            ) : (
+              config.faqs.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="rounded-2xl border border-rose-100 bg-rose-50/40 p-4"
+                >
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Fråga
+                    </span>
+                    <input
+                      value={entry.question}
+                      onChange={(event) =>
+                        updateFaq(entry.id, "question", event.target.value)
+                      }
+                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                    />
+                  </label>
+                  <label className="mt-3 block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Svar
+                    </span>
+                    <textarea
+                      value={entry.answer}
+                      onChange={(event) =>
+                        updateFaq(entry.id, "answer", event.target.value)
+                      }
+                      rows={3}
+                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeFaq(entry.id)}
+                    className="mt-3 rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                  >
+                    Ta bort
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
+            <h3 className="text-sm font-semibold text-zinc-900">
+              Lägg till ny FAQ
+            </h3>
+            <div className="mt-4 space-y-3">
+              <input
+                value={newFaq.question}
+                onChange={(event) =>
+                  setNewFaq((current) => ({
+                    ...current,
+                    question: event.target.value,
+                  }))
+                }
+                placeholder="Fråga"
+                className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+              />
+              <textarea
+                value={newFaq.answer}
+                onChange={(event) =>
+                  setNewFaq((current) => ({
+                    ...current,
+                    answer: event.target.value,
+                  }))
+                }
+                placeholder="Svar"
+                rows={3}
+                className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={addFaq}
+              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+            >
+              + Lägg till FAQ
+            </button>
           </div>
         </section>
 
