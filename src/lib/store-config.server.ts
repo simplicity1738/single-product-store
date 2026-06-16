@@ -138,7 +138,41 @@ function normalizeConfigProduct(
   };
 }
 
-function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
+function normalizeCryptoWallets(
+  parsed: Partial<StoreConfig> & {
+    btcWalletInput?: string;
+    ethWalletInput?: string;
+  },
+): StoreConfig["cryptoWallets"] {
+  const merged = {
+    ...DEFAULT_STORE_CONFIG.cryptoWallets,
+    ...parsed.cryptoWallets,
+  };
+
+  const legacyBtc = parsed.btcWalletInput?.trim();
+  const legacyEth = parsed.ethWalletInput?.trim();
+
+  if (legacyBtc && !parsed.cryptoWallets?.bitcoin?.trim()) {
+    merged.bitcoin = legacyBtc;
+  }
+  if (legacyEth && !parsed.cryptoWallets?.ethereum?.trim()) {
+    merged.ethereum = legacyEth;
+  }
+
+  return {
+    tron: merged.tron?.trim() ?? "",
+    bsc: merged.bsc?.trim() ?? "",
+    bitcoin: merged.bitcoin?.trim() ?? "",
+    ethereum: merged.ethereum?.trim() ?? "",
+  };
+}
+
+function mergeStoreConfig(
+  parsed: Partial<StoreConfig> & {
+    btcWalletInput?: string;
+    ethWalletInput?: string;
+  },
+): StoreConfig {
   return {
     siteSettings: {
       ...DEFAULT_STORE_CONFIG.siteSettings,
@@ -163,18 +197,7 @@ function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
       typeof parsed.contactEmail === "string" && parsed.contactEmail.trim()
         ? parsed.contactEmail.trim()
         : DEFAULT_STORE_CONFIG.contactEmail,
-    cryptoWallets: {
-      ...DEFAULT_STORE_CONFIG.cryptoWallets,
-      ...parsed.cryptoWallets,
-    },
-    btcWalletInput:
-      typeof parsed.btcWalletInput === "string"
-        ? parsed.btcWalletInput.trim()
-        : DEFAULT_STORE_CONFIG.btcWalletInput,
-    ethWalletInput:
-      typeof parsed.ethWalletInput === "string"
-        ? parsed.ethWalletInput.trim()
-        : DEFAULT_STORE_CONFIG.ethWalletInput,
+    cryptoWallets: normalizeCryptoWallets(parsed),
     systemIntegration: {
       ...DEFAULT_STORE_CONFIG.systemIntegration,
       ...parsed.systemIntegration,
@@ -229,8 +252,7 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
     ),
     telegramHandle: normalizeTelegramHandle(config.telegramHandle),
     contactEmail: config.contactEmail?.trim() || DEFAULT_STORE_CONFIG.contactEmail,
-    btcWalletInput: config.btcWalletInput?.trim() ?? "",
-    ethWalletInput: config.ethWalletInput?.trim() ?? "",
+    cryptoWallets: normalizeCryptoWallets(config),
     reviews: Array.isArray(config.reviews) ? config.reviews : DEFAULT_REVIEWS,
     discounts: Array.isArray(config.discounts)
       ? config.discounts.map((entry) => normalizeDiscount(entry))

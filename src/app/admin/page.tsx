@@ -1660,50 +1660,6 @@ export default function AdminPage() {
                 Visas i kontaktsektionen och länkar till din Telegram-boutique.
               </p>
             </label>
-
-            <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Bitcoin Betalningslänk / Adress
-              </span>
-              <input
-                value={config.btcWalletInput}
-                onChange={(event) =>
-                  setConfig((current) =>
-                    current
-                      ? { ...current, btcWalletInput: event.target.value }
-                      : current,
-                  )
-                }
-                placeholder="bc1q... eller bitcoin:...?amount=..."
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-              />
-              <p className="mt-2 text-xs text-zinc-500">
-                Klistra in en full betalningslänk eller en rå Bitcoin-adress för
-                QR-koder i kassan.
-              </p>
-            </label>
-
-            <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Ethereum Betalningslänk / Adress
-              </span>
-              <input
-                value={config.ethWalletInput}
-                onChange={(event) =>
-                  setConfig((current) =>
-                    current
-                      ? { ...current, ethWalletInput: event.target.value }
-                      : current,
-                  )
-                }
-                placeholder="0x... eller ethereum:...?value=..."
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-              />
-              <p className="mt-2 text-xs text-zinc-500">
-                Klistra in en full betalningslänk eller en rå Ethereum-adress för
-                QR-koder i kassan.
-              </p>
-            </label>
           </div>
         </section>
 
@@ -1787,6 +1743,11 @@ export default function AdminPage() {
               </label>
             ))}
           </div>
+          <p className="mt-4 text-xs text-zinc-500">
+            Klistra in en rå adress eller full betalningslänk. Hemsidan genererar
+            automatiskt en ren, högupplöst QR-kod anpassad för kameror och Trust
+            Wallet.
+          </p>
         </section>
 
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">

@@ -1,5 +1,9 @@
 import type { CartItem, Product, ProductVariant } from "@/lib/product";
 import {
+  ADMIN_DEPOSIT_WALLETS,
+  type PaymentNetwork,
+} from "@/lib/payment-wallets";
+import {
   DEFAULT_PRODUCT_STOCK_STATUS,
   type ProductStockStatus,
 } from "@/lib/product-stock";
@@ -200,10 +204,6 @@ export type StoreConfig = {
   /** Store contact email shown on the storefront and used for customer communication. */
   contactEmail: string;
   cryptoWallets: CryptoWallets;
-  /** Bitcoin payment link or raw address for checkout QR codes. */
-  btcWalletInput: string;
-  /** Ethereum payment link or raw address for checkout QR codes. */
-  ethWalletInput: string;
   systemIntegration: SystemIntegration;
   products: ConfigProduct[];
   reviews: ConfigReview[];
@@ -302,8 +302,6 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
     bitcoin: "bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     ethereum: "0x0000000000000000000000000000000000000000",
   },
-  btcWalletInput: "",
-  ethWalletInput: "",
   systemIntegration: {
     telegramBotToken: "",
     telegramChatId: "",
@@ -534,29 +532,14 @@ export function getProductIncludedItems(
   return entry?.includedItems?.trim() ?? "";
 }
 
-export function resolveBtcWalletInput(config: StoreConfig): string {
-  return (
-    config.btcWalletInput?.trim() ||
-    config.cryptoWallets.bitcoin?.trim() ||
-    ""
-  );
-}
-
-export function resolveEthWalletInput(config: StoreConfig): string {
-  return (
-    config.ethWalletInput?.trim() ||
-    config.cryptoWallets.ethereum?.trim() ||
-    ""
-  );
-}
-
 export function resolveNetworkWalletInput(
   config: StoreConfig,
-  network: "bitcoin" | "ethereum" | "tron" | "bsc",
+  network: PaymentNetwork,
 ): string {
-  if (network === "bitcoin") return resolveBtcWalletInput(config);
-  if (network === "ethereum") return resolveEthWalletInput(config);
-  return config.cryptoWallets[network]?.trim() ?? "";
+  const value = config.cryptoWallets[network]?.trim() ?? "";
+  if (!value) return "";
+  if (value === ADMIN_DEPOSIT_WALLETS[network].address) return "";
+  return value;
 }
 
 export function isValidStoreCartItem(

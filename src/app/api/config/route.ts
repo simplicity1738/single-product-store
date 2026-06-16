@@ -14,8 +14,6 @@ export async function GET() {
       telegramHandle: config.telegramHandle,
       contactEmail: config.contactEmail,
       cryptoWallets: config.cryptoWallets,
-      btcWalletInput: config.btcWalletInput,
-      ethWalletInput: config.ethWalletInput,
       products: config.products,
       reviews: config.reviews,
       discounts: config.discounts,

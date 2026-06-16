@@ -48,16 +48,49 @@ const NETWORK_ORDER: PaymentNetwork[] = [
 const QR_SIZE = 220;
 const QR_MARGIN = 2;
 
+function clearQrCanvas(canvas: HTMLCanvasElement) {
+  const context = canvas.getContext("2d");
+  if (!context) return;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function QrPlaceholder({
+  message,
+  size = QR_SIZE,
+}: {
+  message: string;
+  size?: number;
+}) {
+  return (
+    <div
+      className="flex items-center justify-center rounded-xl border border-dashed border-rose-200 bg-white px-4 text-center text-xs leading-relaxed text-zinc-500"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={message}
+    >
+      {message}
+    </div>
+  );
+}
+
 function PaymentQrCode({ value, size = QR_SIZE }: { value: string; size?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const payload = value.trim();
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !value) return;
+    if (!canvas) return;
+
+    if (!payload) {
+      clearQrCanvas(canvas);
+      return;
+    }
 
     let cancelled = false;
 
-    void QRCode.toCanvas(canvas, value, {
+    void QRCode.toCanvas(canvas, payload, {
       width: size,
       margin: QR_MARGIN,
       errorCorrectionLevel: "M",
@@ -66,18 +99,19 @@ function PaymentQrCode({ value, size = QR_SIZE }: { value: string; size?: number
         light: "#ffffff",
       },
     }).catch(() => {
-      if (!cancelled && canvas) {
-        const context = canvas.getContext("2d");
-        if (context) {
-          context.clearRect(0, 0, canvas.width, canvas.height);
-        }
+      if (!cancelled) {
+        clearQrCanvas(canvas);
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [value, size]);
+  }, [payload, size]);
+
+  if (!payload) {
+    return null;
+  }
 
   return (
     <canvas
@@ -122,10 +156,7 @@ export default function PaymentStep({
   const getDepositAddress = useCallback(
     (networkId: PaymentNetwork) => {
       const walletInput = getWalletInput(networkId);
-      if (walletInput) {
-        return extractDisplayAddress(walletInput);
-      }
-      return ADMIN_DEPOSIT_WALLETS[networkId].address;
+      return walletInput ? extractDisplayAddress(walletInput) : "";
     },
     [getWalletInput],
   );
@@ -207,10 +238,10 @@ export default function PaymentStep({
     return `≈ ${btc} BTC`;
   }, [cryptoAmount]);
 
-  const qrPaymentUri = useMemo(
-    () => buildCryptoQrValue(walletInput, network, cryptoAmount),
-    [walletInput, network, cryptoAmount],
-  );
+  const qrPaymentUri = useMemo(() => {
+    if (!walletInput.trim()) return "";
+    return buildCryptoQrValue(walletInput, network, cryptoAmount);
+  }, [walletInput, network, cryptoAmount]);
 
   async function handleGenerateAddress() {
     setError(null);
@@ -530,9 +561,7 @@ export default function PaymentStep({
               {qrPaymentUri ? (
                 <PaymentQrCode value={qrPaymentUri} />
               ) : (
-                <div className="flex h-[220px] w-[220px] items-center justify-center rounded-xl border border-rose-100 bg-white p-2 text-xs text-zinc-500">
-                  {t.payment.qrUnavailable}
-                </div>
+                <QrPlaceholder message={t.payment.qrUnavailable} />
               )}
               <p className="mt-2 text-xs text-zinc-500">{t.payment.qrLabel}</p>
             </div>

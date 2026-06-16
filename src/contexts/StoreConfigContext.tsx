@@ -45,8 +45,6 @@ type PublicStoreConfig = {
   telegramHandle: string;
   contactEmail: string;
   cryptoWallets: CryptoWallets;
-  btcWalletInput: string;
-  ethWalletInput: string;
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
@@ -73,8 +71,6 @@ type StoreConfigContextValue = {
   telegramUrl: string;
   contactEmail: string;
   cryptoWallets: CryptoWallets;
-  btcWalletInput: string;
-  ethWalletInput: string;
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
@@ -114,8 +110,6 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
     bitcoin: "",
     ethereum: "",
   });
-  const [btcWalletInput, setBtcWalletInput] = useState("");
-  const [ethWalletInput, setEthWalletInput] = useState("");
   const [products, setProducts] = useState<ConfigProduct[]>([]);
   const [reviews, setReviews] = useState<ConfigReview[]>([]);
   const [discounts, setDiscounts] = useState<ConfigDiscount[]>([]);
@@ -149,8 +143,6 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
           ethereum: "",
         },
       );
-      setBtcWalletInput(data.btcWalletInput ?? "");
-      setEthWalletInput(data.ethWalletInput ?? "");
       setProducts(Array.isArray(data.products) ? data.products : []);
       setReviews(Array.isArray(data.reviews) ? data.reviews : []);
       setDiscounts(Array.isArray(data.discounts) ? data.discounts : []);
@@ -208,8 +200,6 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       telegramHandle,
       contactEmail,
       cryptoWallets,
-      btcWalletInput,
-      ethWalletInput,
       systemIntegration: { telegramBotToken: "", telegramChatId: "" },
       products,
       reviews,
@@ -227,8 +217,6 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       telegramHandle,
       contactEmail,
       cryptoWallets,
-      btcWalletInput,
-      ethWalletInput,
       products,
       reviews,
       discounts,
@@ -294,8 +282,6 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       telegramUrl,
       contactEmail,
       cryptoWallets,
-      btcWalletInput,
-      ethWalletInput,
       products,
       reviews: resolvedReviews,
       discounts,
@@ -319,8 +305,6 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       telegramUrl,
       contactEmail,
       cryptoWallets,
-      btcWalletInput,
-      ethWalletInput,
       products,
       resolvedReviews,
       discounts,
