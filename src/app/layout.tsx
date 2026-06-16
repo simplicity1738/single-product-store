@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "SimpliCity — Premium Wellness",
   description:
     "Upptäck SimpliCity — premium wellness-produkter med skandinavisk kvalitet och elegant enkelhet.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
