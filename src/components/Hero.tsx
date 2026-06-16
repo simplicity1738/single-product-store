@@ -8,6 +8,8 @@ import { formatCurrency, getProductVariant } from "@/lib/product";
 import { getLowestCatalogPrice } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import StockStatusBadge from "@/components/StockStatusBadge";
+import IncludedItemsBadge from "@/components/IncludedItemsBadge";
+import { getProductIncludedItems } from "@/lib/store-config";
 
 export default function Hero() {
   const { locale, t } = useLanguage();
@@ -36,6 +38,10 @@ export default function Hero() {
     locale === "sv" ? "sv-SE" : "en-US",
   );
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
+
+  const featuredIncludedItems = featuredProduct
+    ? getProductIncludedItems(storeConfig, featuredProduct.id)
+    : "";
 
   const stats = [
     t.hero.stats.purity,
@@ -117,6 +123,7 @@ export default function Hero() {
                       label={t.products.stockStatus[featuredProduct.status]}
                     />
                   </div>
+                  <IncludedItemsBadge items={featuredIncludedItems} />
                 </div>
                 <p className="text-lg font-bold text-zinc-900">
                   {formatCurrency(featuredVariant.price, localeCode)}

@@ -16,6 +16,7 @@ import { formatMgOption } from "@/lib/i18n/translations";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import { isProductPurchasable } from "@/lib/product-stock";
 import StockStatusBadge from "@/components/StockStatusBadge";
+import IncludedItemsBadge from "@/components/IncludedItemsBadge";
 
 const selectClassName =
   "mt-2 w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-9 text-sm font-medium text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -23,6 +24,7 @@ const selectClassName =
 type DisplayProduct = Product & {
   displayName: string;
   displayDescription: string;
+  displayIncludedItems: string;
 };
 
 export default function Products() {
@@ -38,6 +40,7 @@ export default function Products() {
         ...product,
         displayName: entry?.title ?? product.id,
         displayDescription: entry?.description ?? "",
+        displayIncludedItems: entry?.includedItems?.trim() ?? "",
       };
     });
   }, [catalogProducts, configProducts]);
@@ -125,6 +128,7 @@ export default function Products() {
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-600">
                   {product.displayDescription}
                 </p>
+                <IncludedItemsBadge items={product.displayIncludedItems} />
 
                 {hasMultipleMgVariants ? (
                   <div className="relative mt-4">

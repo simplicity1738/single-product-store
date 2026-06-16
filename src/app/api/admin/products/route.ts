@@ -24,6 +24,7 @@ export async function PATCH(request: Request) {
       bestSeller?: boolean;
       premium?: boolean;
       status?: ProductStockStatus;
+      includedItems?: string;
     };
 
     const productId = body.productId
@@ -70,6 +71,13 @@ export async function PATCH(request: Request) {
           "/logo.png"
         : "/logo.png",
       ...(variantsInput !== undefined ? { variantsInput } : {}),
+      includedItems:
+        body.includedItems !== undefined
+          ? sanitizePlainText(
+              body.includedItems,
+              ADMIN_PRODUCT_FIELD_LIMITS.includedItems,
+            )
+          : undefined,
       bestSeller: body.bestSeller,
       premium: body.premium,
       status: body.status,

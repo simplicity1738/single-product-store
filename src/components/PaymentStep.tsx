@@ -1,13 +1,14 @@
 "use client";
 
-// ═══════════════════════════════════════════════════════════════════════════
-// ADMIN SETTINGS — Paste your TRON, BSC, Bitcoin & Ethereum deposit wallet
-// strings in src/lib/payment-wallets.ts before going live.
-// ═══════════════════════════════════════════════════════════════════════════
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import QRCode from "qrcode";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import {
+  buildCryptoQrValue,
+  extractDisplayAddress,
+} from "@/lib/crypto-payment-uri";
 import {
   convertSekToBtc,
   convertSekToUsdt,
@@ -22,7 +23,10 @@ import {
   type PaymentToken,
 } from "@/lib/payment-wallets";
 import { formatCurrency } from "@/lib/product";
-import { calculateStoreOrderTotal } from "@/lib/store-config";
+import {
+  calculateStoreOrderTotal,
+  resolveNetworkWalletInput,
+} from "@/lib/store-config";
 import { ORDER_STORAGE_KEY, type OrderFormData } from "@/lib/order";
 
 type OrderSummary = ReturnType<typeof calculateStoreOrderTotal>;
@@ -41,92 +45,49 @@ const NETWORK_ORDER: PaymentNetwork[] = [
   "ethereum",
 ];
 
-function hashString(value: string): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i += 1) {
-    hash = (hash << 5) - hash + value.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
+const QR_SIZE = 220;
+const QR_MARGIN = 2;
 
-function MockQRCode({ value, size = 192 }: { value: string; size?: number }) {
-  const cells = 21;
-  const seed = hashString(value);
-  const cellSize = size / cells;
+function PaymentQrCode({ value, size = QR_SIZE }: { value: string; size?: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const modules = useMemo(() => {
-    const grid: boolean[][] = [];
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !value) return;
 
-    for (let row = 0; row < cells; row += 1) {
-      const rowCells: boolean[] = [];
-      for (let col = 0; col < cells; col += 1) {
-        const inFinder =
-          (row < 7 && col < 7) ||
-          (row < 7 && col >= cells - 7) ||
-          (row >= cells - 7 && col < 7);
-        const finderBorder =
-          inFinder &&
-          (row === 0 ||
-            row === 6 ||
-            col === 0 ||
-            col === 6 ||
-            (row >= cells - 7 && (row === cells - 7 || row === cells - 1)) ||
-            (col >= cells - 7 && (col === cells - 7 || col === cells - 1)) ||
-            (row < 7 && col < 7 && row >= 2 && row <= 4 && col >= 2 && col <= 4) ||
-            (row < 7 &&
-              col >= cells - 7 &&
-              row >= 2 &&
-              row <= 4 &&
-              col >= cells - 5 &&
-              col <= cells - 3) ||
-            (row >= cells - 7 &&
-              col < 7 &&
-              row >= cells - 5 &&
-              row <= cells - 3 &&
-              col >= 2 &&
-              col <= 4));
+    let cancelled = false;
 
-        if (finderBorder) {
-          rowCells.push(true);
-        } else if (inFinder) {
-          rowCells.push(false);
-        } else {
-          rowCells.push(((seed + row * 17 + col * 31) % 5) < 2);
+    void QRCode.toCanvas(canvas, value, {
+      width: size,
+      margin: QR_MARGIN,
+      errorCorrectionLevel: "M",
+      color: {
+        dark: "#18181b",
+        light: "#ffffff",
+      },
+    }).catch(() => {
+      if (!cancelled && canvas) {
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
-      grid.push(rowCells);
-    }
+    });
 
-    return grid;
-  }, [seed]);
+    return () => {
+      cancelled = true;
+    };
+  }, [value, size]);
 
   return (
-    <svg
+    <canvas
+      ref={canvasRef}
       width={size}
       height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className="rounded-xl border border-rose-100 bg-white p-3 shadow-sm"
+      className="rounded-xl border border-rose-100 bg-white p-2 shadow-sm"
       role="img"
       aria-label="QR code"
-    >
-      <rect width={size} height={size} fill="white" rx={8} />
-      {modules.map((row, rowIndex) =>
-        row.map((filled, colIndex) =>
-          filled ? (
-            <rect
-              key={`${rowIndex}-${colIndex}`}
-              x={colIndex * cellSize}
-              y={rowIndex * cellSize}
-              width={cellSize}
-              height={cellSize}
-              fill="#18181b"
-              rx={1}
-            />
-          ) : null,
-        ),
-      )}
-    </svg>
+    />
   );
 }
 
@@ -141,34 +102,6 @@ function defaultNetworkForToken(token: PaymentToken): PaymentNetwork {
   return token === "btc" ? "bitcoin" : "tron";
 }
 
-function formatUriAmount(value: number, maxDecimals: number): string {
-  const fixed = value.toFixed(maxDecimals);
-  const trimmed = fixed.replace(/\.?0+$/, "");
-  return trimmed || "0";
-}
-
-function buildQrPaymentUri(
-  network: PaymentNetwork,
-  address: string,
-  cryptoAmount: { kind: "usdt" | "btc"; value: number } | null,
-): string {
-  if (!cryptoAmount || !address) return address;
-
-  if (network === "bitcoin" && cryptoAmount.kind === "btc") {
-    return `bitcoin:${address}?amount=${formatUriAmount(cryptoAmount.value, 8)}`;
-  }
-
-  if (network === "ethereum") {
-    const amount =
-      cryptoAmount.kind === "usdt"
-        ? formatUriAmount(cryptoAmount.value, 6)
-        : formatUriAmount(cryptoAmount.value, 8);
-    return `ethereum:${address}?amount=${amount}`;
-  }
-
-  return address;
-}
-
 export default function PaymentStep({
   orderTotal,
   payload,
@@ -177,13 +110,24 @@ export default function PaymentStep({
 }: PaymentStepProps) {
   const router = useRouter();
   const { locale, t } = useLanguage();
-  const { cryptoWallets, getLineLabel } = useStoreConfig();
+  const { storeConfig, getLineLabel } = useStoreConfig();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
-  const getDepositAddress = useCallback(
+  const getWalletInput = useCallback(
     (networkId: PaymentNetwork) =>
-      cryptoWallets[networkId] || ADMIN_DEPOSIT_WALLETS[networkId].address,
-    [cryptoWallets],
+      resolveNetworkWalletInput(storeConfig, networkId),
+    [storeConfig],
+  );
+
+  const getDepositAddress = useCallback(
+    (networkId: PaymentNetwork) => {
+      const walletInput = getWalletInput(networkId);
+      if (walletInput) {
+        return extractDisplayAddress(walletInput);
+      }
+      return ADMIN_DEPOSIT_WALLETS[networkId].address;
+    },
+    [getWalletInput],
   );
 
   const [token, setToken] = useState<PaymentToken>("usdt");
@@ -193,6 +137,7 @@ export default function PaymentStep({
   const [isGenerating, setIsGenerating] = useState(false);
   const [addressGenerated, setAddressGenerated] = useState(false);
   const [depositAddress, setDepositAddress] = useState("");
+  const [walletInput, setWalletInput] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -263,8 +208,8 @@ export default function PaymentStep({
   }, [cryptoAmount]);
 
   const qrPaymentUri = useMemo(
-    () => buildQrPaymentUri(network, depositAddress, cryptoAmount),
-    [network, depositAddress, cryptoAmount],
+    () => buildCryptoQrValue(walletInput, network, cryptoAmount),
+    [walletInput, network, cryptoAmount],
   );
 
   async function handleGenerateAddress() {
@@ -272,6 +217,12 @@ export default function PaymentStep({
 
     if (!isNetworkEnabled(network, token)) {
       setError(t.payment.errors.selectNetwork);
+      return;
+    }
+
+    const resolvedWalletInput = getWalletInput(network);
+    if (!resolvedWalletInput) {
+      setError(t.payment.errors.walletNotConfigured);
       return;
     }
 
@@ -335,6 +286,7 @@ export default function PaymentStep({
         }),
       );
 
+      setWalletInput(resolvedWalletInput);
       setDepositAddress(address);
       setAddressGenerated(true);
     } catch (generateError) {
@@ -575,7 +527,13 @@ export default function PaymentStep({
 
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-center">
             <div className="text-center">
-              <MockQRCode value={qrPaymentUri} />
+              {qrPaymentUri ? (
+                <PaymentQrCode value={qrPaymentUri} />
+              ) : (
+                <div className="flex h-[220px] w-[220px] items-center justify-center rounded-xl border border-rose-100 bg-white p-2 text-xs text-zinc-500">
+                  {t.payment.qrUnavailable}
+                </div>
+              )}
               <p className="mt-2 text-xs text-zinc-500">{t.payment.qrLabel}</p>
             </div>
 

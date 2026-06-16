@@ -32,6 +32,7 @@ type ProductDraft = {
   price: number;
   image: string;
   variantsInput: string;
+  includedItems: string;
   status: ProductStockStatus;
 };
 
@@ -47,6 +48,7 @@ const emptyProduct = (): ProductDraft => ({
   price: 0,
   image: "/logo.png",
   variantsInput: "",
+  includedItems: "",
   status: "i_lager",
 });
 
@@ -650,6 +652,7 @@ export default function AdminPage() {
       price: product.price,
       image: product.image,
       variantsInput: formatVariantsInput(product.variants),
+      includedItems: product.includedItems ?? "",
       bestSeller: config.bestSellerProductIds.includes(product.id),
       premium: config.premiumProductIds.includes(product.id),
       status: product.status ?? "i_lager",
@@ -676,6 +679,7 @@ export default function AdminPage() {
           price: editProduct.price,
           image: editProduct.image,
           variantsInput: editProduct.variantsInput,
+          includedItems: editProduct.includedItems,
           bestSeller: editProduct.bestSeller,
           premium: editProduct.premium,
           status: editProduct.status,
@@ -881,6 +885,9 @@ export default function AdminPage() {
       price: Number(newProduct.price) || 0,
       image: newProduct.image.trim() || "/logo.png",
       status: newProduct.status ?? "i_lager",
+      ...(newProduct.includedItems.trim()
+        ? { includedItems: newProduct.includedItems.trim() }
+        : {}),
       ...(variants.length > 0 ? { variants } : {}),
     };
 
@@ -1014,6 +1021,25 @@ export default function AdminPage() {
                     )
                   }
                   rows={3}
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Medföljer (t.ex. BAC-vatten ingår, lämna tomt om inget extra
+                  medföljer)
+                </span>
+                <input
+                  value={editProduct.includedItems}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, includedItems: event.target.value }
+                        : current,
+                    )
+                  }
+                  placeholder="BAC-vatten ingår"
                   className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 />
               </label>
@@ -1634,6 +1660,50 @@ export default function AdminPage() {
                 Visas i kontaktsektionen och länkar till din Telegram-boutique.
               </p>
             </label>
+
+            <label className="block sm:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Bitcoin Betalningslänk / Adress
+              </span>
+              <input
+                value={config.btcWalletInput}
+                onChange={(event) =>
+                  setConfig((current) =>
+                    current
+                      ? { ...current, btcWalletInput: event.target.value }
+                      : current,
+                  )
+                }
+                placeholder="bc1q... eller bitcoin:...?amount=..."
+                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+              <p className="mt-2 text-xs text-zinc-500">
+                Klistra in en full betalningslänk eller en rå Bitcoin-adress för
+                QR-koder i kassan.
+              </p>
+            </label>
+
+            <label className="block sm:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Ethereum Betalningslänk / Adress
+              </span>
+              <input
+                value={config.ethWalletInput}
+                onChange={(event) =>
+                  setConfig((current) =>
+                    current
+                      ? { ...current, ethWalletInput: event.target.value }
+                      : current,
+                  )
+                }
+                placeholder="0x... eller ethereum:...?value=..."
+                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+              <p className="mt-2 text-xs text-zinc-500">
+                Klistra in en full betalningslänk eller en rå Ethereum-adress för
+                QR-koder i kassan.
+              </p>
+            </label>
           </div>
         </section>
 
@@ -1844,6 +1914,27 @@ export default function AdminPage() {
                 rows={2}
                 className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
               />
+              <div className="sm:col-span-2">
+                <label
+                  htmlFor="new-product-included-items"
+                  className="mb-1.5 block text-xs font-medium text-zinc-600"
+                >
+                  Medföljer (t.ex. BAC-vatten ingår, lämna tomt om inget extra
+                  medföljer)
+                </label>
+                <input
+                  id="new-product-included-items"
+                  value={newProduct.includedItems}
+                  onChange={(event) =>
+                    setNewProduct((current) => ({
+                      ...current,
+                      includedItems: event.target.value,
+                    }))
+                  }
+                  placeholder="BAC-vatten ingår"
+                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                />
+              </div>
               <div className="sm:col-span-2">
                 <label
                   htmlFor="new-product-size-label"

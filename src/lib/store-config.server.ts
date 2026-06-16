@@ -131,6 +131,9 @@ function normalizeConfigProduct(
     price: fallbackPrice,
     image: String(entry.image ?? "").trim() || "/logo.png",
     status: normalizeProductStockStatus(entry.status),
+    ...(entry.includedItems?.trim()
+      ? { includedItems: String(entry.includedItems).trim() }
+      : {}),
     ...(variants.length > 0 ? { variants } : {}),
   };
 }
@@ -164,6 +167,14 @@ function mergeStoreConfig(parsed: Partial<StoreConfig>): StoreConfig {
       ...DEFAULT_STORE_CONFIG.cryptoWallets,
       ...parsed.cryptoWallets,
     },
+    btcWalletInput:
+      typeof parsed.btcWalletInput === "string"
+        ? parsed.btcWalletInput.trim()
+        : DEFAULT_STORE_CONFIG.btcWalletInput,
+    ethWalletInput:
+      typeof parsed.ethWalletInput === "string"
+        ? parsed.ethWalletInput.trim()
+        : DEFAULT_STORE_CONFIG.ethWalletInput,
     systemIntegration: {
       ...DEFAULT_STORE_CONFIG.systemIntegration,
       ...parsed.systemIntegration,
@@ -218,6 +229,8 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
     ),
     telegramHandle: normalizeTelegramHandle(config.telegramHandle),
     contactEmail: config.contactEmail?.trim() || DEFAULT_STORE_CONFIG.contactEmail,
+    btcWalletInput: config.btcWalletInput?.trim() ?? "",
+    ethWalletInput: config.ethWalletInput?.trim() ?? "",
     reviews: Array.isArray(config.reviews) ? config.reviews : DEFAULT_REVIEWS,
     discounts: Array.isArray(config.discounts)
       ? config.discounts.map((entry) => normalizeDiscount(entry))
@@ -251,6 +264,7 @@ export async function updateStoreProduct(
     image?: string;
     variantsInput?: string;
     sizeLabel?: string;
+    includedItems?: string;
     bestSeller?: boolean;
     premium?: boolean;
     status?: ProductStockStatus;

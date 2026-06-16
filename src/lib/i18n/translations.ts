@@ -229,12 +229,15 @@ export const translations = {
       copyAddress: "Kopiera adress",
       copied: "Kopierad!",
       qrLabel: "Skanna QR-kod",
+      qrUnavailable: "QR-kod ej tillgänglig",
       confirmationNote:
         "Din order behandlas så snart transaktionen får blockchain-bekräftelser.",
       viewReceipt: "Visa orderkvitto →",
       errors: {
         selectNetwork: "Välj ett nätverk för att fortsätta.",
         submitFailed: "Kunde inte slutföra beställningen. Försök igen.",
+        walletNotConfigured:
+          "Betalningsadress saknas. Kontakta butiken eller försök igen senare.",
       },
     },
     success: {
@@ -679,12 +682,15 @@ export const translations = {
       copyAddress: "Copy address",
       copied: "Copied!",
       qrLabel: "Scan QR code",
+      qrUnavailable: "QR code unavailable",
       confirmationNote:
         "Your order is processed as soon as the transaction gains blockchain confirmations.",
       viewReceipt: "View order receipt →",
       errors: {
         selectNetwork: "Select a network to continue.",
         submitFailed: "Could not complete the order. Please try again.",
+        walletNotConfigured:
+          "Payment address is not configured. Contact the store or try again later.",
       },
     },
     success: {
