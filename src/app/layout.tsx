@@ -17,8 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SimpliCity — Premium Wellness",
-  description:
-    "Upptäck SimpliCity — premium wellness-produkter med skandinavisk kvalitet och elegant enkelhet.",
+  description: "Premium hälsa och wellness online.",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
