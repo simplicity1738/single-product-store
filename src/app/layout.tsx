@@ -18,7 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SimpliCity — Peptider av högsta kvalitet",
   description:
-    "Peptider av högsta kvalitet. Noggrant utvalda produkter med fokus på kvalitet, renhet och konsekvens. För kunder som värdesätter höga standarder och pålitliga leveranser.",
+    "Noggrant utvalda produkter med fokus på kvalitet, renhet och konsekvens. För kunder som värdesätter höga standarder och pålitliga leveranser.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
