@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   description:
     "Noggrant utvalda produkter med fokus på kvalitet, renhet och konsekvens. För kunder som värdesätter höga standarder och pålitliga leveranser.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
