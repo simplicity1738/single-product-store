@@ -107,6 +107,9 @@ export async function sendOrderNotification(
   const text = [
     "🔔 NY BESTÄLLNING - SIMPLICITY STORE",
     "",
+    "⚠️ UTSTÅENDE BETALNING (Kontrollera plånboken innan leverans!)",
+    `Belopp: ${safeTotalSek} / ${safeCryptoTotal}`,
+    "",
     `👤 Kund: ${safeName}`,
     `📧 E-post: ${safeEmail}`,
     `📦 Leveransadress: ${fullAddress}`,

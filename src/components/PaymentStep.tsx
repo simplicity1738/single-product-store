@@ -141,6 +141,34 @@ function defaultNetworkForToken(token: PaymentToken): PaymentNetwork {
   return token === "btc" ? "bitcoin" : "tron";
 }
 
+function formatUriAmount(value: number, maxDecimals: number): string {
+  const fixed = value.toFixed(maxDecimals);
+  const trimmed = fixed.replace(/\.?0+$/, "");
+  return trimmed || "0";
+}
+
+function buildQrPaymentUri(
+  network: PaymentNetwork,
+  address: string,
+  cryptoAmount: { kind: "usdt" | "btc"; value: number } | null,
+): string {
+  if (!cryptoAmount || !address) return address;
+
+  if (network === "bitcoin" && cryptoAmount.kind === "btc") {
+    return `bitcoin:${address}?amount=${formatUriAmount(cryptoAmount.value, 8)}`;
+  }
+
+  if (network === "ethereum") {
+    const amount =
+      cryptoAmount.kind === "usdt"
+        ? formatUriAmount(cryptoAmount.value, 6)
+        : formatUriAmount(cryptoAmount.value, 8);
+    return `ethereum:${address}?amount=${amount}`;
+  }
+
+  return address;
+}
+
 export default function PaymentStep({
   orderTotal,
   payload,
@@ -233,6 +261,11 @@ export default function PaymentStep({
         : cryptoAmount.value.toFixed(8);
     return `≈ ${btc} BTC`;
   }, [cryptoAmount]);
+
+  const qrPaymentUri = useMemo(
+    () => buildQrPaymentUri(network, depositAddress, cryptoAmount),
+    [network, depositAddress, cryptoAmount],
+  );
 
   async function handleGenerateAddress() {
     setError(null);
@@ -542,7 +575,7 @@ export default function PaymentStep({
 
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-center">
             <div className="text-center">
-              <MockQRCode value={depositAddress} />
+              <MockQRCode value={qrPaymentUri} />
               <p className="mt-2 text-xs text-zinc-500">{t.payment.qrLabel}</p>
             </div>
 

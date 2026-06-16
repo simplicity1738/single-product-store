@@ -55,7 +55,7 @@ export default function SuccessReceipt() {
 
       <main className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-rose-500">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600">
             <svg
               className="h-8 w-8"
               fill="none"
@@ -67,17 +67,27 @@ export default function SuccessReceipt() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M4.5 12.75l6 6 9-13.5"
+                d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
           </div>
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
             {t.success.title}
           </h1>
-          <p className="mt-3 text-lg text-zinc-600">{t.success.subtitle}</p>
+          <p className="mt-3 text-lg leading-relaxed text-zinc-600">
+            {t.success.subtitle}
+          </p>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl shadow-rose-200/30">
+        {order && (
+          <div className="mt-8 flex justify-center">
+            <span className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900 shadow-sm">
+              {t.success.pendingStatus}
+            </span>
+          </div>
+        )}
+
+        <div className="mt-8 overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-xl shadow-rose-200/30">
           <div className="border-b border-rose-900/10 bg-zinc-900 px-6 py-5 text-white sm:px-8">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -198,12 +208,12 @@ export default function SuccessReceipt() {
         </div>
 
         {order && (
-          <div className="mt-8 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-5 text-center sm:text-left">
-            <p className="text-sm font-medium text-rose-900">
+          <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-6 py-5 text-center sm:text-left">
+            <p className="text-sm font-medium text-amber-950">
               {t.success.emailConfirm}{" "}
               <span className="font-semibold">{order.email}</span>
             </p>
-            <p className="mt-1 text-sm text-rose-700">{t.success.delivery}</p>
+            <p className="mt-1 text-sm text-amber-800">{t.success.delivery}</p>
           </div>
         )}
 
