@@ -5,11 +5,11 @@ import { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { formatCurrency, getProductVariant } from "@/lib/product";
-import { getLowestCatalogPrice } from "@/lib/store-config";
+import { getLowestCatalogPrice, getProductIncludedItems } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import StockStatusBadge from "@/components/StockStatusBadge";
 import IncludedItemsBadge from "@/components/IncludedItemsBadge";
-import { getProductIncludedItems } from "@/lib/store-config";
+import { resolveHeroContent } from "@/lib/hero-content";
 
 export default function Hero() {
   const { locale, t } = useLanguage();
@@ -43,6 +43,11 @@ export default function Hero() {
     ? getProductIncludedItems(storeConfig, featuredProduct.id)
     : "";
 
+  const heroContent = useMemo(
+    () => resolveHeroContent(locale, siteSettings, t.hero),
+    [locale, siteSettings, t.hero],
+  );
+
   const stats = [
     t.hero.stats.purity,
     t.hero.stats.shipping,
@@ -55,15 +60,15 @@ export default function Hero() {
         <div className="max-w-xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-700">
             <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-            {siteSettings.heroBadge || t.hero.badge}
+            {heroContent.badge}
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl lg:leading-[1.05]">
-            {siteSettings.heroTitle || t.hero.title}
+            {heroContent.title}
           </h1>
 
           <p className="mt-6 text-lg leading-relaxed text-zinc-600">
-            {siteSettings.heroSubtitle || t.hero.subtitle}
+            {heroContent.subtitle}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">

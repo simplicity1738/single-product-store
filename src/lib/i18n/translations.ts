@@ -7,6 +7,7 @@ export const translations = {
     brand: "SimpliCity",
     nav: {
       products: "Produkter",
+      labTests: "Labbtester",
       features: "Fördelar",
       quality: "Kvalitet",
       order: "Beställ",
@@ -16,10 +17,10 @@ export const translations = {
       buyNow: "Köp nu",
     },
     hero: {
-      badge: "I lager · Premium kvalitet",
-      title: "Skönhet i sin enklaste form",
+      badge: "NOGGRANT UTVALT SORTIMENT",
+      title: "KVALITET UTAN KOMPROMISSER",
       subtitle:
-        "Upptäck vår kuraterade kollektion av premium wellness-produkter — utformade för klarhet, lyster och självsäkerhet i vardagen.",
+        "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
       ctaPrimary: "Köp nu — från {price}",
       ctaSecondary: "Se fördelar",
       stats: {
@@ -496,11 +497,33 @@ export const translations = {
       backToBlog: "Tillbaka till bloggen",
       keyPoints: "Viktiga punkter",
     },
+    labTestsPage: {
+      eyebrow: "Transparens",
+      title: "Tredjepartsanalyser och Labbtester",
+      subtitle:
+        "Varje batch vi säljer analyseras av oberoende laboratorier. Alla rapporter publiceras öppet så att du kan verifiera renhet och identitet innan du beställer.",
+      statProducts: "Testade produkter",
+      statPurity: "Snittrenhet",
+      statLabs: "Oberoende labb",
+      approved: "Godkänd",
+      batchLabel: "Batch",
+      labLabel: "Labb",
+      testedLabel: "Testad",
+      viewReport: "Visa Analysrapport",
+      empty: "Inga labbtester publicerade ännu. Kom tillbaka snart.",
+      whyTitle: "Varför publicerar vi våra labbtester?",
+      whyBody:
+        "De flesta leverantörer visar aldrig sina analysresultat. Vi gör tvärtom. Varje batch skickas till oberoende labb som analyserar renhet med HPLC och bekräftar identitet med masspektrometri. Resultaten publiceras här utan filter.",
+      modalTitle: "Analysrapport",
+      closeModal: "Stäng",
+      openFullReport: "Öppna fullständig rapport",
+    },
   },
   en: {
     brand: "SimpliCity",
     nav: {
       products: "Products",
+      labTests: "Lab Tests",
       features: "Features",
       quality: "Quality",
       order: "Order",
@@ -510,10 +533,10 @@ export const translations = {
       buyNow: "Buy Now",
     },
     hero: {
-      badge: "In Stock · Premium Quality",
-      title: "Beauty in its simplest form",
+      badge: "CAREFULLY SELECTED ASSORTMENT",
+      title: "QUALITY WITHOUT COMPROMISE",
       subtitle:
-        "Discover our curated collection of premium wellness products — designed for clarity, radiance, and everyday confidence.",
+        "SimpliCity is built for customers who expect more — carefully selected peptides, verified purity, and a premium experience without compromise.",
       ctaPrimary: "Buy Now — from {price}",
       ctaSecondary: "See Benefits",
       stats: {
@@ -989,6 +1012,27 @@ export const translations = {
       emptyResults: "No articles matched your search. Try a different filter or keyword.",
       backToBlog: "Back to blog",
       keyPoints: "Key points",
+    },
+    labTestsPage: {
+      eyebrow: "Transparency",
+      title: "Third-party analyses & lab tests",
+      subtitle:
+        "Every batch we sell is analyzed by independent laboratories. All reports are published openly so you can verify purity and identity before ordering.",
+      statProducts: "Tested products",
+      statPurity: "Average purity",
+      statLabs: "Independent labs",
+      approved: "Approved",
+      batchLabel: "Batch",
+      labLabel: "Lab",
+      testedLabel: "Tested",
+      viewReport: "View analysis report",
+      empty: "No lab tests published yet. Check back soon.",
+      whyTitle: "Why do we publish our lab tests?",
+      whyBody:
+        "Most suppliers never show their analysis results. We do the opposite. Every batch is sent to independent labs for HPLC purity analysis and mass spectrometry identity confirmation. Results are published here without filters.",
+      modalTitle: "Analysis report",
+      closeModal: "Close",
+      openFullReport: "Open full report",
     },
   },
 } as const;

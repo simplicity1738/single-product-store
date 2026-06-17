@@ -262,10 +262,10 @@ export function influencerHandleToRef(handle: string): string {
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {
   siteSettings: {
-    heroBadge: "I lager · Premium kvalitet",
-    heroTitle: "Skönhet i sin enklaste form",
+    heroBadge: "NOGGRANT UTVALT SORTIMENT",
+    heroTitle: "KVALITET UTAN KOMPROMISSER",
     heroSubtitle:
-      "Upptäck vår kuraterade kollektion av premium wellness-produkter — utformade för klarhet, lyster och självsäkerhet i vardagen.",
+      "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
     logoPath: "/logo.png",
   },
   banner: DEFAULT_BANNER,

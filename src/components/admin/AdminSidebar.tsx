@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const NAV_ITEMS = [
   { href: "/admin", label: "Översikt", exact: true },
   { href: "/admin/blog", label: "Blogg", exact: false },
+  { href: "/admin/lab-tests", label: "Labbtester", exact: false },
 ] as const;
 
 export default function AdminSidebar() {

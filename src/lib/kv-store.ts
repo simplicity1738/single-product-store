@@ -11,6 +11,7 @@ export const KV_KEYS = {
   INFLUENCER_STATS: "simplicity:influencer-stats",
   SYSTEM_LOGS: "simplicity:system-logs",
   BLOG_POSTS: "simplicity:blog-posts",
+  LAB_TESTS: "simplicity:lab-tests",
 } as const;
 
 type DataFile =
@@ -19,7 +20,8 @@ type DataFile =
   | "subscribers.json"
   | "influencer-stats.json"
   | "system-logs.json"
-  | "blog-posts.json";
+  | "blog-posts.json"
+  | "lab-tests.json";
 
 let kvClient: VercelKV | null | undefined;
 

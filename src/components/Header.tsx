@@ -13,6 +13,7 @@ export default function Header() {
 
   const navLinks = [
     { href: "/#products", label: t.nav.products },
+    { href: "/labbtester", label: t.nav.labTests },
     { href: "/#features", label: t.nav.features },
     { href: "/#quality", label: t.nav.quality },
     { href: "/#checkout-form", label: t.nav.order },

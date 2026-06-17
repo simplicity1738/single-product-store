@@ -13,7 +13,7 @@ export default function Footer() {
   const legalLinks = [
     { href: "/privacy-policy", label: t.footer.privacy },
     { href: "/terms", label: t.footer.terms },
-    { href: "/lab-tests", label: t.footer.labTests },
+    { href: "/labbtester", label: t.footer.labTests },
   ];
 
   async function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {

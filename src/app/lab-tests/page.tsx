@@ -1,10 +1,5 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import LegalPageLayout from "@/components/LegalPageLayout";
-import { useLanguage } from "@/contexts/LanguageContext";
-
-export default function LabTestsPage() {
-  const { t } = useLanguage();
-
-  return <LegalPageLayout content={t.legal.labTests} showPlaceholder />;
+export default function LegacyLabTestsPage() {
+  redirect("/labbtester");
 }
