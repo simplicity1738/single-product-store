@@ -16,6 +16,7 @@ export default function Header() {
     { href: "/#features", label: t.nav.features },
     { href: "/#quality", label: t.nav.quality },
     { href: "/#checkout-form", label: t.nav.order },
+    { href: "/blogg", label: t.nav.blog },
     { href: "/kalkylator", label: t.nav.calculator },
     { href: "/#contact", label: t.nav.contact },
   ];

@@ -10,6 +10,7 @@ export const translations = {
       features: "Fördelar",
       quality: "Kvalitet",
       order: "Beställ",
+      blog: "Blogg",
       contact: "Kontakt",
       calculator: "Kalkylator",
       buyNow: "Köp nu",
@@ -480,6 +481,21 @@ export const translations = {
       disclaimer:
         "Kalkylatorn är ett vägledande verktyg. Dubbelkolla alltid beräkningen och följ produktens officiella instruktioner.",
     },
+    blog: {
+      eyebrow: "Kunskap",
+      title: "Blogg",
+      subtitle:
+        "Artiklar om peptider, dosering och den senaste forskningen.",
+      searchLabel: "Sök artiklar",
+      searchPlaceholder: "Sök artiklar, taggar eller ämnen…",
+      filterAll: "Visa alla",
+      filterDosing: "Dosering",
+      filterResearch: "Forskningen",
+      filterGuides: "Guider",
+      emptyResults: "Inga artiklar matchade din sökning. Prova ett annat filter eller sökord.",
+      backToBlog: "Tillbaka till bloggen",
+      keyPoints: "Viktiga punkter",
+    },
   },
   en: {
     brand: "SimpliCity",
@@ -488,6 +504,7 @@ export const translations = {
       features: "Features",
       quality: "Quality",
       order: "Order",
+      blog: "Blog",
       contact: "Contact",
       calculator: "Calculator",
       buyNow: "Buy Now",
@@ -957,6 +974,21 @@ export const translations = {
         "This dose exceeds the selected syringe capacity ({max} units). Choose a larger syringe or adjust the dose.",
       disclaimer:
         "This calculator is for guidance only. Always double-check your calculation and follow the product's official instructions.",
+    },
+    blog: {
+      eyebrow: "Knowledge",
+      title: "Blog",
+      subtitle:
+        "Articles on peptides, dosing, and the latest research.",
+      searchLabel: "Search articles",
+      searchPlaceholder: "Search articles, tags, or topics…",
+      filterAll: "View all",
+      filterDosing: "Dosing",
+      filterResearch: "Research",
+      filterGuides: "Guides",
+      emptyResults: "No articles matched your search. Try a different filter or keyword.",
+      backToBlog: "Back to blog",
+      keyPoints: "Key points",
     },
   },
 } as const;
