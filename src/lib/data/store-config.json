@@ -124,24 +124,5 @@
       }
     }
   ],
-  "discounts": [
-    {
-      "id": "discount-simpli10",
-      "code": "SIMPLI10",
-      "type": "percent",
-      "value": 10,
-      "productScope": "all",
-      "usageLimit": 0,
-      "usageCount": 0
-    },
-    {
-      "id": "discount-rabatt100",
-      "code": "RABATT100",
-      "type": "flat",
-      "value": 100,
-      "productScope": "all",
-      "usageLimit": 0,
-      "usageCount": 0
-    }
-  ]
+  "discounts": []
 }

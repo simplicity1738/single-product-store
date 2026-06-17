@@ -2,7 +2,6 @@ import { env } from "@/lib/env";
 import { KV_KEYS, readKvData, writeKvData } from "@/lib/kv-store";
 import {
   DEFAULT_BANNER,
-  DEFAULT_DISCOUNTS,
   DEFAULT_FREE_SHIPPING_THRESHOLD,
   DEFAULT_INFLUENCERS,
   DEFAULT_MARKETING_TRACKING,
@@ -214,10 +213,9 @@ function mergeStoreConfig(
       Array.isArray(parsed.reviews) && parsed.reviews.length > 0
         ? parsed.reviews
         : DEFAULT_REVIEWS,
-    discounts:
-      Array.isArray(parsed.discounts) && parsed.discounts.length > 0
-        ? parsed.discounts.map((entry) => normalizeDiscount(entry))
-        : DEFAULT_DISCOUNTS,
+    discounts: Array.isArray(parsed.discounts)
+      ? parsed.discounts.map((entry) => normalizeDiscount(entry))
+      : [],
     bestSellerProductIds: normalizeProductIdList(parsed.bestSellerProductIds),
     premiumProductIds: normalizeProductIdList(parsed.premiumProductIds),
     faqs: Array.isArray(parsed.faqs)
@@ -256,7 +254,7 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
     reviews: Array.isArray(config.reviews) ? config.reviews : DEFAULT_REVIEWS,
     discounts: Array.isArray(config.discounts)
       ? config.discounts.map((entry) => normalizeDiscount(entry))
-      : DEFAULT_DISCOUNTS,
+      : [],
     bestSellerProductIds: normalizeProductIdList(config.bestSellerProductIds),
     premiumProductIds: normalizeProductIdList(config.premiumProductIds),
     faqs: Array.isArray(config.faqs)

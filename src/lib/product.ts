@@ -267,10 +267,7 @@ export type DiscountCode = {
   value: number;
 };
 
-export const DISCOUNT_CODES: DiscountCode[] = [
-  { code: "SIMPLI10", type: "percent_subtotal", value: 10 },
-  { code: "RABATT100", type: "flat_total", value: 100 },
-];
+export const DISCOUNT_CODES: DiscountCode[] = [];
 
 export function findDiscountCode(code: string): DiscountCode | undefined {
   const normalized = code.trim().toUpperCase();

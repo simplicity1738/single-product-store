@@ -215,27 +215,6 @@ export type StoreConfig = {
   faqs: ConfigFaq[];
 };
 
-export const DEFAULT_DISCOUNTS: ConfigDiscount[] = [
-  {
-    id: "discount-simpli10",
-    code: "SIMPLI10",
-    type: "percent",
-    value: 10,
-    productScope: "all",
-    usageLimit: 0,
-    usageCount: 0,
-  },
-  {
-    id: "discount-rabatt100",
-    code: "RABATT100",
-    type: "flat",
-    value: 100,
-    productScope: "all",
-    usageLimit: 0,
-    usageCount: 0,
-  },
-];
-
 export const DEFAULT_REVIEWS: ConfigReview[] = FALLBACK_REVIEWS.map(
   (review) => ({
     id: review.id,
@@ -308,7 +287,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   },
   products: [],
   reviews: DEFAULT_REVIEWS,
-  discounts: DEFAULT_DISCOUNTS,
+  discounts: [],
   bestSellerProductIds: [],
   premiumProductIds: [],
   faqs: [],

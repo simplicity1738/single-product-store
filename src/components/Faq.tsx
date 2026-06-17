@@ -1,14 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+
+const WINK_DURATION_MS = 320;
+
+function RobotFace({ isWinking }: { isWinking: boolean }) {
+  return (
+    <svg
+      className="h-8 w-8"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      aria-hidden
+    >
+      <rect x="5" y="6.5" width="14" height="12.5" rx="3.5" />
+      <line x1="12" y1="6.5" x2="12" y2="3.5" strokeLinecap="round" />
+      <circle cx="12" cy="2.75" r="1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="11.25" r="1.6" fill="currentColor" stroke="none" />
+      {isWinking ? (
+        <path
+          d="M14.25 11.5 Q15.75 13.25 17.25 11.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : (
+        <circle cx="15" cy="11.25" r="1.6" fill="currentColor" stroke="none" />
+      )}
+      <line x1="9.75" y1="15" x2="14.25" y2="15" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export default function Faq() {
   const { t } = useLanguage();
   const { faqs } = useStoreConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [isWinking, setIsWinking] = useState(false);
+  const winkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (winkTimeoutRef.current) {
+        clearTimeout(winkTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleToggle = () => {
+    if (isOpen) {
+      setIsOpen(false);
+      setIsWinking(false);
+      if (winkTimeoutRef.current) {
+        clearTimeout(winkTimeoutRef.current);
+        winkTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    setIsWinking(true);
+    winkTimeoutRef.current = setTimeout(() => {
+      setIsWinking(false);
+      setIsOpen(true);
+      winkTimeoutRef.current = null;
+    }, WINK_DURATION_MS);
+  };
 
   if (faqs.length === 0) {
     return null;
@@ -18,7 +77,7 @@ export default function Faq() {
     <div className="pointer-events-none fixed inset-0 z-50">
       {isOpen && (
         <div
-          className="pointer-events-auto fixed bottom-24 right-6 w-80 max-h-[500px] overflow-y-auto rounded-2xl border border-rose-100 bg-white p-4 shadow-2xl shadow-rose-200/40 sm:w-96"
+          className="pointer-events-auto fixed bottom-[6.75rem] right-6 w-[22.5rem] max-h-[590px] overflow-y-auto rounded-2xl border border-rose-100 bg-white p-4 shadow-2xl shadow-rose-200/40 sm:w-[24rem]"
           role="dialog"
           aria-label={t.faq.title}
         >
@@ -98,26 +157,12 @@ export default function Faq() {
 
       <button
         type="button"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={handleToggle}
         aria-expanded={isOpen}
         aria-label={t.faq.helperLabel}
-        className="pointer-events-auto fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full border border-rose-200 bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-lg shadow-rose-400/40 transition hover:scale-105 hover:shadow-xl hover:shadow-rose-400/50 active:scale-95"
+        className="pointer-events-auto fixed bottom-6 right-6 flex h-[4.125rem] w-[4.125rem] items-center justify-center rounded-full border border-rose-200 bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-lg shadow-rose-400/40 transition hover:scale-105 hover:shadow-xl hover:shadow-rose-400/50 active:scale-95"
       >
-        <svg
-          className="h-7 w-7"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          aria-hidden
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"
-          />
-          <circle cx="12" cy="9" r="2.25" fill="currentColor" stroke="none" />
-        </svg>
+        <RobotFace isWinking={isWinking} />
       </button>
     </div>
   );
