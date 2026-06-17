@@ -414,6 +414,7 @@ export const translations = {
       title: "Frågor & svar",
       widgetTitle: "Supportassistent",
       helperLabel: "Öppna support och vanliga frågor",
+      teacherTag: "Fråga Läraren",
       close: "Stäng",
       subtitle:
         "Här hittar du svar på de vanligaste frågorna om beställning, leverans och produkter.",
@@ -867,6 +868,7 @@ export const translations = {
       title: "Questions & answers",
       widgetTitle: "Support assistant",
       helperLabel: "Open support and frequently asked questions",
+      teacherTag: "Knowledge Bot",
       close: "Close",
       subtitle:
         "Find answers to the most common questions about ordering, shipping, and our products.",

@@ -70,3 +70,55 @@ body {
 .animate-banner-dot {
   animation: banner-dot 1s ease-in-out infinite;
 }
+
+@keyframes teacher-bot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes teacher-bot-blink {
+  0%,
+  44%,
+  48%,
+  100% {
+    transform: scaleY(1);
+  }
+  46% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes teacher-bot-wave {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(-28deg);
+  }
+  55% {
+    transform: rotate(-125deg);
+  }
+  75% {
+    transform: rotate(-108deg);
+  }
+  100% {
+    transform: rotate(-112deg);
+  }
+}
+
+.animate-teacher-bot-bob {
+  animation: teacher-bot-bob 3.2s ease-in-out infinite;
+}
+
+.animate-teacher-bot-blink {
+  animation: teacher-bot-blink 4.5s ease-in-out infinite;
+}
+
+.animate-teacher-bot-wave {
+  animation: teacher-bot-wave 0.48s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+}
