@@ -1,4 +1,9 @@
 import type { ProductStockStatus } from "@/lib/product-stock";
+import { CAMPAIGN_ADDON_PRODUCT_ID, getCampaignAddonPriceWithDefaults, isKnownCampaignAddonId } from "@/lib/campaign-addons";
+import { DEFAULT_HERO_SITE_SETTINGS } from "@/lib/hero-settings";
+
+export { CAMPAIGN_ADDON_PRODUCT_ID };
+export type { ProductSaleType, ProductSaleSettings } from "@/lib/product-sale";
 
 /** SimpliCity sells one-time purchases only — no subscriptions or recurring billing. */
 export const PURCHASE_MODEL = "one-time" as const;
@@ -29,6 +34,9 @@ export type Product = {
   /** Parallel labels for indexed variants from admin (e.g. ["10 mg", "20 mg"]). */
   variantLabels?: string[];
   status: ProductStockStatus;
+  isOnSale?: boolean;
+  saleType?: "procent" | "fixed";
+  saleValue?: number;
 };
 
 /** Returns true when a custom size/strength label should appear on product cards. */
@@ -41,13 +49,15 @@ export function shouldShowSizeLabel(sizeLabel?: string): boolean {
 }
 
 export type CartItem = {
-  productId: ProductId;
+  productId: ProductId | typeof CAMPAIGN_ADDON_PRODUCT_ID;
   variantMg: number;
   quantity: number;
   /** Selected variant label when product has named options. */
   selectedStrength?: string;
   /** Price captured for the selected variant at add-to-cart time. */
   unitPrice?: number;
+  /** Campaign cross-sell add-on from the hero showcase. */
+  campaignAddonId?: string;
 };
 
 export const PRODUCTS: Product[] = [
@@ -110,10 +120,14 @@ export function isValidVariant(productId: string, mg: number): boolean {
 }
 
 export function getCartItemKey(
-  productId: ProductId,
+  productId: CartItem["productId"],
   variantMg: number,
   selectedStrength?: string,
+  campaignAddonId?: string,
 ): string {
+  if (productId === CAMPAIGN_ADDON_PRODUCT_ID && campaignAddonId) {
+    return `${productId}:${campaignAddonId}`;
+  }
   const strengthPart = selectedStrength?.trim()
     ? `:${selectedStrength.trim()}`
     : "";
@@ -148,9 +162,18 @@ export function calculateOrderTotal(
   discountCodeInput?: string | null,
 ) {
   const lineItems: OrderLineItem[] = cart.map((item) => {
+    if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID && item.campaignAddonId) {
+      const unitPrice = getCampaignAddonPriceWithDefaults(item.campaignAddonId);
+      return {
+        ...item,
+        unitPrice,
+        lineSubtotal: unitPrice * item.quantity,
+      };
+    }
+
     const variant =
-      getProductVariant(item.productId, item.variantMg) ??
-      getProduct(item.productId)!.variants[0];
+      getProductVariant(item.productId as ProductId, item.variantMg) ??
+      getProduct(item.productId as ProductId)!.variants[0];
     const unitPrice = variant.price;
 
     return {
@@ -186,7 +209,20 @@ export function calculateOrderTotal(
 }
 
 export function isValidCartItem(item: CartItem): boolean {
-  if (!getProduct(item.productId)) return false;
+  if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID) {
+    if (
+      !item.campaignAddonId ||
+      !isKnownCampaignAddonId(DEFAULT_HERO_SITE_SETTINGS, item.campaignAddonId)
+    ) {
+      return false;
+    }
+    if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+      return false;
+    }
+    return true;
+  }
+
+  if (!getProduct(item.productId as ProductId)) return false;
   if (!isValidVariant(item.productId, item.variantMg)) return false;
   if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
     return false;

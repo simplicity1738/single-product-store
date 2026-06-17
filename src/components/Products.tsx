@@ -7,7 +7,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { isSiteSectionVisible } from "@/lib/site-navigation";
-import { getVariantPrice } from "@/lib/store-config";
+import { getVariantBasePrice, getVariantPrice } from "@/lib/store-config";
+import ProductSalePrice, { ProductSaleBadge } from "@/components/ProductSalePrice";
 import {
   getLocalizedProductDescription,
   getLocalizedProductName,
@@ -93,7 +94,7 @@ export default function Products() {
             const activeStrength = hasNamedVariants
               ? (variantLabels[variantMg] ?? variantLabels[0] ?? "")
               : undefined;
-            const displayPrice = getVariantPrice(
+            const basePrice = getVariantBasePrice(
               product,
               variantMg,
               activeStrength,
@@ -116,6 +117,11 @@ export default function Products() {
                     {t.products.badges[product.badge]}
                   </span>
                 )}
+
+                <ProductSaleBadge
+                  basePrice={basePrice}
+                  saleSettings={product}
+                />
 
                 <div className="mb-4 flex items-center justify-end gap-2">
                   <StockStatusBadge
@@ -163,7 +169,10 @@ export default function Products() {
                       {product.variants.map((variant) => (
                         <option key={variant.mg} value={variant.mg}>
                           {formatMgOption(variant.mg)} —{" "}
-                          {formatCurrency(variant.price, localeCode)}
+                          {formatCurrency(
+                            getVariantPrice(product, variant.mg),
+                            localeCode,
+                          )}
                         </option>
                       ))}
                     </select>
@@ -195,9 +204,12 @@ export default function Products() {
 
                 <div className="mt-5 flex items-end justify-between gap-3 border-t border-rose-100 pt-5">
                   <div>
-                    <p className="text-xl font-bold text-zinc-900">
-                      {formatCurrency(displayPrice, localeCode)}
-                    </p>
+                    <ProductSalePrice
+                      basePrice={basePrice}
+                      saleSettings={product}
+                      locale={localeCode}
+                      size="md"
+                    />
                   </div>
                   <button
                     type="button"

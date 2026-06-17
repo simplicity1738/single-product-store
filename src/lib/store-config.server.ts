@@ -22,7 +22,11 @@ import {
   type StoreConfig,
 } from "@/lib/store-config";
 import { buildLocalizedProductFields } from "@/lib/product-localization";
-import { normalizeSiteSettings } from "@/lib/hero-settings";
+import {
+  normalizeProductSaleType,
+  normalizeProductSaleValue,
+} from "@/lib/product-sale";
+import { normalizeSiteSettings, hasLegacyCampaignAddonFields } from "@/lib/hero-settings";
 import { normalizeSiteNavigation, type NavVisibility } from "@/lib/site-navigation";
 import {
   DEFAULT_PRODUCT_STOCK_STATUS,
@@ -138,6 +142,13 @@ function normalizeConfigProduct(
       ? { includedItems: String(entry.includedItems).trim() }
       : {}),
     ...(variants.length > 0 ? { variants } : {}),
+    ...(entry.isOnSale
+      ? {
+          isOnSale: true,
+          saleType: normalizeProductSaleType(entry.saleType),
+          saleValue: normalizeProductSaleValue(entry.saleValue),
+        }
+      : { isOnSale: false }),
   };
 }
 
@@ -239,7 +250,16 @@ export async function readStoreConfig(): Promise<StoreConfig> {
     "store-config.json",
     DEFAULT_STORE_CONFIG,
   );
-  return mergeStoreConfig(parsed);
+  const legacyAddonFieldsPresent = hasLegacyCampaignAddonFields(
+    parsed.siteSettings as Record<string, unknown> | undefined,
+  );
+  const merged = mergeStoreConfig(parsed);
+
+  if (legacyAddonFieldsPresent) {
+    await writeStoreConfig(merged);
+  }
+
+  return merged;
 }
 
 export async function writeStoreConfig(config: StoreConfig): Promise<void> {
@@ -303,6 +323,9 @@ export async function updateStoreProduct(
     bestSeller?: boolean;
     premium?: boolean;
     status?: ProductStockStatus;
+    isOnSale?: boolean;
+    saleType?: "procent" | "fixed";
+    saleValue?: number;
   },
 ): Promise<UpdateStoreProductResult | null> {
   const config = await readStoreConfig();

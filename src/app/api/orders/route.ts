@@ -183,6 +183,8 @@ export async function POST(request: Request) {
           line.productId,
           line.variantMg,
           line.selectedStrength,
+          undefined,
+          line.campaignAddonId,
         );
         return `${label} × ${line.quantity}`;
       })
@@ -215,6 +217,8 @@ export async function POST(request: Request) {
             line.productId,
             line.variantMg,
             line.selectedStrength,
+            undefined,
+            line.campaignAddonId,
           ),
           quantity: line.quantity,
           lineSubtotal: line.lineSubtotal,

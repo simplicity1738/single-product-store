@@ -20,5 +20,19 @@
     "campaignTag": "Säsongskampanj",
     "campaignHeadline": "Gör dig redo för sommar!",
     "campaignDiscountBadge": "Upp till 25%",
-    "campaignFeaturedProductId": "tirzepatide"
+    "campaignFeaturedProductId": "tirzepatide",
+    "showAddons": true,
+    "campaignAddons": [
+      {
+        "id": "addon-bac-water",
+        "label": "Lägg till extra BAC-vatten",
+        "price": 49
+      },
+      {
+        "id": "addon-sterile-kit",
+        "label": "Lägg till sterilt verktygskit",
+        "price": 29
+      }
+    ],
+    "campaignTickerText": "🔥 Kampanjen slutar snart — begränsat lager kvar!"
   },

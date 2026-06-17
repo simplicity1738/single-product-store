@@ -8,6 +8,11 @@ import {
   useState,
 } from "react";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import {
+  CAMPAIGN_ADDON_PRODUCT_ID,
+  getCampaignAddonPrice,
+  isKnownCampaignAddonId,
+} from "@/lib/campaign-addons";
 import { getVariantPrice } from "@/lib/store-config";
 import {
   getCartItemKey,
@@ -22,19 +27,36 @@ type ProductContextValue = {
   setCardVariantMg: (productId: string, mg: number) => void;
   getCardVariantMg: (productId: string) => number;
   addToCart: (productId: string, variantMg?: number, selectedStrength?: string) => void;
+  setCampaignAddonSelected: (addonId: string, selected: boolean) => void;
+  isCampaignAddonSelected: (addonId: string) => boolean;
   updateCartQuantity: (
     productId: string,
     variantMg: number,
     quantity: number,
     selectedStrength?: string,
+    campaignAddonId?: string,
   ) => void;
   cartItemCount: number;
 };
 
 const ProductContext = createContext<ProductContextValue | null>(null);
 
+function cartItemMatchesKey(
+  item: CartItem,
+  key: string,
+): boolean {
+  return (
+    getCartItemKey(
+      item.productId,
+      item.variantMg,
+      item.selectedStrength,
+      item.campaignAddonId,
+    ) === key
+  );
+}
+
 export function ProductProvider({ children }: { children: React.ReactNode }) {
-  const { catalogProducts } = useStoreConfig();
+  const { catalogProducts, siteSettings } = useStoreConfig();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cardVariantOverrides, setCardVariantOverrides] = useState<
     Record<string, number>
@@ -84,13 +106,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           mg,
           strength,
         );
-        const existingIndex = current.findIndex(
-          (item) =>
-            getCartItemKey(
-              item.productId,
-              item.variantMg,
-              item.selectedStrength,
-            ) === key,
+        const existingIndex = current.findIndex((item) =>
+          cartItemMatchesKey(item, key),
         );
 
         if (existingIndex >= 0) {
@@ -122,37 +139,77 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [catalogProducts],
   );
 
+  const setCampaignAddonSelected = useCallback(
+    (addonId: string, selected: boolean) => {
+      if (!isKnownCampaignAddonId(siteSettings, addonId)) return;
+
+      const unitPrice = getCampaignAddonPrice(siteSettings, addonId);
+
+      const key = getCartItemKey(
+        CAMPAIGN_ADDON_PRODUCT_ID,
+        0,
+        undefined,
+        addonId,
+      );
+
+      setCart((current) => {
+        const existingIndex = current.findIndex((item) =>
+          cartItemMatchesKey(item, key),
+        );
+
+        if (selected) {
+          if (existingIndex >= 0) return current;
+          return [
+            ...current,
+            {
+              productId: CAMPAIGN_ADDON_PRODUCT_ID,
+              variantMg: 0,
+              quantity: 1,
+              unitPrice,
+              campaignAddonId: addonId,
+            },
+          ];
+        }
+
+        if (existingIndex < 0) return current;
+        return current.filter((item) => !cartItemMatchesKey(item, key));
+      });
+    },
+    [siteSettings],
+  );
+
+  const isCampaignAddonSelected = useCallback(
+    (addonId: string) =>
+      cart.some(
+        (item) =>
+          item.productId === CAMPAIGN_ADDON_PRODUCT_ID &&
+          item.campaignAddonId === addonId,
+      ),
+    [cart],
+  );
+
   const updateCartQuantity = useCallback(
     (
       productId: string,
       variantMg: number,
       quantity: number,
       selectedStrength?: string,
+      campaignAddonId?: string,
     ) => {
       const key = getCartItemKey(
-        productId as ProductId,
+        productId as CartItem["productId"],
         variantMg,
         selectedStrength,
+        campaignAddonId,
       );
 
       setCart((current) => {
         if (quantity <= 0) {
-          return current.filter(
-            (item) =>
-              getCartItemKey(
-                item.productId,
-                item.variantMg,
-                item.selectedStrength,
-              ) !== key,
-          );
+          return current.filter((item) => !cartItemMatchesKey(item, key));
         }
 
         return current.map((item) =>
-          getCartItemKey(
-            item.productId,
-            item.variantMg,
-            item.selectedStrength,
-          ) === key
+          cartItemMatchesKey(item, key)
             ? { ...item, quantity: Math.min(99, quantity) }
             : item,
         );
@@ -173,6 +230,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       setCardVariantMg,
       getCardVariantMg,
       addToCart,
+      setCampaignAddonSelected,
+      isCampaignAddonSelected,
       updateCartQuantity,
       cartItemCount,
     }),
@@ -182,6 +241,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       setCardVariantMg,
       getCardVariantMg,
       addToCart,
+      setCampaignAddonSelected,
+      isCampaignAddonSelected,
       updateCartQuantity,
       cartItemCount,
     ],

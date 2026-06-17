@@ -1,4 +1,8 @@
 import type { Locale } from "@/lib/i18n/translations";
+import {
+  getCampaignAddonLabel,
+  resolveAddonByCartId,
+} from "@/lib/campaign-addons";
 import { DEFAULT_HERO_SITE_SETTINGS, type HeroFontFamily } from "@/lib/hero-settings";
 import type { SiteNavigation } from "@/lib/site-navigation";
 import { DEFAULT_SITE_NAVIGATION } from "@/lib/site-navigation";
@@ -15,8 +19,13 @@ import {
   type ProductStockStatus,
 } from "@/lib/product-stock";
 import {
+  calculateSalePrice,
+  type ProductSaleSettings,
+} from "@/lib/product-sale";
+import {
   PRODUCTS as FALLBACK_PRODUCTS,
   REVIEWS as FALLBACK_REVIEWS,
+  CAMPAIGN_ADDON_PRODUCT_ID,
   type CartItem,
   type OrderLineItem,
   type Product,
@@ -52,6 +61,9 @@ export type ConfigProduct = {
   /** Optional included items shown as "Medföljer" on the storefront. */
   includedItems?: string;
   status: ProductStockStatus;
+  isOnSale?: boolean;
+  saleType?: "procent" | "fixed";
+  saleValue?: number;
 };
 
 /** Parse admin input like "10 mg:550, 20 mg:850" into structured variants. */
@@ -120,7 +132,7 @@ export function resolveConfigVariants(entry: ConfigProduct): ConfigProductVarian
   return [];
 }
 
-export function getVariantPrice(
+export function getVariantBasePrice(
   product: Pick<Product, "variants"> & { variantLabels?: string[] },
   variantMg: number,
   selectedStrength?: string,
@@ -138,6 +150,16 @@ export function getVariantPrice(
     product.variants[0]?.price ??
     0
   );
+}
+
+export function getVariantPrice(
+  product: Pick<Product, "variants"> &
+    ProductSaleSettings & { variantLabels?: string[] },
+  variantMg: number,
+  selectedStrength?: string,
+): number {
+  const basePrice = getVariantBasePrice(product, variantMg, selectedStrength);
+  return calculateSalePrice(basePrice, product);
 }
 
 export type ConfigReview = {
@@ -198,6 +220,12 @@ export type InfluencerPartner = {
   commissionPercent: number;
 };
 
+export type CampaignAddon = {
+  id: string;
+  label: string;
+  price: number;
+};
+
 export type ConfigFaq = {
   id: string;
   question: string;
@@ -227,6 +255,9 @@ export type StoreConfig = {
     campaignHeadline: string;
     campaignDiscountBadge: string;
     campaignFeaturedProductId: string;
+    showAddons: boolean;
+    campaignAddons: CampaignAddon[];
+    campaignTickerText: string;
   };
   /** Editable labels and visibility for storefront navigation and widgets. */
   siteNavigation: SiteNavigation;
@@ -422,12 +453,21 @@ export function resolveProductBadge(
   return undefined;
 }
 
+function configProductSaleFields(entry: ConfigProduct): ProductSaleSettings {
+  return {
+    isOnSale: entry.isOnSale,
+    saleType: entry.saleType,
+    saleValue: entry.saleValue,
+  };
+}
+
 function configProductToCatalogEntry(
   entry: ConfigProduct,
   config: StoreConfig,
 ): Product {
   const fallback = FALLBACK_PRODUCTS.find((product) => product.id === entry.id);
   const optionVariants = resolveConfigVariants(entry);
+  const saleFields = configProductSaleFields(entry);
 
   if (optionVariants.length > 0) {
     return {
@@ -441,6 +481,7 @@ function configProductToCatalogEntry(
       variantLabels: optionVariants.map((variant) => variant.name),
       sizeLabel: optionVariants[0].name,
       status: entry.status ?? DEFAULT_PRODUCT_STOCK_STATUS,
+      ...saleFields,
     };
   }
 
@@ -459,6 +500,7 @@ function configProductToCatalogEntry(
       ...variant,
       price: fallback ? variant.price : entry.price,
     })),
+    ...saleFields,
   };
 }
 
@@ -510,7 +552,12 @@ export function getProductLineLabelFromConfig(
   variantMg: number,
   selectedStrength?: string,
   locale: Locale = "sv",
+  campaignAddonId?: string,
 ): string {
+  if (productId === CAMPAIGN_ADDON_PRODUCT_ID && campaignAddonId) {
+    return getCampaignAddonLabel(config.siteSettings, campaignAddonId);
+  }
+
   const title = getProductTitle(config, productId, locale);
   const entry = config.products.find((product) => product.id === productId);
   const variants = entry ? resolveConfigVariants(entry) : [];
@@ -572,6 +619,23 @@ export function isValidStoreCartItem(
   config: StoreConfig,
   item: CartItem,
 ): boolean {
+  if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID) {
+    if (!item.campaignAddonId) return false;
+    const addon = resolveAddonByCartId(config.siteSettings, item.campaignAddonId);
+    if (!addon || !addon.label.trim()) return false;
+    const expectedPrice = addon.price;
+    if (
+      item.unitPrice !== undefined &&
+      Math.round(item.unitPrice) !== Math.round(expectedPrice)
+    ) {
+      return false;
+    }
+    if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+      return false;
+    }
+    return true;
+  }
+
   const catalog = getCatalogProducts(config);
   const product = catalog.find((entry) => entry.id === item.productId);
   if (!product) return false;
@@ -650,6 +714,16 @@ export function calculateStoreOrderTotal(
   const catalog = getCatalogProducts(config);
 
   const lineItems: OrderLineItem[] = cart.map((item) => {
+    if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID && item.campaignAddonId) {
+      const addon = resolveAddonByCartId(config.siteSettings, item.campaignAddonId);
+      const unitPrice = addon?.price ?? 0;
+      return {
+        ...item,
+        unitPrice,
+        lineSubtotal: unitPrice * item.quantity,
+      };
+    }
+
     const product =
       catalog.find((entry) => entry.id === item.productId) ?? catalog[0];
     const unitPrice = getVariantPrice(

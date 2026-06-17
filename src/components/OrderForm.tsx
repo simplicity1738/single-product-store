@@ -304,6 +304,7 @@ export default function OrderForm() {
                       line.productId,
                       line.variantMg,
                       line.selectedStrength,
+                      line.campaignAddonId,
                     );
                     const productImage =
                       catalogProducts.find(
@@ -312,7 +313,7 @@ export default function OrderForm() {
 
                     return (
                       <li
-                        key={`${line.productId}-${line.variantMg}-${line.selectedStrength ?? ""}`}
+                        key={`${line.productId}-${line.variantMg}-${line.selectedStrength ?? ""}-${line.campaignAddonId ?? ""}`}
                         className="flex items-start justify-between gap-3"
                       >
                         <div
@@ -340,6 +341,7 @@ export default function OrderForm() {
                                   line.variantMg,
                                   line.quantity - 1,
                                   line.selectedStrength,
+                                  line.campaignAddonId,
                                 )
                               }
                               className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
@@ -358,6 +360,7 @@ export default function OrderForm() {
                                   line.variantMg,
                                   line.quantity + 1,
                                   line.selectedStrength,
+                                  line.campaignAddonId,
                                 )
                               }
                               className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"

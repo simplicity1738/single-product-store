@@ -29,6 +29,9 @@ export async function PATCH(request: Request) {
       premium?: boolean;
       status?: ProductStockStatus;
       includedItems?: string;
+      isOnSale?: boolean;
+      saleType?: "procent" | "fixed";
+      saleValue?: number;
     };
 
     const productId = body.productId
@@ -97,6 +100,9 @@ export async function PATCH(request: Request) {
       bestSeller: body.bestSeller,
       premium: body.premium,
       status: body.status,
+      isOnSale: body.isOnSale,
+      saleType: body.saleType,
+      saleValue: Number(body.saleValue),
     });
 
     if (!result) {

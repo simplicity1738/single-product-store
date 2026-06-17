@@ -74,6 +74,9 @@ export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
   campaignHeadline: "Gör dig redo för sommar!",
   campaignDiscountBadge: "Upp till 25%",
   campaignFeaturedProductId: "tirzepatide",
+  showAddons: true,
+  campaignAddons: [],
+  campaignTickerText: "🔥 Kampanjen slutar snart — begränsat lager kvar!",
 };
 
 function normalizeFontSize(
@@ -99,6 +102,95 @@ function normalizeFontFamily(
 function normalizeText(value: unknown, fallback: string): string {
   const text = typeof value === "string" ? value.trim() : "";
   return text || fallback;
+}
+
+function normalizeAddonPrice(value: unknown, fallback = 0): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
+  return Math.round(parsed);
+}
+
+function createAddonId(seed: string): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `addon-${seed}-${Date.now()}`;
+}
+
+export function hasLegacyCampaignAddonFields(
+  settings: Record<string, unknown> | null | undefined,
+): boolean {
+  if (!settings) return false;
+  return (
+    "addon1_label" in settings ||
+    "addon1_price" in settings ||
+    "addon2_label" in settings ||
+    "addon2_price" in settings
+  );
+}
+
+function migrateLegacyCampaignAddons(
+  input?: Partial<SiteSettings> & Record<string, unknown> | null,
+): SiteSettings["campaignAddons"] {
+  const legacy: SiteSettings["campaignAddons"] = [];
+  const addon1Label =
+    typeof input?.addon1_label === "string" ? input.addon1_label.trim() : "";
+  const addon2Label =
+    typeof input?.addon2_label === "string" ? input.addon2_label.trim() : "";
+  const addon1Price = normalizeAddonPrice(input?.addon1_price, 0);
+  const addon2Price = normalizeAddonPrice(input?.addon2_price, 0);
+
+  if (addon1Label || addon1Price > 0) {
+    legacy.push({
+      id: "addon1",
+      label: addon1Label || "Lägg till extra BAC-vatten",
+      price: addon1Price || 49,
+    });
+  }
+  if (addon2Label || addon2Price > 0) {
+    legacy.push({
+      id: "addon2",
+      label: addon2Label || "Lägg till sterilt verktygskit",
+      price: addon2Price || 29,
+    });
+  }
+
+  return legacy;
+}
+
+export function normalizeCampaignAddons(
+  input?: Partial<SiteSettings> & Record<string, unknown> | null,
+): SiteSettings["campaignAddons"] {
+  if (Array.isArray(input?.campaignAddons)) {
+    const seen = new Set<string>();
+    const normalized = input.campaignAddons
+      .map((entry, index) => {
+        const raw = entry as Partial<SiteSettings["campaignAddons"][number]>;
+        const id =
+          typeof raw?.id === "string" && raw.id.trim()
+            ? raw.id.trim()
+            : createAddonId(String(index));
+        return {
+          id,
+          label: typeof raw?.label === "string" ? raw.label : "",
+          price: normalizeAddonPrice(raw?.price, 0),
+        };
+      })
+      .filter((entry) => {
+        if (seen.has(entry.id)) return false;
+        seen.add(entry.id);
+        return true;
+      });
+
+    if (normalized.length > 0) return normalized;
+
+    const legacy = migrateLegacyCampaignAddons(input);
+    if (legacy.length > 0) return legacy;
+
+    return [];
+  }
+
+  return migrateLegacyCampaignAddons(input);
 }
 
 export function normalizeSiteSettings(
@@ -160,6 +252,15 @@ export function normalizeSiteSettings(
     campaignFeaturedProductId: normalizeText(
       input?.campaignFeaturedProductId,
       defaults.campaignFeaturedProductId,
+    ),
+    showAddons:
+      input?.showAddons === undefined
+        ? defaults.showAddons
+        : Boolean(input.showAddons),
+    campaignAddons: normalizeCampaignAddons(input),
+    campaignTickerText: normalizeText(
+      input?.campaignTickerText,
+      defaults.campaignTickerText,
     ),
   };
 }

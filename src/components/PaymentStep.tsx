@@ -291,6 +291,7 @@ export default function PaymentStep({
           line.productId,
           line.variantMg,
           line.selectedStrength,
+          line.campaignAddonId,
         ),
       }));
 

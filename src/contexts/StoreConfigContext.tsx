@@ -89,6 +89,7 @@ type StoreConfigContextValue = {
     productId: string,
     variantMg: number,
     selectedStrength?: string,
+    campaignAddonId?: string,
   ) => string;
   getDisplayName: (productId: string) => string;
   validateDiscount: (
@@ -255,13 +256,19 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   );
 
   const getLineLabel = useCallback(
-    (productId: string, variantMg: number, selectedStrength?: string) =>
+    (
+      productId: string,
+      variantMg: number,
+      selectedStrength?: string,
+      campaignAddonId?: string,
+    ) =>
       getProductLineLabelFromConfig(
         storeConfig,
         productId,
         variantMg,
         selectedStrength,
         locale,
+        campaignAddonId,
       ),
     [storeConfig, locale],
   );

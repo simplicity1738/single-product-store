@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { StoreConfig } from "@/lib/store-config";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
-import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
 import HeroCampaignForm from "@/components/admin/HeroCampaignForm";
 import {
   normalizeSiteNavigation,
@@ -130,7 +129,7 @@ export default function AdminSiteSettingsPage() {
               Sajtkonfiguration
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-              Anpassa hero-typografi, navigation och synlighet för den publika
+              Anpassa kampanj-hero, navigation och synlighet för den publika
               startsidan.
             </p>
           </div>
@@ -158,7 +157,9 @@ export default function AdminSiteSettingsPage() {
         )}
 
         <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Hero Showcase</h2>
+          <h2 className="text-lg font-bold text-zinc-900">
+            Hjälte-Kampanj (Hero Showcase)
+          </h2>
           <p className="mt-1 text-sm text-zinc-500">
             Kampanjmotor för startsidans split-layout med utvald produkt.
           </p>
@@ -170,24 +171,6 @@ export default function AdminSiteSettingsPage() {
               <HeroCampaignForm
                 siteSettings={siteSettings}
                 products={config.products}
-                onChange={setSiteSettings}
-              />
-            </div>
-          )}
-        </section>
-
-        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Hero &amp; typografi</h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            Styr rubriker, storlekar, typsnitt och logotyp för hero-sektionen.
-          </p>
-
-          {isLoading ? (
-            <p className="mt-6 text-sm text-zinc-500">Laddar hero-inställningar…</p>
-          ) : (
-            <div className="mt-6">
-              <HeroSettingsForm
-                siteSettings={siteSettings}
                 onChange={setSiteSettings}
               />
             </div>

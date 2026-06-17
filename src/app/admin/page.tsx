@@ -20,8 +20,10 @@ import {
   parseVariantsInput,
 } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
-import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
 import HeroCampaignForm from "@/components/admin/HeroCampaignForm";
+import ProductSaleFields, {
+  emptyProductSaleFormValues,
+} from "@/components/admin/ProductSaleFields";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
 import {
   PRODUCT_STOCK_STATUS_OPTIONS,
@@ -39,6 +41,9 @@ type ProductDraft = {
   variantsInput: string;
   includedItems: string;
   status: ProductStockStatus;
+  isOnSale: boolean;
+  saleType: "procent" | "fixed";
+  saleValue: number;
 };
 
 type EditProductForm = Omit<ProductDraft, "id"> & {
@@ -57,6 +62,7 @@ const emptyProduct = (): ProductDraft => ({
   variantsInput: "",
   includedItems: "",
   status: "i_lager",
+  ...emptyProductSaleFormValues(),
 });
 
 type AdminOrder = {
@@ -668,6 +674,9 @@ export default function AdminPage() {
       bestSeller: config.bestSellerProductIds.includes(product.id),
       premium: config.premiumProductIds.includes(product.id),
       status: product.status ?? "i_lager",
+      isOnSale: Boolean(product.isOnSale),
+      saleType: product.saleType === "fixed" ? "fixed" : "procent",
+      saleValue: product.saleValue ?? 0,
     });
   }
 
@@ -697,6 +706,9 @@ export default function AdminPage() {
           bestSeller: editProduct.bestSeller,
           premium: editProduct.premium,
           status: editProduct.status,
+          isOnSale: editProduct.isOnSale,
+          saleType: editProduct.saleType,
+          saleValue: editProduct.saleValue,
         }),
       });
       const data = await response.json();
@@ -907,6 +919,13 @@ export default function AdminPage() {
         ? { includedItems: newProduct.includedItems.trim() }
         : {}),
       ...(variants.length > 0 ? { variants } : {}),
+      ...(newProduct.isOnSale
+        ? {
+            isOnSale: true,
+            saleType: newProduct.saleType,
+            saleValue: newProduct.saleValue,
+          }
+        : { isOnSale: false }),
     };
 
     setConfig((current) =>
@@ -1041,6 +1060,19 @@ export default function AdminPage() {
                   className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
                 />
               </label>
+
+              <ProductSaleFields
+                values={{
+                  isOnSale: editProduct.isOnSale,
+                  saleType: editProduct.saleType,
+                  saleValue: editProduct.saleValue,
+                }}
+                onChange={(saleValues) =>
+                  setEditProduct((current) =>
+                    current ? { ...current, ...saleValues } : current,
+                  )
+                }
+              />
 
               <label className="block">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
@@ -1608,9 +1640,10 @@ export default function AdminPage() {
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-zinc-900">Site Settings</h2>
+              <h2 className="text-lg font-bold text-zinc-900">Sajtkonfiguration</h2>
               <p className="mt-1 text-sm text-zinc-500">
-                Hero-typografi och header-logotyp styr den publika startsidan.
+                Kampanj-hero, header-logotyp och butikskontakt styr den publika
+                startsidan.
               </p>
             </div>
             <Link
@@ -1622,18 +1655,10 @@ export default function AdminPage() {
           </div>
 
           {config && (
-            <div className="mt-6 space-y-6">
+            <div className="mt-6">
               <HeroCampaignForm
                 siteSettings={config.siteSettings}
                 products={config.products}
-                onChange={(siteSettings) =>
-                  setConfig((current) =>
-                    current ? { ...current, siteSettings } : current,
-                  )
-                }
-              />
-              <HeroSettingsForm
-                siteSettings={config.siteSettings}
                 onChange={(siteSettings) =>
                   setConfig((current) =>
                     current ? { ...current, siteSettings } : current,
@@ -1915,6 +1940,18 @@ export default function AdminPage() {
                 placeholder="Pris (SEK)"
                 className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
               />
+              <div className="sm:col-span-2">
+                <ProductSaleFields
+                  values={{
+                    isOnSale: newProduct.isOnSale,
+                    saleType: newProduct.saleType,
+                    saleValue: newProduct.saleValue,
+                  }}
+                  onChange={(saleValues) =>
+                    setNewProduct((current) => ({ ...current, ...saleValues }))
+                  }
+                />
+              </div>
               <input
                 value={newProduct.image}
                 onChange={(event) =>
