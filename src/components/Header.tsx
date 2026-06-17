@@ -8,7 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import {
   getSiteNavLabel,
-  isSiteNavVisible,
+  isSiteNavLinkVisible,
   SITE_NAV_ROUTES,
 } from "@/lib/site-navigation";
 
@@ -46,7 +46,7 @@ export default function Header() {
   const { siteSettings, banner, siteNavigation } = useStoreConfig();
 
   const visibleNavLinks = SITE_NAV_ROUTES.filter((route) =>
-    isSiteNavVisible(siteNavigation, route.key),
+    isSiteNavLinkVisible(siteNavigation, route.key),
   ).map((route) => ({
     ...route,
     label: getSiteNavLabel(siteNavigation, route.key, locale),

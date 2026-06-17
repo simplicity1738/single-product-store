@@ -122,9 +122,8 @@ export default function AdminSiteSettingsPage() {
               Sajtkonfiguration
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-              Anpassa visningsnamn och synlighet för menylänkar, sidfot och
-              FAQ-widgeten. Sidorna finns kvar — du styr bara vad som syns
-              publikt.
+              Anpassa visningsnamn och styr synlighet separat för toppmenyn och
+              startsidans sektioner.
             </p>
           </div>
 
@@ -164,26 +163,50 @@ export default function AdminSiteSettingsPage() {
                     key={key}
                     className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5"
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <h2 className="text-sm font-bold text-zinc-900">
-                          {meta.title}
-                        </h2>
-                        <p className="mt-1 text-xs text-zinc-500">{meta.hint}</p>
-                      </div>
+                    <div>
+                      <h2 className="text-sm font-bold text-zinc-900">
+                        {meta.title}
+                      </h2>
+                      <p className="mt-1 text-xs text-zinc-500">{meta.hint}</p>
+                    </div>
 
-                      <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
-                        <span className="text-xs text-zinc-500">
-                          {item.visible ? "Synlig" : "Dold"}
-                        </span>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
                         <input
                           type="checkbox"
-                          checked={item.visible}
+                          checked={item.hide_navbar}
                           onChange={(event) =>
-                            updateNavItem(key, "visible", event.target.checked)
+                            updateNavItem(key, "hide_navbar", event.target.checked)
                           }
-                          className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                          className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
                         />
+                        <span className="text-sm leading-snug text-zinc-700">
+                          <span className="block font-semibold text-zinc-900">
+                            Dölj endast i toppmenyn
+                          </span>
+                          <span className="mt-0.5 block text-xs text-zinc-500">
+                            Länken försvinner från header och mobilmeny.
+                          </span>
+                        </span>
+                      </label>
+
+                      <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={item.hide_section}
+                          onChange={(event) =>
+                            updateNavItem(key, "hide_section", event.target.checked)
+                          }
+                          className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                        />
+                        <span className="text-sm leading-snug text-zinc-700">
+                          <span className="block font-semibold text-zinc-900">
+                            Dölj helt från hemsidan
+                          </span>
+                          <span className="mt-0.5 block text-xs text-zinc-500">
+                            Sektionen eller widgeten renderas inte på startsidan.
+                          </span>
+                        </span>
                       </label>
                     </div>
 

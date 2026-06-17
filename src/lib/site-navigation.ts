@@ -14,7 +14,10 @@ export type SiteNavKey =
 export type SiteNavItem = {
   label_sv: string;
   label_en: string;
-  visible: boolean;
+  hide_navbar: boolean;
+  hide_section: boolean;
+  /** @deprecated Migrated to hide_navbar / hide_section on read. */
+  visible?: boolean;
 };
 
 export type SiteNavigation = Record<SiteNavKey, SiteNavItem>;
@@ -50,6 +53,15 @@ export const SITE_NAV_HEADER_KEYS: Exclude<SiteNavKey, "faq">[] = [
   "kontakt",
 ];
 
+export const SITE_NAV_HOMEPAGE_SECTION_KEYS: SiteNavKey[] = [
+  "produkter",
+  "fordelar",
+  "kvalitet",
+  "bestall",
+  "kontakt",
+  "faq",
+];
+
 export const SITE_NAV_ROUTES: {
   key: Exclude<SiteNavKey, "faq">;
   href: string;
@@ -68,23 +80,23 @@ export const SITE_NAV_ADMIN_META: Record<
   SiteNavKey,
   { title: string; hint: string }
 > = {
-  produkter: { title: "Produkter", hint: "Huvudmeny — sektionen #products" },
+  produkter: { title: "Produkter", hint: "Meny — sektionen #products på startsidan" },
   labbtester: {
     title: "Labbtester",
-    hint: "Huvudmeny och sidfot — /labbtester",
+    hint: "Meny och sidfot — sidan /labbtester",
   },
-  fordelar: { title: "Fördelar", hint: "Huvudmeny — sektionen #features" },
-  kvalitet: { title: "Kvalitet", hint: "Huvudmeny — sektionen #quality" },
-  bestall: { title: "Beställ", hint: "Huvudmeny — sektionen #checkout-form" },
-  blogg: { title: "Blogg", hint: "Huvudmeny — /blogg" },
+  fordelar: { title: "Fördelar", hint: "Meny — sektionen #features på startsidan" },
+  kvalitet: { title: "Kvalitet", hint: "Meny — sektionen #quality på startsidan" },
+  bestall: { title: "Beställ", hint: "Meny — kassaformuläret #checkout-form" },
+  blogg: { title: "Blogg", hint: "Meny — sidan /blogg" },
   kalkylator: {
     title: "Kalkylator",
-    hint: "Huvudmeny — /kalkylator (t.ex. Doseringsguide)",
+    hint: "Meny — sidan /kalkylator",
   },
-  kontakt: { title: "Kontakt", hint: "Huvudmeny — sektionen #contact" },
+  kontakt: { title: "Kontakt", hint: "Meny — sektionen #contact på startsidan" },
   faq: {
     title: "FAQ",
-    hint: "Flytande supportwidget (lärarroboten)",
+    hint: "Flytande supportwidget (ingen menylänk)",
   },
 };
 
@@ -93,56 +105,32 @@ function trimLabel(value: string, fallback: string): string {
   return trimmed || fallback;
 }
 
+function buildDefaultSiteNavItem(
+  label_sv: string,
+  label_en: string,
+): SiteNavItem {
+  return {
+    label_sv,
+    label_en,
+    hide_navbar: false,
+    hide_section: false,
+  };
+}
+
 export function buildDefaultSiteNavigation(): SiteNavigation {
   const sv = translations.sv;
   const en = translations.en;
 
   return {
-    produkter: {
-      label_sv: sv.nav.products,
-      label_en: en.nav.products,
-      visible: true,
-    },
-    labbtester: {
-      label_sv: sv.nav.labTests,
-      label_en: en.nav.labTests,
-      visible: true,
-    },
-    fordelar: {
-      label_sv: sv.nav.features,
-      label_en: en.nav.features,
-      visible: true,
-    },
-    kvalitet: {
-      label_sv: sv.nav.quality,
-      label_en: en.nav.quality,
-      visible: true,
-    },
-    bestall: {
-      label_sv: sv.nav.order,
-      label_en: en.nav.order,
-      visible: true,
-    },
-    blogg: {
-      label_sv: sv.nav.blog,
-      label_en: en.nav.blog,
-      visible: true,
-    },
-    kalkylator: {
-      label_sv: sv.nav.calculator,
-      label_en: en.nav.calculator,
-      visible: true,
-    },
-    kontakt: {
-      label_sv: sv.nav.contact,
-      label_en: en.nav.contact,
-      visible: true,
-    },
-    faq: {
-      label_sv: sv.faq.teacherTag,
-      label_en: en.faq.teacherTag,
-      visible: true,
-    },
+    produkter: buildDefaultSiteNavItem(sv.nav.products, en.nav.products),
+    labbtester: buildDefaultSiteNavItem(sv.nav.labTests, en.nav.labTests),
+    fordelar: buildDefaultSiteNavItem(sv.nav.features, en.nav.features),
+    kvalitet: buildDefaultSiteNavItem(sv.nav.quality, en.nav.quality),
+    bestall: buildDefaultSiteNavItem(sv.nav.order, en.nav.order),
+    blogg: buildDefaultSiteNavItem(sv.nav.blog, en.nav.blog),
+    kalkylator: buildDefaultSiteNavItem(sv.nav.calculator, en.nav.calculator),
+    kontakt: buildDefaultSiteNavItem(sv.nav.contact, en.nav.contact),
+    faq: buildDefaultSiteNavItem(sv.faq.teacherTag, en.faq.teacherTag),
   };
 }
 
@@ -155,15 +143,28 @@ function normalizeSiteNavItem(
 ): SiteNavItem {
   const defaults = DEFAULT_SITE_NAVIGATION[key];
 
+  let hide_navbar = defaults.hide_navbar;
+  let hide_section = defaults.hide_section;
+
+  if (
+    typeof entry?.hide_navbar === "boolean" ||
+    typeof entry?.hide_section === "boolean"
+  ) {
+    hide_navbar = entry.hide_navbar ?? defaults.hide_navbar;
+    hide_section = entry.hide_section ?? defaults.hide_section;
+  } else if (typeof entry?.visible === "boolean") {
+    hide_navbar = !entry.visible;
+    hide_section = !entry.visible;
+  } else if (typeof legacyVisible === "boolean") {
+    hide_navbar = !legacyVisible;
+    hide_section = !legacyVisible;
+  }
+
   return {
     label_sv: trimLabel(String(entry?.label_sv ?? defaults.label_sv), defaults.label_sv),
     label_en: trimLabel(String(entry?.label_en ?? defaults.label_en), defaults.label_en),
-    visible:
-      typeof entry?.visible === "boolean"
-        ? entry.visible
-        : typeof legacyVisible === "boolean"
-          ? legacyVisible
-          : defaults.visible,
+    hide_navbar,
+    hide_section,
   };
 }
 
@@ -189,11 +190,20 @@ export function normalizeSiteNavigation(
   return normalized;
 }
 
-export function isSiteNavVisible(
+/** True when the item should appear in the header / mobile navigation. */
+export function isSiteNavLinkVisible(
   siteNavigation: SiteNavigation,
   key: SiteNavKey,
 ): boolean {
-  return siteNavigation[key]?.visible !== false;
+  return siteNavigation[key]?.hide_navbar !== true;
+}
+
+/** True when a homepage section (or FAQ widget) should render. */
+export function isSiteSectionVisible(
+  siteNavigation: SiteNavigation,
+  key: SiteNavKey,
+): boolean {
+  return siteNavigation[key]?.hide_section !== true;
 }
 
 export function getSiteNavLabel(
@@ -211,7 +221,15 @@ export function getSiteNavLabel(
   return item.label_sv.trim() || defaults.label_sv;
 }
 
-/** @deprecated Use `isSiteNavVisible` with `siteNavigation` instead. */
+/** @deprecated Use `isSiteNavLinkVisible` or `isSiteSectionVisible`. */
+export function isSiteNavVisible(
+  siteNavigation: SiteNavigation,
+  key: SiteNavKey,
+): boolean {
+  return isSiteNavLinkVisible(siteNavigation, key) && isSiteSectionVisible(siteNavigation, key);
+}
+
+/** @deprecated Use `isSiteNavLinkVisible` with `siteNavigation` instead. */
 export function isNavLinkVisible(
   navVisibility: NavVisibility,
   key: Exclude<SiteNavKey, "faq">,
@@ -228,7 +246,9 @@ export function normalizeNavVisibility(
 
   for (const key of SITE_NAV_HEADER_KEYS) {
     normalized[key] =
-      typeof value?.[key] === "boolean" ? value[key]! : defaults[key].visible;
+      typeof value?.[key] === "boolean"
+        ? value[key]!
+        : !defaults[key].hide_navbar;
   }
 
   return normalized;

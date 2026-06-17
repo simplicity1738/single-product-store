@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import { isSiteSectionVisible } from "@/lib/site-navigation";
 import ProductImage from "@/components/ProductImage";
 import PaymentStep from "@/components/PaymentStep";
 import {
@@ -20,7 +21,7 @@ type CheckoutStep = "details" | "payment";
 export default function OrderForm() {
   const { locale, t } = useLanguage();
   const { cart, updateCartQuantity } = useProductSelection();
-  const { calculateOrderTotal, getLineLabel, validateDiscount, catalogProducts, storeConfig } =
+  const { calculateOrderTotal, getLineLabel, validateDiscount, catalogProducts, storeConfig, siteNavigation } =
     useStoreConfig();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
@@ -106,6 +107,10 @@ export default function OrderForm() {
     setIsSubmitting(true);
     setCheckoutStep("payment");
     setIsSubmitting(false);
+  }
+
+  if (!isSiteSectionVisible(siteNavigation, "bestall")) {
+    return null;
   }
 
   return (

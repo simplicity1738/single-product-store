@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import { isSiteSectionVisible } from "@/lib/site-navigation";
 import { CONTACT } from "@/lib/contact";
 
 const inputClassName =
@@ -10,7 +11,7 @@ const inputClassName =
 
 export default function ContactForm() {
   const { locale, t } = useLanguage();
-  const { telegramHandle, telegramUrl, contactEmail } = useStoreConfig();
+  const { telegramHandle, telegramUrl, contactEmail, siteNavigation } = useStoreConfig();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +50,10 @@ export default function ContactForm() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (!isSiteSectionVisible(siteNavigation, "kontakt")) {
+    return null;
   }
 
   return (

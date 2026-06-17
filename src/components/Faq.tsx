@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
-import { getSiteNavLabel, isSiteNavVisible } from "@/lib/site-navigation";
+import { getSiteNavLabel, isSiteSectionVisible } from "@/lib/site-navigation";
 import TeacherBot from "@/components/TeacherBot";
 
 const INTERACTION_DURATION_MS = 480;
@@ -43,7 +43,7 @@ export default function Faq() {
     }, INTERACTION_DURATION_MS);
   };
 
-  if (!isSiteNavVisible(siteNavigation, "faq") || faqs.length === 0) {
+  if (!isSiteSectionVisible(siteNavigation, "faq") || faqs.length === 0) {
     return null;
   }
 

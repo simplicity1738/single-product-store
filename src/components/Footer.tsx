@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
-import { getSiteNavLabel, isSiteNavVisible } from "@/lib/site-navigation";
+import { getSiteNavLabel, isSiteNavLinkVisible } from "@/lib/site-navigation";
 
 export default function Footer() {
   const { locale, t } = useLanguage();
@@ -19,7 +19,7 @@ export default function Footer() {
       { href: "/terms", label: t.footer.terms },
     ];
 
-    if (isSiteNavVisible(siteNavigation, "labbtester")) {
+    if (isSiteNavLinkVisible(siteNavigation, "labbtester")) {
       links.push({
         href: "/labbtester",
         label: getSiteNavLabel(siteNavigation, "labbtester", locale),

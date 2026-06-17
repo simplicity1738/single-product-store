@@ -6,7 +6,7 @@ import StrengthSelector from "@/components/StrengthSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
-import { isSiteNavVisible } from "@/lib/site-navigation";
+import { isSiteSectionVisible } from "@/lib/site-navigation";
 import { getVariantPrice } from "@/lib/store-config";
 import {
   getLocalizedProductDescription,
@@ -55,7 +55,7 @@ export default function Products() {
     });
   }, [catalogProducts, configProducts, locale]);
 
-  if (!isSiteNavVisible(siteNavigation, "produkter")) {
+  if (!isSiteSectionVisible(siteNavigation, "produkter")) {
     return null;
   }
 
@@ -234,9 +234,17 @@ const featureIcons = [
 
 export function Features() {
   const { t } = useLanguage();
+  const { siteNavigation } = useStoreConfig();
+  const showFeatures = isSiteSectionVisible(siteNavigation, "fordelar");
+  const showQuality = isSiteSectionVisible(siteNavigation, "kvalitet");
+
+  if (!showFeatures && !showQuality) {
+    return null;
+  }
 
   return (
     <>
+      {showFeatures && (
       <section id="features" className="scroll-mt-24 bg-rose-50/50 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
@@ -282,7 +290,9 @@ export function Features() {
           </div>
         </div>
       </section>
+      )}
 
+      {showQuality && (
       <section
         id="quality"
         className="scroll-mt-24 border-y border-rose-900/20 bg-zinc-900 py-20 text-white sm:py-24"
@@ -328,6 +338,7 @@ export function Features() {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }
