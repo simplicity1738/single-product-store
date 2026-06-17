@@ -463,7 +463,13 @@ export const translations = {
       eyebrow: "Verktyg",
       title: "Peptidkalkylator",
       subtitle:
-        "Beräkna exakt hur många enheter du ska dra upp efter rekonstitution — med precision i milligram.",
+        "Beräkna exakt hur många enheter du ska dra upp — för egen rekonstitution eller färdigblandade engångsflaskor.",
+      calculationMode: "Beräkningsläge",
+      modeRaw: "Raw Peptide (Pulver + Blanda själv)",
+      modePremixed: "Färdigblandad Vätska (T.ex. Mounjaro / Zepbound flaskor)",
+      premixedWaterNote:
+        "Fabriksförpackade vialer innehåller alltid exakt 0,5 mL vätska oavsett styrka.",
+      vialStrength: "Flaskstyrka (mg / 0,5 mL)",
       peptideAmount: "Peptidmängd (mg)",
       waterVolume: "Tillsatt sterilt vatten (mL)",
       desiredDose: "Önskad dosering (mg)",
@@ -979,7 +985,13 @@ export const translations = {
       eyebrow: "Tool",
       title: "Peptide Calculator",
       subtitle:
-        "Calculate exactly how many units to draw after reconstitution — with milligram precision.",
+        "Calculate exactly how many units to draw — for self-mixed reconstitution or factory pre-filled single-dose vials.",
+      calculationMode: "Calculation mode",
+      modeRaw: "Raw peptide (powder + mix yourself)",
+      modePremixed: "Pre-mixed liquid (e.g. Mounjaro / Zepbound vials)",
+      premixedWaterNote:
+        "Factory vials always contain exactly 0.5 mL of fluid regardless of strength.",
+      vialStrength: "Vial strength (mg / 0.5 mL)",
       peptideAmount: "Peptide amount (mg)",
       waterVolume: "Sterile water added (mL)",
       desiredDose: "Desired dose (mg)",
