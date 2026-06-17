@@ -7,6 +7,7 @@ export async function GET() {
   return NextResponse.json(
     {
       siteSettings: config.siteSettings,
+      siteNavigation: config.siteNavigation,
       banner: config.banner,
       marketingTracking: config.marketingTracking,
       shippingFee: config.shippingFee,

@@ -27,8 +27,10 @@ import {
 
 type ProductDraft = {
   id: string;
-  title: string;
-  description: string;
+  name_sv: string;
+  name_en: string;
+  description_sv: string;
+  description_en: string;
   price: number;
   image: string;
   variantsInput: string;
@@ -43,8 +45,10 @@ type EditProductForm = Omit<ProductDraft, "id"> & {
 
 const emptyProduct = (): ProductDraft => ({
   id: "",
-  title: "",
-  description: "",
+  name_sv: "",
+  name_en: "",
+  description_sv: "",
+  description_en: "",
   price: 0,
   image: "/logo.png",
   variantsInput: "",
@@ -647,8 +651,10 @@ export default function AdminPage() {
     if (!config) return;
     setEditingProductId(product.id);
     setEditProduct({
-      title: product.title,
-      description: product.description,
+      name_sv: product.name_sv || product.title || "",
+      name_en: product.name_en || "",
+      description_sv: product.description_sv || product.description || "",
+      description_en: product.description_en || "",
       price: product.price,
       image: product.image,
       variantsInput: formatVariantsInput(product.variants),
@@ -674,8 +680,10 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: editingProductId,
-          title: editProduct.title,
-          description: editProduct.description,
+          name_sv: editProduct.name_sv,
+          name_en: editProduct.name_en,
+          description_sv: editProduct.description_sv,
+          description_en: editProduct.description_en,
           price: editProduct.price,
           image: editProduct.image,
           variantsInput: editProduct.variantsInput,
@@ -864,24 +872,28 @@ export default function AdminPage() {
   }
 
   function addProduct() {
-    const title = newProduct.title.trim();
-    if (!title) {
+    const name_sv = newProduct.name_sv.trim();
+    if (!name_sv) {
       showToast({
         type: "info",
-        message: "Ange en produkttitel innan du lägger till.",
+        message: "Ange ett produktnamn (SV) innan du lägger till.",
       });
       return;
     }
 
-    const id = slugify(title) || `product-${Date.now()}`;
+    const id = slugify(name_sv) || `product-${Date.now()}`;
     const variants = parseVariantsInput(
       newProduct.variantsInput ?? "",
       Number(newProduct.price) || 0,
     );
     const entry: ConfigProduct = {
       id,
-      title,
-      description: newProduct.description.trim(),
+      name_sv,
+      name_en: newProduct.name_en.trim(),
+      description_sv: newProduct.description_sv.trim(),
+      description_en: newProduct.description_en.trim(),
+      title: name_sv,
+      description: newProduct.description_sv.trim(),
       price: Number(newProduct.price) || 0,
       image: newProduct.image.trim() || "/logo.png",
       status: newProduct.status ?? "i_lager",
@@ -945,7 +957,7 @@ export default function AdminPage() {
                   id="edit-product-title"
                   className="mt-1 text-xl font-bold text-zinc-900"
                 >
-                  {editProduct.title || "Produkt"}
+                  {editProduct.name_sv || "Produkt"}
                 </h2>
               </div>
               <button
@@ -963,7 +975,7 @@ export default function AdminPage() {
             >
               <ProductImage
                 src={editProduct.image || "/logo.png"}
-                alt={editProduct.title || "Produkt"}
+                alt={editProduct.name_sv || "Produkt"}
                 fill
                 sizes="144px"
                 className="object-contain p-4"
@@ -973,14 +985,31 @@ export default function AdminPage() {
             <div className="mt-6 space-y-4">
               <label className="block">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Titel
+                  Namn (SV)
                 </span>
                 <input
-                  value={editProduct.title}
+                  value={editProduct.name_sv}
                   onChange={(event) =>
                     setEditProduct((current) =>
                       current
-                        ? { ...current, title: event.target.value }
+                        ? { ...current, name_sv: event.target.value }
+                        : current,
+                    )
+                  }
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Namn (EN)
+                </span>
+                <input
+                  value={editProduct.name_en}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, name_en: event.target.value }
                         : current,
                     )
                   }
@@ -1009,14 +1038,32 @@ export default function AdminPage() {
 
               <label className="block">
                 <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                  Beskrivning
+                  Beskrivning (SV)
                 </span>
                 <textarea
-                  value={editProduct.description}
+                  value={editProduct.description_sv}
                   onChange={(event) =>
                     setEditProduct((current) =>
                       current
-                        ? { ...current, description: event.target.value }
+                        ? { ...current, description_sv: event.target.value }
+                        : current,
+                    )
+                  }
+                  rows={3}
+                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Beskrivning (EN)
+                </span>
+                <textarea
+                  value={editProduct.description_en}
+                  onChange={(event) =>
+                    setEditProduct((current) =>
+                      current
+                        ? { ...current, description_en: event.target.value }
                         : current,
                     )
                   }
@@ -1155,7 +1202,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => void saveEditProduct()}
-                disabled={isSavingProduct || !editProduct.title.trim()}
+                disabled={isSavingProduct || !editProduct.name_sv.trim()}
                 className="rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60"
               >
                 {isSavingProduct ? "Sparar…" : "Spara ändringar"}
@@ -1767,15 +1814,22 @@ export default function AdminPage() {
                 >
                   <ProductImage
                     src={product.image}
-                    alt={product.title}
+                    alt={product.name_sv || product.title || product.id}
                     fill
                     sizes="80px"
                     className="object-contain p-2"
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-zinc-900">{product.title}</p>
-                  <p className="text-sm text-zinc-600">{product.description}</p>
+                  <p className="font-semibold text-zinc-900">
+                    {product.name_sv || product.title}
+                  </p>
+                  <p className="text-sm text-zinc-600">
+                    {product.description_sv || product.description}
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    EN: {product.name_en || "—"}
+                  </p>
                   <p className="mt-1 text-xs text-zinc-500">
                     {product.price} SEK ·{" "}
                     {PRODUCT_STOCK_STATUS_OPTIONS.find(
@@ -1830,14 +1884,25 @@ export default function AdminPage() {
             </h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <input
-                value={newProduct.title}
+                value={newProduct.name_sv}
                 onChange={(event) =>
                   setNewProduct((current) => ({
                     ...current,
-                    title: event.target.value,
+                    name_sv: event.target.value,
                   }))
                 }
-                placeholder="Titel"
+                placeholder="Namn (SV)"
+                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+              />
+              <input
+                value={newProduct.name_en}
+                onChange={(event) =>
+                  setNewProduct((current) => ({
+                    ...current,
+                    name_en: event.target.value,
+                  }))
+                }
+                placeholder="Namn (EN)"
                 className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
               />
               <input
@@ -1864,14 +1929,26 @@ export default function AdminPage() {
                 className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
               />
               <textarea
-                value={newProduct.description}
+                value={newProduct.description_sv}
                 onChange={(event) =>
                   setNewProduct((current) => ({
                     ...current,
-                    description: event.target.value,
+                    description_sv: event.target.value,
                   }))
                 }
-                placeholder="Beskrivning"
+                placeholder="Beskrivning (SV)"
+                rows={2}
+                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
+              />
+              <textarea
+                value={newProduct.description_en}
+                onChange={(event) =>
+                  setNewProduct((current) => ({
+                    ...current,
+                    description_en: event.target.value,
+                  }))
+                }
+                placeholder="Beskrivning (EN)"
                 rows={2}
                 className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
               />
@@ -2112,7 +2189,7 @@ export default function AdminPage() {
                   <option value="all">Alla produkter</option>
                   {config.products.map((product) => (
                     <option key={product.id} value={product.id}>
-                      {product.title}
+                      {product.name_sv || product.title}
                     </option>
                   ))}
                 </select>

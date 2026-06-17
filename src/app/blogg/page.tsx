@@ -3,6 +3,8 @@ import Footer from "@/components/Footer";
 import BlogIndex from "@/components/BlogIndex";
 import { readBlogPosts } from "@/lib/blog.server";
 
+export const dynamic = "force-dynamic";
+
 export default async function BlogPage() {
   const posts = await readBlogPosts();
 

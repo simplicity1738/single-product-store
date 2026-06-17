@@ -4,7 +4,7 @@ import {
   sortBlogPosts,
   type BlogPost,
 } from "@/lib/blog";
-import { sanitizePlainText } from "@/lib/sanitize";
+import { sanitizeMultilineText, sanitizePlainText } from "@/lib/sanitize";
 
 export const BLOG_FIELD_LIMITS = {
   title: 200,
@@ -48,7 +48,10 @@ export function normalizeBlogPost(
     title,
     slug,
     excerpt: sanitizePlainText(entry.excerpt ?? existing?.excerpt ?? "", BLOG_FIELD_LIMITS.excerpt),
-    content: sanitizePlainText(entry.content ?? existing?.content ?? "", BLOG_FIELD_LIMITS.content),
+    content: sanitizeMultilineText(
+      entry.content ?? existing?.content ?? "",
+      BLOG_FIELD_LIMITS.content,
+    ),
     keyPoints: normalizeStringArray(
       entry.keyPoints ?? existing?.keyPoints,
       BLOG_FIELD_LIMITS.keyPoint,
@@ -126,10 +129,12 @@ export async function updateBlogPost(
   return post;
 }
 
-export async function deleteBlogPost(id: string): Promise<boolean> {
+export async function deleteBlogPost(id: string): Promise<BlogPost | null> {
   const posts = await readBlogPosts();
+  const target = posts.find((entry) => entry.id === id);
+  if (!target) return null;
+
   const next = posts.filter((entry) => entry.id !== id);
-  if (next.length === posts.length) return false;
   await writeBlogPosts(next);
-  return true;
+  return target;
 }

@@ -17,6 +17,10 @@ export async function PATCH(request: Request) {
       productId?: string;
       title?: string;
       description?: string;
+      name_sv?: string;
+      name_en?: string;
+      description_sv?: string;
+      description_en?: string;
       price?: number;
       image?: string;
       variantsInput?: string;
@@ -37,12 +41,13 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const title = body.title
-      ? sanitizePlainText(body.title, ADMIN_PRODUCT_FIELD_LIMITS.title)
-      : "";
-    if (!title) {
+    const name_sv = sanitizePlainText(
+      body.name_sv ?? body.title ?? "",
+      ADMIN_PRODUCT_FIELD_LIMITS.title,
+    );
+    if (!name_sv) {
       return NextResponse.json(
-        { success: false, message: "Produkttitel krävs." },
+        { success: false, message: "Produktnamn (SV) krävs." },
         { status: 400 },
       );
     }
@@ -58,10 +63,21 @@ export async function PATCH(request: Request) {
           : undefined;
 
     const result = await updateStoreProduct(productId, {
-      title,
-      description: body.description
+      name_sv,
+      name_en: body.name_en
+        ? sanitizePlainText(body.name_en, ADMIN_PRODUCT_FIELD_LIMITS.title)
+        : "",
+      description_sv: body.description_sv
         ? sanitizePlainText(
-            body.description,
+            body.description_sv,
+            ADMIN_PRODUCT_FIELD_LIMITS.description,
+          )
+        : body.description
+          ? sanitizePlainText(body.description, ADMIN_PRODUCT_FIELD_LIMITS.description)
+          : "",
+      description_en: body.description_en
+        ? sanitizePlainText(
+            body.description_en,
             ADMIN_PRODUCT_FIELD_LIMITS.description,
           )
         : "",

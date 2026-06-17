@@ -21,6 +21,8 @@ import {
   type InfluencerPartner,
   type StoreConfig,
 } from "@/lib/store-config";
+import { buildLocalizedProductFields } from "@/lib/product-localization";
+import { normalizeSiteNavigation, type NavVisibility } from "@/lib/site-navigation";
 import {
   DEFAULT_PRODUCT_STOCK_STATUS,
   normalizeProductStockStatus,
@@ -123,10 +125,11 @@ function normalizeConfigProduct(
     } as ConfigProduct);
   }
 
+  const localized = buildLocalizedProductFields({ ...entry, id });
+
   return {
     id,
-    title: String(entry.title ?? "").trim(),
-    description: String(entry.description ?? "").trim(),
+    ...localized,
     price: fallbackPrice,
     image: String(entry.image ?? "").trim() || "/logo.png",
     status: normalizeProductStockStatus(entry.status),
@@ -170,6 +173,7 @@ function mergeStoreConfig(
   parsed: Partial<StoreConfig> & {
     btcWalletInput?: string;
     ethWalletInput?: string;
+    navVisibility?: Partial<NavVisibility>;
   },
 ): StoreConfig {
   return {
@@ -177,6 +181,10 @@ function mergeStoreConfig(
       ...DEFAULT_STORE_CONFIG.siteSettings,
       ...parsed.siteSettings,
     },
+    siteNavigation: normalizeSiteNavigation(
+      parsed.siteNavigation,
+      parsed.navVisibility,
+    ),
     banner: normalizeBanner(parsed.banner),
     marketingTracking: {
       ...DEFAULT_MARKETING_TRACKING,
@@ -236,6 +244,7 @@ export async function readStoreConfig(): Promise<StoreConfig> {
 export async function writeStoreConfig(config: StoreConfig): Promise<void> {
   const normalized: StoreConfig = {
     ...config,
+    siteNavigation: normalizeSiteNavigation(config.siteNavigation),
     banner: normalizeBanner(config.banner),
     marketingTracking: {
       googleAnalyticsId: config.marketingTracking?.googleAnalyticsId?.trim() ?? "",
@@ -280,6 +289,10 @@ export async function updateStoreProduct(
   updates: {
     title?: string;
     description?: string;
+    name_sv?: string;
+    name_en?: string;
+    description_sv?: string;
+    description_en?: string;
     price?: number;
     image?: string;
     variantsInput?: string;

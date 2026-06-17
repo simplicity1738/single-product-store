@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import { getSiteNavLabel, isSiteNavVisible } from "@/lib/site-navigation";
 import TeacherBot from "@/components/TeacherBot";
 
 const INTERACTION_DURATION_MS = 480;
 
 export default function Faq() {
-  const { t } = useLanguage();
-  const { faqs } = useStoreConfig();
+  const { locale, t } = useLanguage();
+  const { faqs, siteNavigation } = useStoreConfig();
   const [isOpen, setIsOpen] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [isInteracting, setIsInteracting] = useState(false);
@@ -42,9 +43,11 @@ export default function Faq() {
     }, INTERACTION_DURATION_MS);
   };
 
-  if (faqs.length === 0) {
+  if (!isSiteNavVisible(siteNavigation, "faq") || faqs.length === 0) {
     return null;
   }
+
+  const faqLabel = getSiteNavLabel(siteNavigation, "faq", locale);
 
   return (
     <div className="pointer-events-none fixed inset-0 z-50">
@@ -52,15 +55,15 @@ export default function Faq() {
         <div
           className="pointer-events-auto fixed bottom-[9.5rem] right-4 w-[22.5rem] max-h-[590px] overflow-y-auto rounded-2xl border border-rose-100 bg-white p-4 shadow-2xl shadow-rose-200/40 sm:right-6 sm:w-[24rem]"
           role="dialog"
-          aria-label={t.faq.title}
+          aria-label={faqLabel}
         >
           <div className="mb-4 flex items-start justify-between gap-3 border-b border-rose-100 pb-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
-                {t.faq.eyebrow}
+                {faqLabel}
               </p>
               <h2 className="mt-1 text-base font-bold text-zinc-900">
-                {t.faq.widgetTitle}
+                {faqLabel}
               </h2>
               <p className="mt-1 text-xs text-zinc-500">{t.faq.subtitle}</p>
             </div>
@@ -132,10 +135,10 @@ export default function Faq() {
         type="button"
         onClick={handleToggle}
         aria-expanded={isOpen}
-        aria-label={t.faq.helperLabel}
+        aria-label={faqLabel}
         className="pointer-events-auto fixed bottom-0 right-2 overflow-visible pb-1 pr-1 transition hover:scale-[1.03] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 sm:right-4"
       >
-        <TeacherBot isActive={isOpen || isInteracting} tagLabel={t.faq.teacherTag} />
+        <TeacherBot isActive={isOpen || isInteracting} tagLabel={faqLabel} />
       </button>
     </div>
   );

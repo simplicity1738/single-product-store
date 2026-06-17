@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth.server";
+import { revalidateBlogPaths } from "@/lib/blog-cache";
 import { createBlogPost, readBlogPosts } from "@/lib/blog.server";
 import type { BlogPost } from "@/lib/blog";
 
@@ -18,6 +19,8 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<BlogPost>;
     const post = await createBlogPost(body);
+
+    revalidateBlogPaths(post.slug);
 
     return NextResponse.json({
       success: true,

@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Product } from "@/lib/product";
 import {
   calculateStoreOrderTotal,
@@ -33,11 +34,17 @@ import {
   type MarketingTracking,
   type StoreConfig,
 } from "@/lib/store-config";
+import {
+  DEFAULT_SITE_NAVIGATION,
+  normalizeSiteNavigation,
+  type SiteNavigation,
+} from "@/lib/site-navigation";
 
 type SiteSettings = StoreConfig["siteSettings"];
 
 type PublicStoreConfig = {
   siteSettings: SiteSettings;
+  siteNavigation: SiteNavigation;
   banner: BannerConfig;
   marketingTracking: MarketingTracking;
   shippingFee: number;
@@ -63,6 +70,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 
 type StoreConfigContextValue = {
   siteSettings: SiteSettings;
+  siteNavigation: SiteNavigation;
   banner: BannerConfig;
   marketingTracking: MarketingTracking;
   shippingFee: number;
@@ -98,7 +106,11 @@ type StoreConfigContextValue = {
 const StoreConfigContext = createContext<StoreConfigContextValue | null>(null);
 
 export function StoreConfigProvider({ children }: { children: ReactNode }) {
+  const { locale } = useLanguage();
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
+  const [siteNavigation, setSiteNavigation] = useState<SiteNavigation>(
+    DEFAULT_SITE_NAVIGATION,
+  );
   const [banner, setBanner] = useState<BannerConfig>(DEFAULT_BANNER);
   const [marketingTracking, setMarketingTracking] =
     useState<MarketingTracking>(DEFAULT_MARKETING_TRACKING);
@@ -128,6 +140,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       if (!response.ok) return;
       const data = (await response.json()) as PublicStoreConfig;
       setSiteSettings({ ...DEFAULT_SETTINGS, ...data.siteSettings });
+      setSiteNavigation(normalizeSiteNavigation(data.siteNavigation));
       setBanner({ ...DEFAULT_BANNER, ...data.banner });
       setMarketingTracking({
         ...DEFAULT_MARKETING_TRACKING,
@@ -192,6 +205,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   const storeConfig = useMemo<StoreConfig>(
     () => ({
       siteSettings,
+      siteNavigation,
       banner,
       marketingTracking,
       influencers: [] as InfluencerPartner[],
@@ -210,6 +224,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
     }),
     [
       siteSettings,
+      siteNavigation,
       banner,
       marketingTracking,
       shippingFee,
@@ -248,13 +263,14 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
         productId,
         variantMg,
         selectedStrength,
+        locale,
       ),
-    [storeConfig],
+    [storeConfig, locale],
   );
 
   const getDisplayName = useCallback(
-    (productId: string) => getProductTitle(storeConfig, productId),
-    [storeConfig],
+    (productId: string) => getProductTitle(storeConfig, productId, locale),
+    [storeConfig, locale],
   );
 
   const validateDiscount = useCallback(
@@ -274,6 +290,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       siteSettings,
+      siteNavigation,
       banner,
       marketingTracking,
       shippingFee,
@@ -297,6 +314,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
     }),
     [
       siteSettings,
+      siteNavigation,
       banner,
       marketingTracking,
       shippingFee,

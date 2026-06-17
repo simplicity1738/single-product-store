@@ -65,12 +65,12 @@ export const translations = {
             "Melanotan 2 i injicerbar form — hög renhet och noggrant testad kvalitet.",
         },
         retatrutide: {
-          name: "RetaTrutid",
+          name: "Retatrutid",
           description:
             "Avancerad peptidformel med flera styrkor — välj den dos som passar ditt protokoll.",
         },
         tirzepatide: {
-          name: "TirzePatid",
+          name: "Tirzepatid",
           description:
             "Vår mest efterfrågade peptid med flexibla mg-alternativ — från 5 mg till 30 mg.",
         },
@@ -581,12 +581,12 @@ export const translations = {
             "Melanotan 2 in injectable form — high purity and rigorously tested quality.",
         },
         retatrutide: {
-          name: "RetaTrutid",
+          name: "Retatrutide",
           description:
             "Advanced peptide formula available in multiple strengths — choose the dose that fits your protocol.",
         },
         tirzepatide: {
-          name: "TirzePatid",
+          name: "Tirzepatide",
           description:
             "Our most requested peptide with flexible mg options — from 5 mg to 30 mg.",
         },

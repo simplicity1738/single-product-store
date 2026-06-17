@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth.server";
+import { revalidateBlogPaths } from "@/lib/blog-cache";
 import {
   deleteBlogPost,
   getBlogPostById,
@@ -60,6 +61,8 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
+    revalidateBlogPaths(post.slug);
+
     return NextResponse.json({
       success: true,
       message: "Artikel uppdaterad.",
@@ -100,6 +103,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
       { status: 404 },
     );
   }
+
+  revalidateBlogPaths(deleted.slug);
 
   return NextResponse.json({
     success: true,

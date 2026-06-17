@@ -90,8 +90,8 @@ function DoseSliderField({
 }: DoseSliderFieldProps) {
   const isMg = doseUnit === "mg";
   const min = isMg ? 0.05 : 50;
-  const max = isMg ? 2 : 2000;
-  const step = isMg ? 0.05 : 50;
+  const max = isMg ? 15 : 2000;
+  const step = isMg ? 0.1 : 50;
   const unit = isMg ? "mg" : "mcg";
   const displayValue = doseFromMg(doseMg, doseUnit);
   const decimals = isMg ? 2 : 0;

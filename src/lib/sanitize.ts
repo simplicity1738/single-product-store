@@ -29,6 +29,14 @@ export function sanitizePlainText(value: string, maxLength: number): string {
   return clampText(stripControlCharacters(value), maxLength);
 }
 
+/** Like sanitizePlainText but preserves line breaks for markdown/multiline fields. */
+export function sanitizeMultilineText(value: string, maxLength: number): string {
+  const normalized = value
+    .replace(/\r\n/g, "\n")
+    .replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "");
+  return normalized.trim().slice(0, maxLength);
+}
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Normalize and validate an email address. Returns null when invalid. */

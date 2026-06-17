@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BlogArticleContent from "@/components/BlogArticleContent";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getPrimaryBlogTag, type BlogPost } from "@/lib/blog";
 
@@ -16,28 +17,6 @@ function formatBlogDate(value: string, locale: string): string {
     month: "long",
     day: "numeric",
   });
-}
-
-function renderArticleContent(content: string) {
-  const blocks = content
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean);
-
-  if (blocks.length === 0) {
-    return (
-      <p className="whitespace-pre-line text-base leading-8 text-zinc-700">{content}</p>
-    );
-  }
-
-  return blocks.map((block, index) => (
-    <p
-      key={index}
-      className="whitespace-pre-line text-base leading-8 text-zinc-700"
-    >
-      {block}
-    </p>
-  ));
 }
 
 export default function BlogArticleView({ post }: BlogArticleViewProps) {
@@ -94,7 +73,9 @@ export default function BlogArticleView({ post }: BlogArticleViewProps) {
           </aside>
         )}
 
-        <div className="mt-10 space-y-6">{renderArticleContent(post.content)}</div>
+        <div className="mt-10">
+          <BlogArticleContent content={post.content} />
+        </div>
 
         {post.tags.length > 0 && (
           <div className="mt-12 flex flex-wrap gap-2 border-t border-rose-100 pt-8">

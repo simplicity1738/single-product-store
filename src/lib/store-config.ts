@@ -1,4 +1,10 @@
-import type { CartItem, Product, ProductVariant } from "@/lib/product";
+import type { Locale } from "@/lib/i18n/translations";
+import type { SiteNavigation } from "@/lib/site-navigation";
+import { DEFAULT_SITE_NAVIGATION } from "@/lib/site-navigation";
+import {
+  getLocalizedProductDescription,
+  getLocalizedProductName,
+} from "@/lib/product-localization";
 import {
   ADMIN_DEPOSIT_WALLETS,
   type PaymentNetwork,
@@ -10,7 +16,10 @@ import {
 import {
   PRODUCTS as FALLBACK_PRODUCTS,
   REVIEWS as FALLBACK_REVIEWS,
+  type CartItem,
   type OrderLineItem,
+  type Product,
+  type ProductVariant,
 } from "@/lib/product";
 
 export const DEFAULT_SHIPPING_FEE = 49;
@@ -23,8 +32,14 @@ export type ConfigProductVariant = {
 
 export type ConfigProduct = {
   id: string;
-  title: string;
-  description: string;
+  name_sv: string;
+  name_en: string;
+  description_sv: string;
+  description_en: string;
+  /** @deprecated Legacy alias synced from name_sv */
+  title?: string;
+  /** @deprecated Legacy alias synced from description_sv */
+  description?: string;
   price: number;
   image: string;
   /** Buyer-selectable variants with per-option pricing. */
@@ -105,7 +120,7 @@ export function resolveConfigVariants(entry: ConfigProduct): ConfigProductVarian
 }
 
 export function getVariantPrice(
-  product: Pick<Product, "variants" | "variantLabels">,
+  product: Pick<Product, "variants"> & { variantLabels?: string[] },
   variantMg: number,
   selectedStrength?: string,
 ): number {
@@ -195,6 +210,8 @@ export type StoreConfig = {
     heroSubtitle: string;
     logoPath: string;
   };
+  /** Editable labels and visibility for storefront navigation and widgets. */
+  siteNavigation: SiteNavigation;
   banner: BannerConfig;
   marketingTracking: MarketingTracking;
   influencers: InfluencerPartner[];
@@ -268,6 +285,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
       "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
     logoPath: "/logo.png",
   },
+  siteNavigation: DEFAULT_SITE_NAVIGATION,
   banner: DEFAULT_BANNER,
   marketingTracking: DEFAULT_MARKETING_TRACKING,
   influencers: DEFAULT_INFLUENCERS,
@@ -453,10 +471,13 @@ export function getConfigReviews(config: StoreConfig): ConfigReview[] {
   return config.reviews;
 }
 
-export function getProductTitle(config: StoreConfig, productId: string): string {
+export function getProductTitle(
+  config: StoreConfig,
+  productId: string,
+  locale: Locale = "sv",
+): string {
   const entry = config.products.find((product) => product.id === productId);
-  if (entry) return entry.title;
-  return productId;
+  return getLocalizedProductName(entry, productId, locale);
 }
 
 export function getProductLineLabelFromConfig(
@@ -464,8 +485,9 @@ export function getProductLineLabelFromConfig(
   productId: string,
   variantMg: number,
   selectedStrength?: string,
+  locale: Locale = "sv",
 ): string {
-  const title = getProductTitle(config, productId);
+  const title = getProductTitle(config, productId, locale);
   const entry = config.products.find((product) => product.id === productId);
   const variants = entry ? resolveConfigVariants(entry) : [];
   const trimmedStrength = selectedStrength?.trim();
@@ -498,9 +520,10 @@ export function getLowestCatalogPrice(config: StoreConfig): number {
 export function getProductDescription(
   config: StoreConfig,
   productId: string,
+  locale: Locale = "sv",
 ): string {
   const entry = config.products.find((product) => product.id === productId);
-  return entry?.description ?? "";
+  return getLocalizedProductDescription(entry, productId, locale);
 }
 
 export function getProductIncludedItems(

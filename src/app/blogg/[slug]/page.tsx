@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import BlogArticleView from "@/components/BlogArticleView";
 import { getBlogPostBySlug } from "@/lib/blog.server";
 
+export const dynamic = "force-dynamic";
+
 type BlogArticlePageProps = {
   params: Promise<{ slug: string }>;
 };

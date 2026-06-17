@@ -1,20 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import { getSiteNavLabel, isSiteNavVisible } from "@/lib/site-navigation";
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
+  const { siteNavigation } = useStoreConfig();
   const [email, setEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const legalLinks = [
-    { href: "/privacy-policy", label: t.footer.privacy },
-    { href: "/terms", label: t.footer.terms },
-    { href: "/labbtester", label: t.footer.labTests },
-  ];
+  const legalLinks = useMemo(() => {
+    const links: { href: string; label: string }[] = [
+      { href: "/privacy-policy", label: t.footer.privacy },
+      { href: "/terms", label: t.footer.terms },
+    ];
+
+    if (isSiteNavVisible(siteNavigation, "labbtester")) {
+      links.push({
+        href: "/labbtester",
+        label: getSiteNavLabel(siteNavigation, "labbtester", locale),
+      });
+    }
+
+    return links;
+  }, [locale, siteNavigation, t.footer.privacy, t.footer.terms]);
 
   async function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

@@ -8,6 +8,10 @@ import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { getVariantPrice } from "@/lib/store-config";
 import {
+  getLocalizedProductDescription,
+  getLocalizedProductName,
+} from "@/lib/product-localization";
+import {
   formatCurrency,
   shouldShowSizeLabel,
 } from "@/lib/product";
@@ -38,12 +42,16 @@ export default function Products() {
       const entry = configProducts.find((item) => item.id === product.id);
       return {
         ...product,
-        displayName: entry?.title ?? product.id,
-        displayDescription: entry?.description ?? "",
+        displayName: getLocalizedProductName(entry, product.id, locale),
+        displayDescription: getLocalizedProductDescription(
+          entry,
+          product.id,
+          locale,
+        ),
         displayIncludedItems: entry?.includedItems?.trim() ?? "",
       };
     });
-  }, [catalogProducts, configProducts]);
+  }, [catalogProducts, configProducts, locale]);
 
   if (displayProducts.length === 0) {
     return null;
