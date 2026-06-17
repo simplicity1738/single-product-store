@@ -49,16 +49,18 @@ export const HERO_FONT_FAMILY_CLASSES: Record<HeroFontFamily, string> = {
   mono: "font-mono",
 };
 
+export const HERO_LOGO_DEFAULT_PATH = "/hero-logo.png";
+
 export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
   logoPath: "/logo.png",
   heroBadge: "SUPPORT 24/7",
-  heroUseLogoImage: false,
-  heroLogoPath: "/logo.png",
+  heroUseLogoImage: true,
+  heroLogoPath: HERO_LOGO_DEFAULT_PATH,
   heroBrandText: "SimpliCity",
   heroBrandFontSize: "text-4xl",
   heroBrandFontFamily: "sans",
   heroTitle: "Kvalitet utan kompromisser",
-  heroTitleFontSize: "text-5xl",
+  heroTitleFontSize: "text-2xl",
   heroTitleFontFamily: "sans",
   heroTagline: "Renhet och kvalitet i fokus",
   heroTaglineFontSize: "text-xl",
@@ -141,6 +143,25 @@ export function normalizeSiteSettings(
       defaults.heroDescriptionFontFamily,
     ),
   };
+}
+
+export function resolveHeroLogoSrc(
+  siteSettings: Pick<
+    SiteSettings,
+    "heroUseLogoImage" | "heroLogoPath" | "logoPath"
+  >,
+): string {
+  if (siteSettings.heroUseLogoImage) {
+    return (
+      siteSettings.heroLogoPath.trim() || HERO_LOGO_DEFAULT_PATH
+    );
+  }
+
+  return (
+    siteSettings.heroLogoPath.trim() ||
+    siteSettings.logoPath.trim() ||
+    HERO_LOGO_DEFAULT_PATH
+  );
 }
 
 export function heroTypographyClass(

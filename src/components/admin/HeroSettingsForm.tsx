@@ -119,7 +119,7 @@ export default function HeroSettingsForm({
             <input
               value={siteSettings.heroLogoPath}
               onChange={(event) => patch({ heroLogoPath: event.target.value })}
-              placeholder="/logo.png"
+              placeholder="/hero-logo.png"
               className={inputClassName}
             />
           </label>
