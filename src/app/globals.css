@@ -101,6 +101,27 @@ body {
   animation: teacher-bot-blink 4.5s ease-in-out infinite;
 }
 
+@keyframes fade-in-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-12%) rotate(0deg);
+  }
+  8% {
+    opacity: 0.85;
+  }
+  92% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(110vh) rotate(360deg);
+  }
+}
+
+.animate-fade-in-down {
+  animation: fade-in-down linear infinite;
+}
+
 .calculator-slider {
   -webkit-appearance: none;
   appearance: none;

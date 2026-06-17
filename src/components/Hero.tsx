@@ -131,12 +131,12 @@ export default function Hero({
     <section className="relative overflow-hidden border-b border-rose-100 bg-gradient-to-b from-rose-50 to-white">
       <HeroThemeDecorations theme={campaignTheme} />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <div className="relative flex flex-col text-left lg:py-4">
             {campaignTheme === "summer" ? <HeroSunGlow /> : null}
 
-            <div className="relative">
+            <div className="relative z-10">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
                 {siteSettings.campaignTag}
               </p>
@@ -170,7 +170,7 @@ export default function Hero({
             </div>
           </div>
 
-          <div className="relative rounded-3xl border border-rose-100/30 bg-gradient-to-br from-rose-50/30 to-white/40 p-6 md:p-8">
+          <div className="relative z-10 rounded-3xl border border-rose-100/30 bg-gradient-to-br from-rose-50/30 to-white/40 p-6 md:p-8">
             {featuredProduct ? (
               <article className="relative rounded-3xl border border-rose-100 bg-white p-6 shadow-xl shadow-rose-100/40 sm:p-8">
                 <div
