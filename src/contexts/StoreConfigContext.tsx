@@ -61,7 +61,7 @@ type PublicStoreConfig = {
 };
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  heroBadge: "SimpliCity",
+  heroBadge: "SUPPORT 24/7",
   heroTitle: "Premiumingredienser för forskning",
   heroTagline: "Renhet och kvalitet i fokus",
   heroSubtitle:

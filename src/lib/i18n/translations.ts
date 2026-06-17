@@ -17,7 +17,7 @@ export const translations = {
       buyNow: "Köp nu",
     },
     hero: {
-      badge: "SimpliCity",
+      badge: "SUPPORT 24/7",
       title: "Premiumingredienser för forskning",
       tagline: "Renhet och kvalitet i fokus",
       subtitle:
@@ -547,7 +547,7 @@ export const translations = {
       buyNow: "Buy Now",
     },
     hero: {
-      badge: "SimpliCity",
+      badge: "SUPPORT 24/7",
       title: "Premium ingredients for research",
       tagline: "Purity and quality in focus",
       subtitle:
