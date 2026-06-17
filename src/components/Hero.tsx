@@ -284,24 +284,26 @@ export default function Hero({
         </div>
 
         <div className="relative mt-10 max-w-3xl lg:mt-12">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="h-2 min-w-[8rem] flex-1 overflow-hidden rounded-full bg-rose-100">
-              <div
-                className="relative h-2 overflow-hidden rounded-full bg-gradient-to-r from-rose-400 to-pink-500 shadow-[0_0_12px_rgba(251,113,133,0.45)] transition-all duration-1000 ease-out motion-safe:animate-progress-glow"
-                style={{ width: `${progressBarWidth}%` }}
-                role="progressbar"
-                aria-valuenow={Math.round(progressBarWidth)}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={siteSettings.campaignTickerText}
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent motion-safe:animate-progress-shimmer-wave" />
+          {campaignProgressPercent > 0 ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="h-2 min-w-[8rem] flex-1 overflow-hidden rounded-full bg-rose-100">
+                <div
+                  className="relative h-2 overflow-hidden rounded-full bg-gradient-to-r from-rose-400 to-pink-500 shadow-[0_0_12px_rgba(251,113,133,0.45)] transition-all duration-1000 ease-out motion-safe:animate-progress-glow"
+                  style={{ width: `${progressBarWidth}%` }}
+                  role="progressbar"
+                  aria-valuenow={Math.round(progressBarWidth)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={siteSettings.campaignTickerText}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent motion-safe:animate-progress-shimmer-wave" />
+                </div>
               </div>
+              <p className="text-xs font-medium text-rose-700 sm:text-sm">
+                {siteSettings.campaignTickerText}
+              </p>
             </div>
-            <p className="text-xs font-medium text-rose-700 sm:text-sm">
-              {siteSettings.campaignTickerText}
-            </p>
-          </div>
+          ) : null}
         </div>
       </div>
     </section>

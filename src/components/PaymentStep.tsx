@@ -6,7 +6,7 @@ import QRCode from "qrcode";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import {
-  buildCryptoQrValue,
+  buildCryptoWalletDeepLink,
   extractDisplayAddress,
 } from "@/lib/crypto-payment-uri";
 import {
@@ -239,9 +239,10 @@ export default function PaymentStep({
   }, [cryptoAmount]);
 
   const qrPaymentUri = useMemo(() => {
-    if (!walletInput.trim()) return "";
-    return buildCryptoQrValue(walletInput, network, cryptoAmount);
-  }, [walletInput, network, cryptoAmount]);
+    const rawWallet =
+      walletInput.trim() || getWalletInput(network) || storeConfig.cryptoWallets[network]?.trim() || "";
+    return buildCryptoWalletDeepLink(rawWallet, network, cryptoAmount);
+  }, [walletInput, network, cryptoAmount, getWalletInput, storeConfig.cryptoWallets]);
 
   async function handleGenerateAddress() {
     setError(null);
@@ -581,6 +582,14 @@ export default function PaymentStep({
               >
                 {copied ? t.payment.copied : t.payment.copyAddress}
               </button>
+              {qrPaymentUri ? (
+                <a
+                  href={qrPaymentUri}
+                  className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-full bg-rose-400 text-sm font-semibold text-white transition hover:bg-rose-500"
+                >
+                  {t.payment.openWallet}
+                </a>
+              ) : null}
             </div>
           </div>
 

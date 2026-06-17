@@ -234,6 +234,7 @@ export const translations = {
       toAddress: "Till adress",
       copyAddress: "Kopiera adress",
       copied: "Kopierad!",
+      openWallet: "👉 Öppna i plånbok",
       qrLabel: "Skanna QR-kod",
       qrUnavailable: "QR-kod ej tillgänglig",
       confirmationNote:
@@ -819,6 +820,7 @@ export const translations = {
       toAddress: "To address",
       copyAddress: "Copy address",
       copied: "Copied!",
+      openWallet: "👉 Open in wallet",
       qrLabel: "Scan QR code",
       qrUnavailable: "QR code unavailable",
       confirmationNote:

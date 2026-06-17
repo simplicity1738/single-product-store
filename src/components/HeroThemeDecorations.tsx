@@ -80,7 +80,7 @@ const SNOWFLAKE_LAYER = [
 function SummerDecorations() {
   return (
     <div
-      className={`${DECOR_BASE} inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,182,182,0.35),transparent_50%)]`}
+      className={`${DECOR_BASE} inset-0 bg-[radial-gradient(circle_at_top_right,rgba(253,224,178,0.28)_0%,rgba(251,182,182,0.35)_42%,transparent_55%)]`}
     />
   );
 }
@@ -92,7 +92,7 @@ function WinterDecorations() {
         {SNOWFLAKE_LAYER.map((flake) => (
           <SnowflakeIcon
             key={`${flake.left}-${flake.delay}`}
-            className={`animate-fade-in-down absolute top-0 text-rose-300/40 ${flake.size}`}
+            className={`animate-fade-in-down absolute top-0 text-rose-300/35 ${flake.size}`}
             style={{
               left: flake.left,
               animationDelay: flake.delay,
