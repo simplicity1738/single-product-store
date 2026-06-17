@@ -18,7 +18,8 @@ export const translations = {
     },
     hero: {
       badge: "SUPPORT 24/7",
-      title: "Premiumingredienser för forskning",
+      intake: "Premiumingredienser för forskning",
+      headline: "Kvalitet utan kompromisser",
       tagline: "Renhet och kvalitet i fokus",
       subtitle:
         "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
@@ -548,7 +549,8 @@ export const translations = {
     },
     hero: {
       badge: "SUPPORT 24/7",
-      title: "Premium ingredients for research",
+      intake: "Premium ingredients for research",
+      headline: "Quality without compromise",
       tagline: "Purity and quality in focus",
       subtitle:
         "SimpliCity is built for customers who expect more — carefully selected peptides, verified purity, and a premium experience without compromise.",
