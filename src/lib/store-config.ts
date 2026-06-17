@@ -223,6 +223,10 @@ export type StoreConfig = {
     heroSubtitle: string;
     heroDescriptionFontSize: string;
     heroDescriptionFontFamily: HeroFontFamily;
+    campaignTag: string;
+    campaignHeadline: string;
+    campaignDiscountBadge: string;
+    campaignFeaturedProductId: string;
   };
   /** Editable labels and visibility for storefront navigation and widgets. */
   siteNavigation: SiteNavigation;
@@ -470,6 +474,18 @@ export function getCatalogProducts(config: StoreConfig): Product[] {
   return config.products.map((entry) =>
     configProductToCatalogEntry(entry, config),
   );
+}
+
+export function resolveCampaignFeaturedProduct(config: StoreConfig): Product | null {
+  const catalog = getCatalogProducts(config);
+  if (catalog.length === 0) return null;
+
+  const selectedId = config.siteSettings.campaignFeaturedProductId.trim();
+  if (selectedId) {
+    return catalog.find((product) => product.id === selectedId) ?? catalog[0];
+  }
+
+  return catalog[0];
 }
 
 export function getConfigReviews(config: StoreConfig): ConfigReview[] {

@@ -70,6 +70,10 @@ export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
     "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
   heroDescriptionFontSize: "text-lg",
   heroDescriptionFontFamily: "sans",
+  campaignTag: "Säsongskampanj",
+  campaignHeadline: "Gör dig redo för sommar!",
+  campaignDiscountBadge: "Upp till 25%",
+  campaignFeaturedProductId: "tirzepatide",
 };
 
 function normalizeFontSize(
@@ -143,6 +147,19 @@ export function normalizeSiteSettings(
     heroDescriptionFontFamily: normalizeFontFamily(
       input?.heroDescriptionFontFamily,
       defaults.heroDescriptionFontFamily,
+    ),
+    campaignTag: normalizeText(input?.campaignTag, defaults.campaignTag),
+    campaignHeadline: normalizeText(
+      input?.campaignHeadline,
+      defaults.campaignHeadline,
+    ),
+    campaignDiscountBadge: normalizeText(
+      input?.campaignDiscountBadge,
+      defaults.campaignDiscountBadge,
+    ),
+    campaignFeaturedProductId: normalizeText(
+      input?.campaignFeaturedProductId,
+      defaults.campaignFeaturedProductId,
     ),
   };
 }

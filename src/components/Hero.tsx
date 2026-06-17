@@ -1,82 +1,144 @@
 "use client";
 
-import Image from "next/image";
+import ProductImage from "@/components/ProductImage";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { resolveHeroLogoSrc } from "@/lib/hero-settings";
-import type { StoreConfig } from "@/lib/store-config";
+import { formatMgOption } from "@/lib/i18n/translations";
+import {
+  getLocalizedProductDescription,
+  getLocalizedProductName,
+} from "@/lib/product-localization";
+import { formatCurrency, type Product } from "@/lib/product";
+import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import type { ConfigProduct, StoreConfig } from "@/lib/store-config";
+import { getVariantPrice } from "@/lib/store-config";
+import StockStatusBadge from "@/components/StockStatusBadge";
+import IncludedItemsBadge from "@/components/IncludedItemsBadge";
 
 type HeroProps = {
   siteSettings: StoreConfig["siteSettings"];
+  featuredProduct: Product | null;
+  featuredConfigProduct: ConfigProduct | null;
 };
 
-export default function Hero({ siteSettings }: HeroProps) {
-  const { t } = useLanguage();
-  const heroLogoSrc = resolveHeroLogoSrc(siteSettings);
+export default function Hero({
+  siteSettings,
+  featuredProduct,
+  featuredConfigProduct,
+}: HeroProps) {
+  const { locale, t } = useLanguage();
+  const localeCode = locale === "sv" ? "sv-SE" : "en-US";
+
+  const configEntry = featuredConfigProduct ?? undefined;
+
+  const productName = featuredProduct
+    ? getLocalizedProductName(configEntry, featuredProduct.id, locale)
+    : "";
+  const productDescription = featuredProduct
+    ? getLocalizedProductDescription(configEntry, featuredProduct.id, locale)
+    : "";
+  const includedItems = featuredConfigProduct?.includedItems?.trim() ?? "";
+
+  const variantMg = featuredProduct?.variants[0]?.mg ?? 0;
+  const variantLabel = featuredProduct?.variantLabels?.[0];
+  const displayPrice = featuredProduct
+    ? getVariantPrice(featuredProduct, variantMg, variantLabel)
+    : 0;
+
+  const variantSummary = featuredProduct
+    ? featuredProduct.variantLabels && featuredProduct.variantLabels.length > 0
+      ? featuredProduct.variantLabels.join(" · ")
+      : featuredProduct.variants
+          .map((variant) => formatMgOption(variant.mg))
+          .join(" · ")
+    : "";
 
   return (
     <section className="relative overflow-hidden border-b border-rose-100 bg-gradient-to-b from-rose-50 to-white">
-      <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
-        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          {siteSettings.heroEyebrow ? (
-            <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-rose-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" aria-hidden />
-              {siteSettings.heroEyebrow}
-            </span>
-          ) : null}
-
-          {siteSettings.heroUseLogoImage ? (
-            <div className="relative mx-auto mb-8 h-28 w-28 overflow-hidden rounded-full border border-rose-100/40 bg-transparent shadow-sm md:h-36 md:w-36">
-              <Image
-                src={heroLogoSrc}
-                alt={siteSettings.heroBrandText}
-                fill
-                priority
-                sizes="(max-width: 768px) 112px, 144px"
-                className="object-contain p-3"
-              />
-            </div>
-          ) : (
-            <p className="mb-8 text-4xl font-extrabold tracking-wide text-rose-500">
-              {siteSettings.heroBrandText}
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
+              {siteSettings.campaignTag}
             </p>
-          )}
 
-          <h1 className="mb-4 text-balance text-4xl font-extrabold uppercase tracking-tight text-slate-900 md:text-5xl lg:text-6xl lg:whitespace-nowrap">
-            {siteSettings.heroTitle}
-          </h1>
+            <h1 className="mt-4 text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+              {siteSettings.campaignHeadline}
+            </h1>
 
-          <p className="mb-6 text-lg font-medium text-rose-500 md:text-xl">
-            {siteSettings.heroTagline}
-          </p>
-
-          <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-gray-600 md:text-lg">
-            {siteSettings.heroSubtitle}
-          </p>
-
-          <div className="flex flex-col items-center">
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-x-4">
+            <div className="mt-8">
               <a
                 href="#products"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-rose-400 px-8 text-sm font-semibold text-white shadow-lg shadow-rose-400/25 transition hover:bg-rose-500"
               >
-                {t.hero.ctaPrimary}
-              </a>
-              <a
-                href="#features"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-rose-200 bg-white px-8 text-sm font-semibold text-zinc-800 transition hover:border-rose-300 hover:bg-rose-50"
-              >
-                {t.hero.ctaSecondary}
+                {t.hero.ctaCampaign}
               </a>
             </div>
-
-            <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold tracking-wide text-rose-700">
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-rose-400"
-                aria-hidden
-              />
-              {siteSettings.heroBadge}
-            </span>
           </div>
+
+          {featuredProduct ? (
+            <article className="relative rounded-3xl border border-rose-100 bg-white p-6 shadow-xl shadow-rose-100/40 sm:p-8">
+              <div
+                className="absolute -left-3 -top-3 z-10 flex h-20 w-20 items-center justify-center rounded-full bg-red-600 p-2 text-center text-[11px] font-extrabold leading-tight text-white shadow-lg sm:-left-4 sm:-top-4 sm:h-24 sm:w-24 sm:text-xs"
+                aria-label={siteSettings.campaignDiscountBadge}
+              >
+                {siteSettings.campaignDiscountBadge}
+              </div>
+
+              <div
+                className={`relative mx-auto mb-6 flex aspect-square max-w-sm items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-rose-50/40 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+              >
+                <ProductImage
+                  src={featuredProduct.image}
+                  alt={productName}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-contain p-6 mix-blend-multiply"
+                />
+              </div>
+
+              <div className="space-y-3 text-left">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-xl font-bold text-zinc-900 sm:text-2xl">
+                    {productName}
+                  </h2>
+                  <p className="text-lg font-bold text-zinc-900">
+                    {formatCurrency(displayPrice, localeCode)}
+                  </p>
+                </div>
+
+                <StockStatusBadge
+                  status={featuredProduct.status}
+                  label={t.products.stockStatus[featuredProduct.status]}
+                />
+
+                {includedItems ? (
+                  <IncludedItemsBadge items={includedItems} />
+                ) : null}
+
+                {variantSummary ? (
+                  <p className="text-sm font-medium text-rose-600">
+                    {variantSummary}
+                  </p>
+                ) : null}
+
+                <p className="text-sm leading-relaxed text-zinc-600 sm:text-base">
+                  {productDescription}
+                </p>
+              </div>
+            </article>
+          ) : (
+            <div className="flex min-h-[320px] items-center justify-center rounded-3xl border border-dashed border-rose-200 bg-white/70 p-8 text-center text-sm text-zinc-500">
+              {t.hero.featuredLabel}: ingen produkt vald
+            </div>
+          )}
+        </div>
+
+        <div className="mt-10 flex justify-center lg:mt-12">
+          <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold tracking-wide text-rose-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" aria-hidden />
+            {siteSettings.heroBadge}
+          </span>
         </div>
       </div>
     </section>

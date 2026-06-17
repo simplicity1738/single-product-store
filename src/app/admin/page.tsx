@@ -21,6 +21,7 @@ import {
 } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
+import HeroCampaignForm from "@/components/admin/HeroCampaignForm";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
 import {
   PRODUCT_STOCK_STATUS_OPTIONS,
@@ -1621,7 +1622,16 @@ export default function AdminPage() {
           </div>
 
           {config && (
-            <div className="mt-6">
+            <div className="mt-6 space-y-6">
+              <HeroCampaignForm
+                siteSettings={config.siteSettings}
+                products={config.products}
+                onChange={(siteSettings) =>
+                  setConfig((current) =>
+                    current ? { ...current, siteSettings } : current,
+                  )
+                }
+              />
               <HeroSettingsForm
                 siteSettings={config.siteSettings}
                 onChange={(siteSettings) =>

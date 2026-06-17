@@ -16,5 +16,9 @@
     "heroTaglineFontFamily": "sans",
     "heroSubtitle": "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
     "heroDescriptionFontSize": "text-lg",
-    "heroDescriptionFontFamily": "sans"
+    "heroDescriptionFontFamily": "sans",
+    "campaignTag": "Säsongskampanj",
+    "campaignHeadline": "Gör dig redo för sommar!",
+    "campaignDiscountBadge": "Upp till 25%",
+    "campaignFeaturedProductId": "tirzepatide"
   },

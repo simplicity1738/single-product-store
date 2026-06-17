@@ -24,6 +24,7 @@ export const translations = {
       subtitle:
         "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
       ctaPrimary: "Utforska sortiment",
+      ctaCampaign: "Till erbjudandet",
       ctaSecondary: "Se fördelar",
       stats: {
         purity: { label: "Renhet", value: "100%" },
@@ -560,6 +561,7 @@ export const translations = {
       subtitle:
         "SimpliCity is built for customers who expect more — carefully selected peptides, verified purity, and a premium experience without compromise.",
       ctaPrimary: "Explore collection",
+      ctaCampaign: "View the offer",
       ctaSecondary: "See Benefits",
       stats: {
         purity: { label: "Purity", value: "100%" },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { StoreConfig } from "@/lib/store-config";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
 import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
+import HeroCampaignForm from "@/components/admin/HeroCampaignForm";
 import {
   normalizeSiteNavigation,
   SITE_NAV_ADMIN_META,
@@ -155,6 +156,25 @@ export default function AdminSiteSettingsPage() {
             {toast.message}
           </p>
         )}
+
+        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">Hero Showcase</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Kampanjmotor för startsidans split-layout med utvald produkt.
+          </p>
+
+          {isLoading || !config ? (
+            <p className="mt-6 text-sm text-zinc-500">Laddar kampanjinställningar…</p>
+          ) : (
+            <div className="mt-6">
+              <HeroCampaignForm
+                siteSettings={siteSettings}
+                products={config.products}
+                onChange={setSiteSettings}
+              />
+            </div>
+          )}
+        </section>
 
         <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Hero &amp; typografi</h2>
