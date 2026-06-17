@@ -122,6 +122,33 @@ body {
   animation: fade-in-down linear infinite;
 }
 
+@keyframes progress-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(251, 113, 133, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(244, 114, 182, 0.55);
+  }
+}
+
+@keyframes progress-shimmer-wave {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.animate-progress-glow {
+  animation: progress-glow 2.8s ease-in-out infinite;
+}
+
+.animate-progress-shimmer-wave {
+  animation: progress-shimmer-wave 2.4s ease-in-out infinite;
+}
+
 .calculator-slider {
   -webkit-appearance: none;
   appearance: none;

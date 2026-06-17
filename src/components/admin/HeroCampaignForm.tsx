@@ -259,6 +259,27 @@ export default function HeroCampaignForm({
         </p>
 
         <label className="mt-4 block">
+          <span className={labelClassName}>Kampanj-mätare fyllnadsgrad (%)</span>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            value={siteSettings.campaignProgressPercent}
+            onChange={(event) =>
+              patch({
+                campaignProgressPercent: Math.max(
+                  0,
+                  Math.min(100, Number(event.target.value) || 0),
+                ),
+              })
+            }
+            placeholder="85"
+            className={inputClassName}
+          />
+        </label>
+
+        <label className="mt-4 block">
           <span className={labelClassName}>Kampanjmeddelande vid mätare</span>
           <input
             value={siteSettings.campaignTickerText}

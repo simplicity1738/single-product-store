@@ -82,6 +82,7 @@ export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
   showAddons: true,
   campaignAddons: [],
   campaignTickerText: "🔥 Kampanjen slutar snart — begränsat lager kvar!",
+  campaignProgressPercent: 85,
   campaignTheme: "summer" as CampaignTheme,
 };
 
@@ -162,6 +163,12 @@ function migrateLegacyCampaignAddons(
   }
 
   return legacy;
+}
+
+export function normalizeCampaignProgressPercent(value: unknown): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) return 85;
+  return Math.max(0, Math.min(100, Math.round(parsed)));
 }
 
 export function normalizeCampaignAddons(
@@ -267,6 +274,9 @@ export function normalizeSiteSettings(
     campaignTickerText: normalizeText(
       input?.campaignTickerText,
       defaults.campaignTickerText,
+    ),
+    campaignProgressPercent: normalizeCampaignProgressPercent(
+      input?.campaignProgressPercent ?? defaults.campaignProgressPercent,
     ),
     campaignTheme: normalizeCampaignTheme(input?.campaignTheme),
   };

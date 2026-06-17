@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import ProductImage from "@/components/ProductImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
-import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { resolveCampaignAddons } from "@/lib/campaign-addons";
-import { calculateCampaignCountdownProgress } from "@/lib/campaign-countdown";
 import { formatMgOption } from "@/lib/i18n/translations";
 import {
   getLocalizedProductDescription,
@@ -21,8 +19,6 @@ import ProductSalePrice, { ProductSaleBadge } from "@/components/ProductSalePric
 import StockStatusBadge from "@/components/StockStatusBadge";
 import IncludedItemsBadge from "@/components/IncludedItemsBadge";
 import HeroThemeDecorations, {
-  HeroSantaHat,
-  HeroSunGlow,
   HeroSupportBadge,
 } from "@/components/HeroThemeDecorations";
 
@@ -47,27 +43,17 @@ function useSameDayShippingMessage() {
   return message;
 }
 
-function useCampaignCountdownProgress(
-  countdownEndsAt: string,
-  enabled: boolean,
-) {
-  const [progressPercent, setProgressPercent] = useState(() =>
-    calculateCampaignCountdownProgress(countdownEndsAt, enabled),
-  );
+function useCampaignProgressBar(targetPercent: number) {
+  const [displayPercent, setDisplayPercent] = useState(0);
 
   useEffect(() => {
-    function tick() {
-      setProgressPercent(
-        calculateCampaignCountdownProgress(countdownEndsAt, enabled),
-      );
-    }
+    const frame = window.requestAnimationFrame(() => {
+      setDisplayPercent(targetPercent);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [targetPercent]);
 
-    tick();
-    const interval = window.setInterval(tick, 1000);
-    return () => window.clearInterval(interval);
-  }, [enabled, countdownEndsAt]);
-
-  return progressPercent;
+  return displayPercent;
 }
 
 export default function Hero({
@@ -76,7 +62,6 @@ export default function Hero({
   featuredConfigProduct,
 }: HeroProps) {
   const { locale, t } = useLanguage();
-  const { banner } = useStoreConfig();
   const {
     addToCart,
     setCampaignAddonSelected,
@@ -84,10 +69,9 @@ export default function Hero({
   } = useProductSelection();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
   const shippingMessage = useSameDayShippingMessage();
-  const countdownProgress = useCampaignCountdownProgress(
-    banner.countdownEndsAt,
-    banner.countdownEnabled,
-  );
+  const campaignProgressPercent =
+    siteSettings.campaignProgressPercent ?? 85;
+  const progressBarWidth = useCampaignProgressBar(campaignProgressPercent);
   const campaignTheme = siteSettings.campaignTheme;
 
   const configEntry = featuredConfigProduct ?? undefined;
@@ -133,9 +117,7 @@ export default function Hero({
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          <div className="relative flex flex-col text-left lg:py-4">
-            {campaignTheme === "summer" ? <HeroSunGlow /> : null}
-
+          <div className="relative z-10 flex flex-col text-left lg:py-4">
             <div className="relative z-10">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
                 {siteSettings.campaignTag}
@@ -189,7 +171,6 @@ export default function Hero({
                 <div
                   className={`relative mx-auto mb-6 flex aspect-square max-w-sm items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-rose-50/40 ${PRODUCT_IMAGE_FRAME_CLASS}`}
                 >
-                  {campaignTheme === "winter" ? <HeroSantaHat /> : null}
                   <ProductImage
                     src={featuredProduct.image}
                     alt={productName}
@@ -306,14 +287,16 @@ export default function Hero({
           <div className="flex flex-wrap items-center gap-3">
             <div className="h-2 min-w-[8rem] flex-1 overflow-hidden rounded-full bg-rose-100">
               <div
-                className="h-2 rounded-full bg-gradient-to-r from-rose-400 to-pink-500 transition-[width] duration-1000 ease-linear motion-safe:animate-pulse"
-                style={{ width: `${countdownProgress}%` }}
+                className="relative h-2 overflow-hidden rounded-full bg-gradient-to-r from-rose-400 to-pink-500 shadow-[0_0_12px_rgba(251,113,133,0.45)] transition-all duration-1000 ease-out motion-safe:animate-progress-glow"
+                style={{ width: `${progressBarWidth}%` }}
                 role="progressbar"
-                aria-valuenow={Math.round(countdownProgress)}
+                aria-valuenow={Math.round(progressBarWidth)}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label={siteSettings.campaignTickerText}
-              />
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent motion-safe:animate-progress-shimmer-wave" />
+              </div>
             </div>
             <p className="text-xs font-medium text-rose-700 sm:text-sm">
               {siteSettings.campaignTickerText}

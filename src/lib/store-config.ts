@@ -259,6 +259,7 @@ export type StoreConfig = {
     showAddons: boolean;
     campaignAddons: CampaignAddon[];
     campaignTickerText: string;
+    campaignProgressPercent: number;
     campaignTheme: CampaignTheme;
   };
   /** Editable labels and visibility for storefront navigation and widgets. */
