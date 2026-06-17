@@ -135,7 +135,7 @@ export default function Faq() {
         aria-label={t.faq.helperLabel}
         className="pointer-events-auto fixed bottom-0 right-2 overflow-visible pb-1 pr-1 transition hover:scale-[1.03] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2 sm:right-4"
       >
-        <TeacherBot isInteracting={isInteracting} tagLabel={t.faq.teacherTag} />
+        <TeacherBot isActive={isOpen || isInteracting} tagLabel={t.faq.teacherTag} />
       </button>
     </div>
   );
