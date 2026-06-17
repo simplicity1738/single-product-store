@@ -17,6 +17,7 @@ export default function Footer() {
     const links: { href: string; label: string }[] = [
       { href: "/privacy-policy", label: t.footer.privacy },
       { href: "/terms", label: t.footer.terms },
+      { href: "/ansvarsfriskrivning", label: t.footer.disclaimerLink },
     ];
 
     if (isSiteNavLinkVisible(siteNavigation, "labbtester")) {
@@ -27,7 +28,13 @@ export default function Footer() {
     }
 
     return links;
-  }, [locale, siteNavigation, t.footer.privacy, t.footer.terms]);
+  }, [
+    locale,
+    siteNavigation,
+    t.footer.disclaimerLink,
+    t.footer.privacy,
+    t.footer.terms,
+  ]);
 
   async function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -108,11 +115,10 @@ export default function Footer() {
             </Link>
           ))}
         </nav>
-        <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+        <div className="text-center sm:text-left">
           <p className="text-sm text-zinc-500">
             © {new Date().getFullYear()} {t.brand}. {t.footer.rights}
           </p>
-          <p className="text-xs text-zinc-400">{t.footer.disclaimer}</p>
         </div>
       </div>
     </footer>

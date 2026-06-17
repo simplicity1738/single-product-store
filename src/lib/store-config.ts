@@ -4,6 +4,7 @@ import {
   resolveAddonByCartId,
 } from "@/lib/campaign-addons";
 import { DEFAULT_HERO_SITE_SETTINGS, type HeroFontFamily } from "@/lib/hero-settings";
+import type { CampaignTheme } from "@/lib/campaign-theme";
 import type { SiteNavigation } from "@/lib/site-navigation";
 import { DEFAULT_SITE_NAVIGATION } from "@/lib/site-navigation";
 import {
@@ -258,6 +259,7 @@ export type StoreConfig = {
     showAddons: boolean;
     campaignAddons: CampaignAddon[];
     campaignTickerText: string;
+    campaignTheme: CampaignTheme;
   };
   /** Editable labels and visibility for storefront navigation and widgets. */
   siteNavigation: SiteNavigation;

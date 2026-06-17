@@ -274,13 +274,61 @@ export const translations = {
     },
     footer: {
       rights: "Alla rättigheter förbehållna.",
-      disclaimer: "Endast för personligt bruk. Resultat kan variera.",
       privacy: "Integritetspolicy",
       terms: "Villkor",
+      disclaimerLink: "Ansvarsfriskrivning",
       labTests: "Labbtest",
     },
     legal: {
       lastUpdated: "Senast uppdaterad",
+      disclaimerLastUpdated: "17 juni 2026",
+      disclaimer: {
+        title: "Ansvarsfriskrivning",
+        subtitle:
+          "Forskningsprodukter och kemiska föreningar — uteslutande avsedda för laboratorieforskning, in vitro-diagnostik och vetenskaplig utvärdering. Ej för konsumtion.",
+        sections: [
+          {
+            heading: "1. Användningsområde — Endast för forskning",
+            body: "Alla kemiska produkter, peptider och relaterade substanser som säljs via SimpliCity (\"Produkterna\") är uteslutande avsedda för in vitro-forskning, laboratoriebruk, in vitro-diagnostisk testning och vetenskapliga utvärderingsändamål. Produkterna är inte avsedda, godkända eller marknadsförda för humant eller veterinärt bruk, inklusive men inte begränsat till diagnostik, terapeutisk behandling, konsumtion, injektion eller någon annan form av administrering till människor eller djur.",
+          },
+          {
+            heading: "2. Köpvillkor och bekräftelse",
+            body: "Genom att genomföra ett köp på SimpliCity bekräftar och garanterar köparen att:\n\n• Köparen är minst 18 år gammal och har rättslig handlingsförmåga att ingå avtal.\n• Produkterna uteslutande kommer att användas för legitim forskning, laboratorieverksamhet och vetenskaplig utvärdering.\n• Köparen inte avser att använda Produkterna för personligt bruk, konsumtion eller administrering till sig själv, annan person eller djur.\n• Köparen har nödvändig kompetens, utrustning och, i förekommande fall, tillstånd för att hantera de beställda substanserna i enlighet med gällande lagar och förordningar.\n• Köparen ansvarar för att säkerställa att köp, innehav och användning av Produkterna är förenligt med alla tillämpliga lagar och regler i köparens jurisdiktion.",
+          },
+          {
+            heading: "3. Förbjuden användning",
+            body: "Det är uttryckligen förbjudet att använda Produkterna för något av följande:\n\n• Humant eller veterinärt bruk i någon form, inklusive men inte begränsat till oral, intravenös, subkutan, intramuskulär eller topikal administrering.\n• Användning som livsmedel, kosttillskott, läkemedel, medicinteknisk produkt eller kosmetika.\n• Direkt mänsklig konsumtion i någon form.\n• Vidareförsäljning med marknadsföring som antyder att Produkterna är avsedda för mänsklig eller animalisk konsumtion.\n• All annan användning som strider mot tillämplig lagstiftning, inklusive Läkemedelsverkets föreskrifter och EU-förordningar.",
+          },
+          {
+            heading: "4. Ansvarsbegränsning",
+            body: "SimpliCity (\"Företaget\") frånsäger sig allt ansvar för skador, förluster, sjukdomar, biverkningar eller andra negativa konsekvenser som direkt eller indirekt uppstår till följd av felaktig användning, hantering eller förvaring av Produkterna, inklusive men inte begränsat till användning i strid med denna ansvarsfriskrivning.\n\nFöretaget lämnar inga garantier, uttryckliga eller underförstådda, avseende Produkternas lämplighet för något specifikt ändamål utöver in vitro-forskning och vetenskaplig utvärdering. Företaget ansvarar inte för eventuella hälsorisker, allergiska reaktioner eller skador som uppkommer vid användning som inte överensstämmer med den avsedda forskningsanvändningen.",
+          },
+          {
+            heading: "5. Hävningsrätt",
+            body: "Företaget förbehåller sig rätten att neka, annullera eller häva beställningar om det finns skälig anledning att anta att Produkterna avses användas i strid med denna ansvarsfriskrivning, tillämpliga lagar eller på ett sätt som kan medföra skada. I sådana fall återbetalas eventuellt erlagt belopp med avdrag för redan uppkomna kostnader.",
+          },
+          {
+            heading: "6. Skadeståndsskyldighet och skadeslöshet",
+            body: "Köparen åtar sig att hålla Företaget, dess ägare, anställda och samarbetspartners skadeslösa från alla krav, stämningar, skadestånd, böter, kostnader (inklusive rimliga advokatkostnader) och andra förluster som uppstår till följd av köparens användning av Produkterna i strid med denna ansvarsfriskrivning eller tillämplig lag.",
+          },
+          {
+            heading: "7. Regulatorisk information",
+            body: "Produkterna har inte utvärderats, godkänts eller registrerats av Läkemedelsverket, Europeiska läkemedelsmyndigheten (EMA), U.S. Food and Drug Administration (FDA) eller motsvarande regulatorisk myndighet i någon jurisdiktion. Ingenting på denna webbplats ska tolkas som medicinsk rådgivning, diagnostik eller behandlingsrekommendation.",
+          },
+          {
+            heading: "8. Märkning och hantering",
+            body: "Alla Produkter är märkta med texten \"Endast för forskningsändamål — Ej för mänsklig konsumtion\" eller motsvarande formulering. Köparen är skyldig att bibehålla denna märkning och förvara Produkterna på ett säkert sätt, utom räckhåll för obehöriga personer.",
+          },
+          {
+            heading: "9. Tillämplig lag",
+            body: "Denna ansvarsfriskrivning regleras av och tolkas i enlighet med svensk lag, utan hänsyn till lagvalsregler. Eventuella tvister som uppstår i samband med denna ansvarsfriskrivning ska i första hand avgöras genom förhandling och, om överenskommelse inte kan nås, hänskjutas till behörig domstol i Sverige.",
+          },
+          {
+            heading: "10. Kontakt",
+            body: "Frågor om denna ansvarsfriskrivning? Använd kontaktformuläret på startsidan eller nå oss via de kanaler som anges där.",
+          },
+        ],
+      },
       privacy: {
         title: "Integritetspolicy",
         subtitle:
@@ -811,13 +859,61 @@ export const translations = {
     },
     footer: {
       rights: "All rights reserved.",
-      disclaimer: "For personal use only. Results may vary.",
       privacy: "Privacy Policy",
       terms: "Terms",
+      disclaimerLink: "Disclaimer",
       labTests: "Lab Tests",
     },
     legal: {
       lastUpdated: "Last updated",
+      disclaimerLastUpdated: "17 June 2026",
+      disclaimer: {
+        title: "Disclaimer",
+        subtitle:
+          "Research products and chemical compounds — strictly intended for laboratory research, in vitro diagnostic testing, and scientific evaluation only. Not for consumption.",
+        sections: [
+          {
+            heading: "1. Intended use — Research only",
+            body: "All chemical products, peptides, and related substances sold through SimpliCity (the \"Products\") are intended exclusively for in vitro research, laboratory use, in vitro diagnostic testing, and scientific evaluation purposes. The Products are not intended, approved, or marketed for human or veterinary use, including but not limited to diagnosis, therapeutic treatment, consumption, injection, or any other form of administration to humans or animals.",
+          },
+          {
+            heading: "2. Purchase terms and confirmation",
+            body: "By completing a purchase on SimpliCity, the buyer confirms and warrants that:\n\n• The buyer is at least 18 years old and has the legal capacity to enter into agreements.\n• The Products will be used exclusively for legitimate research, laboratory work, and scientific evaluation.\n• The buyer does not intend to use the Products for personal use, consumption, or administration to themselves, any other person, or any animal.\n• The buyer has the necessary competence, equipment, and, where applicable, permits to handle the ordered substances in accordance with applicable laws and regulations.\n• The buyer is responsible for ensuring that purchase, possession, and use of the Products comply with all applicable laws and regulations in the buyer's jurisdiction.",
+          },
+          {
+            heading: "3. Prohibited use",
+            body: "It is expressly prohibited to use the Products for any of the following:\n\n• Human or veterinary use in any form, including but not limited to oral, intravenous, subcutaneous, intramuscular, or topical administration.\n• Use as food, dietary supplements, drugs, medical devices, or cosmetics.\n• Direct human consumption in any form.\n• Resale with marketing that suggests the Products are intended for human or animal consumption.\n• Any other use that violates applicable legislation, including regulations from the Swedish Medical Products Agency and EU directives.",
+          },
+          {
+            heading: "4. Limitation of liability",
+            body: "SimpliCity (the \"Company\") disclaims all liability for damages, losses, illness, adverse effects, or other negative consequences arising directly or indirectly from improper use, handling, or storage of the Products, including but not limited to use contrary to this disclaimer.\n\nThe Company makes no warranties, express or implied, regarding the suitability of the Products for any specific purpose beyond in vitro research and scientific evaluation. The Company is not responsible for any health risks, allergic reactions, or injuries arising from use that does not conform to the intended research use.",
+          },
+          {
+            heading: "5. Right of cancellation",
+            body: "The Company reserves the right to refuse, cancel, or revoke orders if there is reasonable cause to believe the Products are intended to be used in violation of this disclaimer, applicable laws, or in a manner that may cause harm. In such cases, any amount paid will be refunded minus costs already incurred.",
+          },
+          {
+            heading: "6. Indemnification",
+            body: "The buyer agrees to indemnify and hold harmless the Company, its owners, employees, and partners from all claims, lawsuits, damages, fines, costs (including reasonable legal fees), and other losses arising from the buyer's use of the Products in violation of this disclaimer or applicable law.",
+          },
+          {
+            heading: "7. Regulatory information",
+            body: "The Products have not been evaluated, approved, or registered by the Swedish Medical Products Agency, the European Medicines Agency (EMA), the U.S. Food and Drug Administration (FDA), or any equivalent regulatory authority in any jurisdiction. Nothing on this website shall be construed as medical advice, diagnosis, or treatment recommendation.",
+          },
+          {
+            heading: "8. Labeling and handling",
+            body: "All Products are labeled with the text \"For research purposes only — Not for human consumption\" or equivalent wording. The buyer is required to maintain this labeling and store the Products securely, out of reach of unauthorized persons.",
+          },
+          {
+            heading: "9. Governing law",
+            body: "This disclaimer is governed by and construed in accordance with Swedish law, without regard to conflict-of-law rules. Any disputes arising in connection with this disclaimer shall first be resolved through negotiation and, if no agreement can be reached, submitted to a competent court in Sweden.",
+          },
+          {
+            heading: "10. Contact",
+            body: "Questions about this disclaimer? Use the contact form on the homepage or reach us through the channels listed there.",
+          },
+        ],
+      },
       privacy: {
         title: "Privacy Policy",
         subtitle:

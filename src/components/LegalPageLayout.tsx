@@ -22,13 +22,15 @@ type LegalContent = {
 type LegalPageLayoutProps = {
   content: LegalContent;
   showPlaceholder?: boolean;
+  lastUpdated?: string;
 };
 
-const LAST_UPDATED = "13 juni 2025 / 13 June 2025";
+const DEFAULT_LAST_UPDATED = "13 juni 2025 / 13 June 2025";
 
 export default function LegalPageLayout({
   content,
   showPlaceholder = false,
+  lastUpdated = DEFAULT_LAST_UPDATED,
 }: LegalPageLayoutProps) {
   const { t } = useLanguage();
 
@@ -47,7 +49,7 @@ export default function LegalPageLayout({
             {content.subtitle}
           </p>
           <p className="mt-3 text-xs text-zinc-400">
-            {t.legal.lastUpdated}: {LAST_UPDATED}
+            {t.legal.lastUpdated}: {lastUpdated}
           </p>
         </div>
 
@@ -57,7 +59,7 @@ export default function LegalPageLayout({
               <h2 className="text-lg font-semibold text-zinc-900">
                 {section.heading}
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-zinc-600">
                 {section.body}
               </p>
             </section>

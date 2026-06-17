@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import ProductImage from "@/components/ProductImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { resolveCampaignAddons } from "@/lib/campaign-addons";
+import { calculateCampaignCountdownProgress } from "@/lib/campaign-countdown";
 import { formatMgOption } from "@/lib/i18n/translations";
 import {
   getLocalizedProductDescription,
@@ -19,6 +20,11 @@ import { getVariantBasePrice, getVariantPrice } from "@/lib/store-config";
 import ProductSalePrice, { ProductSaleBadge } from "@/components/ProductSalePrice";
 import StockStatusBadge from "@/components/StockStatusBadge";
 import IncludedItemsBadge from "@/components/IncludedItemsBadge";
+import HeroThemeDecorations, {
+  HeroSantaHat,
+  HeroSunGlow,
+  HeroSupportBadge,
+} from "@/components/HeroThemeDecorations";
 
 type HeroProps = {
   siteSettings: StoreConfig["siteSettings"];
@@ -45,35 +51,15 @@ function useCampaignCountdownProgress(
   countdownEndsAt: string,
   enabled: boolean,
 ) {
-  const baselineRef = useRef<{ end: number; totalMs: number } | null>(null);
-  const [progressPercent, setProgressPercent] = useState(100);
+  const [progressPercent, setProgressPercent] = useState(() =>
+    calculateCampaignCountdownProgress(countdownEndsAt, enabled),
+  );
 
   useEffect(() => {
-    if (!enabled || !countdownEndsAt) {
-      setProgressPercent(88);
-      return;
-    }
-
-    const end = new Date(countdownEndsAt).getTime();
-    if (Number.isNaN(end)) {
-      setProgressPercent(88);
-      return;
-    }
-
     function tick() {
-      const now = Date.now();
-      const remaining = Math.max(0, end - now);
-
-      if (!baselineRef.current || baselineRef.current.end !== end) {
-        baselineRef.current = {
-          end,
-          totalMs: Math.max(remaining, 60_000),
-        };
-      }
-
-      const total = baselineRef.current.totalMs;
-      const pct = total > 0 ? (remaining / total) * 100 : 0;
-      setProgressPercent(Math.max(5, Math.min(100, pct)));
+      setProgressPercent(
+        calculateCampaignCountdownProgress(countdownEndsAt, enabled),
+      );
     }
 
     tick();
@@ -102,6 +88,7 @@ export default function Hero({
     banner.countdownEndsAt,
     banner.countdownEnabled,
   );
+  const campaignTheme = siteSettings.campaignTheme;
 
   const configEntry = featuredConfigProduct ?? undefined;
 
@@ -142,24 +129,38 @@ export default function Hero({
 
   return (
     <section className="relative overflow-hidden border-b border-rose-100 bg-gradient-to-b from-rose-50 to-white">
-      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
+      <HeroThemeDecorations theme={campaignTheme} />
+
+      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
-          <div className="flex flex-col text-left lg:py-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
-              {siteSettings.campaignTag}
-            </p>
+          <div className="relative flex flex-col text-left lg:py-4">
+            {campaignTheme === "summer" ? <HeroSunGlow /> : null}
 
-            <h1 className="mt-5 max-w-xl text-balance text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              {siteSettings.campaignHeadline}
-            </h1>
+            <div className="relative">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
+                {siteSettings.campaignTag}
+              </p>
 
-            <div className="mt-8 sm:mt-10">
-              <a
-                href="#products"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-rose-400 px-8 text-sm font-semibold text-white shadow-lg shadow-rose-400/25 transition hover:bg-rose-500"
-              >
-                {t.hero.ctaCampaign}
-              </a>
+              <h1 className="mt-5 max-w-xl text-balance text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                {siteSettings.campaignHeadline}
+              </h1>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3 sm:mt-10">
+                <a
+                  href="#products"
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-rose-400 px-8 text-sm font-semibold text-white shadow-lg shadow-rose-400/25 transition hover:bg-rose-500"
+                >
+                  {t.hero.ctaCampaign}
+                </a>
+                <a
+                  href="#features"
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-rose-200 bg-white px-8 text-sm font-semibold text-rose-700 transition hover:border-rose-300 hover:bg-rose-50"
+                >
+                  {t.hero.ctaSecondary}
+                </a>
+              </div>
+
+              <HeroSupportBadge label={siteSettings.heroBadge} />
 
               {shippingMessage ? (
                 <p className="mt-3 flex items-center gap-2 text-xs text-gray-500">
@@ -169,7 +170,7 @@ export default function Hero({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-rose-100/30 bg-gradient-to-br from-rose-50/30 to-white/40 p-6 md:p-8">
+          <div className="relative rounded-3xl border border-rose-100/30 bg-gradient-to-br from-rose-50/30 to-white/40 p-6 md:p-8">
             {featuredProduct ? (
               <article className="relative rounded-3xl border border-rose-100 bg-white p-6 shadow-xl shadow-rose-100/40 sm:p-8">
                 <div
@@ -188,6 +189,7 @@ export default function Hero({
                 <div
                   className={`relative mx-auto mb-6 flex aspect-square max-w-sm items-center justify-center overflow-hidden rounded-2xl border border-rose-100 bg-rose-50/40 ${PRODUCT_IMAGE_FRAME_CLASS}`}
                 >
+                  {campaignTheme === "winter" ? <HeroSantaHat /> : null}
                   <ProductImage
                     src={featuredProduct.image}
                     alt={productName}
@@ -235,36 +237,36 @@ export default function Hero({
                       {siteSettings.campaignAddons
                         .filter((addon) => addon.label.trim())
                         .map((addon) => {
-                        const checked = isCampaignAddonSelected(addon.id);
-                        return (
-                          <label
-                            key={addon.id}
-                            className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition ${
-                              checked
-                                ? "border-rose-300 bg-rose-50/80"
-                                : "border-rose-100 bg-white hover:border-rose-200 hover:bg-rose-50/40"
-                            }`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(event) =>
-                                setCampaignAddonSelected(
-                                  addon.id,
-                                  event.target.checked,
-                                )
-                              }
-                              className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
-                            />
-                            <span className="text-sm leading-snug text-zinc-700">
-                              {addon.label}{" "}
-                              <span className="font-semibold text-rose-600">
-                                (+{addon.price} kr)
+                          const checked = isCampaignAddonSelected(addon.id);
+                          return (
+                            <label
+                              key={addon.id}
+                              className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition ${
+                                checked
+                                  ? "border-rose-300 bg-rose-50/80"
+                                  : "border-rose-100 bg-white hover:border-rose-200 hover:bg-rose-50/40"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(event) =>
+                                  setCampaignAddonSelected(
+                                    addon.id,
+                                    event.target.checked,
+                                  )
+                                }
+                                className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                              />
+                              <span className="text-sm leading-snug text-zinc-700">
+                                {addon.label}{" "}
+                                <span className="font-semibold text-rose-600">
+                                  (+{addon.price} kr)
+                                </span>
                               </span>
-                            </span>
-                          </label>
-                        );
-                      })}
+                            </label>
+                          );
+                        })}
                     </div>
                   ) : null}
 
@@ -300,11 +302,11 @@ export default function Hero({
           </div>
         </div>
 
-        <div className="mt-10 max-w-3xl lg:mt-12">
+        <div className="relative mt-10 max-w-3xl lg:mt-12">
           <div className="flex flex-wrap items-center gap-3">
             <div className="h-2 min-w-[8rem] flex-1 overflow-hidden rounded-full bg-rose-100">
               <div
-                className="h-2 rounded-full bg-gradient-to-r from-rose-400 to-pink-500 animate-pulse transition-[width] duration-1000 ease-linear"
+                className="h-2 rounded-full bg-gradient-to-r from-rose-400 to-pink-500 transition-[width] duration-1000 ease-linear motion-safe:animate-pulse"
                 style={{ width: `${countdownProgress}%` }}
                 role="progressbar"
                 aria-valuenow={Math.round(countdownProgress)}
@@ -317,13 +319,6 @@ export default function Hero({
               {siteSettings.campaignTickerText}
             </p>
           </div>
-        </div>
-
-        <div className="mt-10 flex justify-center lg:mt-12">
-          <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold tracking-wide text-rose-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" aria-hidden />
-            {siteSettings.heroBadge}
-          </span>
         </div>
       </div>
     </section>

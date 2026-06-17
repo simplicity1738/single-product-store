@@ -1,3 +1,8 @@
+import {
+  CAMPAIGN_THEME_OPTIONS,
+  normalizeCampaignTheme,
+  type CampaignTheme,
+} from "@/lib/campaign-theme";
 import type { StoreConfig } from "@/lib/store-config";
 
 export type HeroFontFamily = "sans" | "serif" | "mono";
@@ -77,6 +82,7 @@ export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
   showAddons: true,
   campaignAddons: [],
   campaignTickerText: "🔥 Kampanjen slutar snart — begränsat lager kvar!",
+  campaignTheme: "summer" as CampaignTheme,
 };
 
 function normalizeFontSize(
@@ -262,6 +268,7 @@ export function normalizeSiteSettings(
       input?.campaignTickerText,
       defaults.campaignTickerText,
     ),
+    campaignTheme: normalizeCampaignTheme(input?.campaignTheme),
   };
 }
 

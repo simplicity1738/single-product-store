@@ -1,6 +1,7 @@
 "use client";
 
 import type { CampaignAddon, ConfigProduct, StoreConfig } from "@/lib/store-config";
+import { CAMPAIGN_THEME_OPTIONS } from "@/lib/campaign-theme";
 import { getLocalizedProductName } from "@/lib/product-localization";
 
 type HeroCampaignFormProps = {
@@ -125,6 +126,27 @@ export default function HeroCampaignForm({
                 </option>
               ))
             )}
+          </select>
+        </label>
+
+        <label className="block sm:col-span-2">
+          <span className={labelClassName}>
+            Välj Kampanj-Tema (Bakgrundsdekorationer)
+          </span>
+          <select
+            value={siteSettings.campaignTheme}
+            onChange={(event) =>
+              patch({
+                campaignTheme: event.target.value as StoreConfig["siteSettings"]["campaignTheme"],
+              })
+            }
+            className={inputClassName}
+          >
+            {CAMPAIGN_THEME_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </label>
 
