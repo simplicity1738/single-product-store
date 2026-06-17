@@ -53,6 +53,7 @@ export const HERO_LOGO_DEFAULT_PATH = "/hero-logo.png";
 
 export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
   logoPath: "/logo.png",
+  heroEyebrow: "NOGGRANT UTVALT SORTIMENT",
   heroBadge: "SUPPORT 24/7",
   heroUseLogoImage: true,
   heroLogoPath: HERO_LOGO_DEFAULT_PATH,
@@ -103,6 +104,7 @@ export function normalizeSiteSettings(
 
   return {
     logoPath: normalizeText(input?.logoPath, defaults.logoPath),
+    heroEyebrow: normalizeText(input?.heroEyebrow, defaults.heroEyebrow),
     heroBadge: normalizeText(input?.heroBadge, defaults.heroBadge),
     heroUseLogoImage: Boolean(input?.heroUseLogoImage),
     heroLogoPath: normalizeText(input?.heroLogoPath, defaults.heroLogoPath),

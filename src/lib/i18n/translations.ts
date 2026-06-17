@@ -423,6 +423,11 @@ export const translations = {
       close: "Stäng",
       subtitle:
         "Här hittar du svar på de vanligaste frågorna om beställning, leverans och produkter.",
+      feedbackPrompt: "Var denna guide till hjälp?",
+      feedbackPositive: "Bra guide",
+      feedbackNegative: "Inte till hjälp",
+      feedbackThanksPositive: "Tack för din feedback!",
+      feedbackThanksNegative: "Tack — vi förbättrar guiden.",
     },
     contact: {
       eyebrow: "Kontakta oss",
@@ -954,6 +959,11 @@ export const translations = {
       close: "Close",
       subtitle:
         "Find answers to the most common questions about ordering, shipping, and our products.",
+      feedbackPrompt: "Was this guide helpful?",
+      feedbackPositive: "Helpful guide",
+      feedbackNegative: "Not helpful",
+      feedbackThanksPositive: "Thanks for your feedback!",
+      feedbackThanksNegative: "Thanks — we'll improve the guide.",
     },
     contact: {
       eyebrow: "Contact us",

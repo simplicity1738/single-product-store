@@ -207,6 +207,7 @@ export type ConfigFaq = {
 export type StoreConfig = {
   siteSettings: {
     logoPath: string;
+    heroEyebrow: string;
     heroBadge: string;
     heroUseLogoImage: boolean;
     heroLogoPath: string;

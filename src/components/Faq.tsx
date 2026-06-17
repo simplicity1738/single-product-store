@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { getSiteNavLabel, isSiteSectionVisible } from "@/lib/site-navigation";
 import TeacherBot from "@/components/TeacherBot";
+import GuideFeedback from "@/components/GuideFeedback";
 
 const INTERACTION_DURATION_MS = 480;
 
@@ -128,6 +129,8 @@ export default function Faq() {
               );
             })}
           </div>
+
+          <GuideFeedback className="mt-4" />
         </div>
       )}
 

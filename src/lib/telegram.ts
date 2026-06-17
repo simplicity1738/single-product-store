@@ -163,3 +163,65 @@ export async function sendContactNotification(
 
   return sendTelegramMessage({ text });
 }
+
+export type SecurityAlertPayload = {
+  ip: string;
+  userAgent: string;
+  username: string;
+};
+
+export async function sendSecurityAlertNotification(
+  payload: SecurityAlertPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeIp = escapeTelegramHtml(payload.ip);
+  const safeUserAgent = escapeTelegramHtml(payload.userAgent);
+  const safeUsername = escapeTelegramHtml(payload.username);
+
+  const text = [
+    "🚨 <b>SÄKERHETSLARM: MISSTÄNKT INLOGGNINGSFÖRSÖK</b>",
+    `<b>IP-Adress:</b> ${safeIp}`,
+    `<b>Enhet:</b> ${safeUserAgent}`,
+    `<b>Försök mot:</b> ${safeUsername}`,
+    "<b>Status:</b> IP-adressen har blockerats temporärt.",
+  ].join("\n");
+
+  return sendTelegramMessage({ text });
+}
+
+export async function sendAdminAuditNotification(
+  changes: string[],
+): Promise<{ ok: boolean; mock: boolean }> {
+  if (changes.length === 0) {
+    return { ok: true, mock: true };
+  }
+
+  const safeLines = changes.map((line) => escapeTelegramHtml(line));
+  const text = [
+    "🛠 <b>ADMIN: KONFIGURATION UPPDATERAD</b>",
+    "",
+    ...safeLines,
+  ].join("\n");
+
+  return sendTelegramMessage({ text });
+}
+
+export type GuideFeedbackNotificationPayload = {
+  vote: "positive" | "negative";
+};
+
+export async function sendGuideFeedbackNotification(
+  payload: GuideFeedbackNotificationPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const isPositive = payload.vote === "positive";
+  const resultLine = isPositive
+    ? "👍 Positiv (Användaren är nöjd med guiden!)"
+    : "👎 Negativ (Användaren markerade missnöje)";
+
+  const text = [
+    "💬 <b>KUNDUTVÄRDERING INKOMMEN</b>",
+    "<b>Typ:</b> Guide / Supportbetyg",
+    `<b>Resultat:</b> ${escapeTelegramHtml(resultLine)}`,
+  ].join("\n");
+
+  return sendTelegramMessage({ text });
+}

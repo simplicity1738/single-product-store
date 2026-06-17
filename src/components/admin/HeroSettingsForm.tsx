@@ -77,6 +77,21 @@ export default function HeroSettingsForm({
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5">
+        <h2 className="text-sm font-bold text-zinc-900">Topp-badge</h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          Rosa pill-badge ovanför logotypen, t.ex. NOGGRANT UTVALT SORTIMENT.
+        </p>
+        <label className="mt-4 block">
+          <span className={labelClassName}>Eyebrow-text</span>
+          <input
+            value={siteSettings.heroEyebrow}
+            onChange={(event) => patch({ heroEyebrow: event.target.value })}
+            className={inputClassName}
+          />
+        </label>
+      </div>
+
+      <div className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5">
         <h2 className="text-sm font-bold text-zinc-900">Varumärke (överst)</h2>
         <p className="mt-1 text-xs text-zinc-500">
           Visa SimpliCity som text eller ladda en logotypbild i hero-sektionen.

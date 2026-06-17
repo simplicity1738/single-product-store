@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdminSession } from "@/lib/admin-auth.server";
+import { summarizeStoreConfigChanges } from "@/lib/admin-audit";
 import { readStoreConfig, writeStoreConfig } from "@/lib/store-config.server";
+import { sendAdminAuditNotification } from "@/lib/telegram";
 import type { StoreConfig } from "@/lib/store-config";
 
 export async function GET() {
@@ -32,7 +34,14 @@ async function saveConfig(request: Request) {
       );
     }
 
+    const previousConfig = await readStoreConfig();
     await writeStoreConfig(body);
+
+    const changes = summarizeStoreConfigChanges(previousConfig, body);
+    if (changes.length > 0) {
+      void sendAdminAuditNotification(changes);
+    }
+
     return NextResponse.json({
       success: true,
       message: "Ändringar sparade framgångsrikt!",

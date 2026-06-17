@@ -1,6 +1,7 @@
 {
   "siteSettings": {
     "logoPath": "/logo.png",
+    "heroEyebrow": "NOGGRANT UTVALT SORTIMENT",
     "heroBadge": "SUPPORT 24/7",
     "heroUseLogoImage": true,
     "heroLogoPath": "/hero-logo.png",

@@ -3,6 +3,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ReconstitutionCalculator from "@/components/ReconstitutionCalculator";
+import GuideFeedback from "@/components/GuideFeedback";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function CalculatorPage() {
@@ -27,6 +28,10 @@ export default function CalculatorPage() {
 
         <div className="mt-10 sm:mt-12">
           <ReconstitutionCalculator />
+        </div>
+
+        <div className="mx-auto mt-8 max-w-md">
+          <GuideFeedback />
         </div>
       </main>
       <Footer />
