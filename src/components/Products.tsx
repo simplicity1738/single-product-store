@@ -6,6 +6,7 @@ import StrengthSelector from "@/components/StrengthSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
+import { isSiteNavVisible } from "@/lib/site-navigation";
 import { getVariantPrice } from "@/lib/store-config";
 import {
   getLocalizedProductDescription,
@@ -33,7 +34,8 @@ type DisplayProduct = Product & {
 
 export default function Products() {
   const { locale, t } = useLanguage();
-  const { products: configProducts, catalogProducts } = useStoreConfig();
+  const { products: configProducts, catalogProducts, siteNavigation } =
+    useStoreConfig();
   const { cardVariants, setCardVariantMg, addToCart } = useProductSelection();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
@@ -52,6 +54,10 @@ export default function Products() {
       };
     });
   }, [catalogProducts, configProducts, locale]);
+
+  if (!isSiteNavVisible(siteNavigation, "produkter")) {
+    return null;
+  }
 
   if (displayProducts.length === 0) {
     return null;
