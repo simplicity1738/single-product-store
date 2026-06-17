@@ -1,32 +1,76 @@
 "use client";
 
+import Image from "next/image";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { heroTypographyClass } from "@/lib/hero-settings";
+import type { StoreConfig } from "@/lib/store-config";
 
-export default function Hero() {
+type HeroProps = {
+  siteSettings: StoreConfig["siteSettings"];
+};
+
+export default function Hero({ siteSettings }: HeroProps) {
   const { t } = useLanguage();
+
+  const brandClass = heroTypographyClass(
+    siteSettings.heroBrandFontSize,
+    siteSettings.heroBrandFontFamily,
+  );
+  const titleClass = heroTypographyClass(
+    siteSettings.heroTitleFontSize,
+    siteSettings.heroTitleFontFamily,
+  );
+  const taglineClass = heroTypographyClass(
+    siteSettings.heroTaglineFontSize,
+    siteSettings.heroTaglineFontFamily,
+  );
+  const descriptionClass = heroTypographyClass(
+    siteSettings.heroDescriptionFontSize,
+    siteSettings.heroDescriptionFontFamily,
+  );
+
+  const heroLogoSrc =
+    siteSettings.heroLogoPath || siteSettings.logoPath || "/logo.png";
 
   return (
     <section className="relative overflow-hidden border-b border-rose-100 bg-gradient-to-b from-rose-50 to-white">
       <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
         <div className="mx-auto flex max-w-3xl flex-col items-center space-y-8 text-center">
-          <p className="text-lg font-medium text-zinc-700">{t.hero.intake}</p>
-
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl md:text-6xl lg:whitespace-nowrap">
-              <span className="font-extrabold tracking-wide text-rose-500">
-                {t.brand}
-              </span>
-              {" – "}
-              {t.hero.headline}
-            </h1>
-
-            <p className="text-xl font-semibold text-zinc-700 sm:text-2xl">
-              {t.hero.tagline}
+          {siteSettings.heroUseLogoImage ? (
+            <div className="relative h-14 w-44 sm:h-16 sm:w-52">
+              <Image
+                src={heroLogoSrc}
+                alt={siteSettings.heroBrandText}
+                fill
+                priority
+                sizes="(max-width: 640px) 176px, 208px"
+                className="object-contain"
+              />
+            </div>
+          ) : (
+            <p
+              className={`${brandClass} font-extrabold tracking-wide text-rose-500`}
+            >
+              {siteSettings.heroBrandText}
             </p>
-          </div>
+          )}
 
-          <p className="max-w-2xl text-lg leading-relaxed text-zinc-600">
-            {t.hero.subtitle}
+          <h1
+            className={`${titleClass} font-bold tracking-tight text-zinc-900 lg:whitespace-nowrap`}
+          >
+            {siteSettings.heroTitle}
+          </h1>
+
+          <p
+            className={`${taglineClass} font-semibold text-rose-500/90 sm:text-rose-500`}
+          >
+            {siteSettings.heroTagline}
+          </p>
+
+          <p
+            className={`${descriptionClass} max-w-2xl leading-relaxed text-zinc-600`}
+          >
+            {siteSettings.heroSubtitle}
           </p>
 
           <div className="flex flex-col items-center gap-6">
@@ -46,8 +90,11 @@ export default function Hero() {
             </div>
 
             <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold tracking-wide text-rose-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" aria-hidden />
-              {t.hero.badge}
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-rose-400"
+                aria-hidden
+              />
+              {siteSettings.heroBadge}
             </span>
           </div>
         </div>

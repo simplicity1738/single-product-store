@@ -35,12 +35,18 @@ import {
   type StoreConfig,
 } from "@/lib/store-config";
 import {
+  DEFAULT_HERO_SITE_SETTINGS,
+  normalizeSiteSettings,
+} from "@/lib/hero-settings";
+import {
   DEFAULT_SITE_NAVIGATION,
   normalizeSiteNavigation,
   type SiteNavigation,
 } from "@/lib/site-navigation";
 
 type SiteSettings = StoreConfig["siteSettings"];
+
+const DEFAULT_SETTINGS: SiteSettings = DEFAULT_HERO_SITE_SETTINGS;
 
 type PublicStoreConfig = {
   siteSettings: SiteSettings;
@@ -58,15 +64,6 @@ type PublicStoreConfig = {
   faqs: ConfigFaq[];
   bestSellerProductIds: string[];
   premiumProductIds: string[];
-};
-
-const DEFAULT_SETTINGS: SiteSettings = {
-  heroBadge: "SUPPORT 24/7",
-  heroTitle: "Premiumingredienser för forskning",
-  heroTagline: "Renhet och kvalitet i fokus",
-  heroSubtitle:
-    "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
-  logoPath: "/logo.png",
 };
 
 type StoreConfigContextValue = {
@@ -140,7 +137,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       const response = await fetch("/api/config", { cache: "no-store" });
       if (!response.ok) return;
       const data = (await response.json()) as PublicStoreConfig;
-      setSiteSettings({ ...DEFAULT_SETTINGS, ...data.siteSettings });
+      setSiteSettings(normalizeSiteSettings(data.siteSettings));
       setSiteNavigation(normalizeSiteNavigation(data.siteNavigation));
       setBanner({ ...DEFAULT_BANNER, ...data.banner });
       setMarketingTracking({

@@ -22,6 +22,7 @@ import {
   type StoreConfig,
 } from "@/lib/store-config";
 import { buildLocalizedProductFields } from "@/lib/product-localization";
+import { normalizeSiteSettings } from "@/lib/hero-settings";
 import { normalizeSiteNavigation, type NavVisibility } from "@/lib/site-navigation";
 import {
   DEFAULT_PRODUCT_STOCK_STATUS,
@@ -177,10 +178,10 @@ function mergeStoreConfig(
   },
 ): StoreConfig {
   return {
-    siteSettings: {
+    siteSettings: normalizeSiteSettings({
       ...DEFAULT_STORE_CONFIG.siteSettings,
       ...parsed.siteSettings,
-    },
+    }),
     siteNavigation: normalizeSiteNavigation(
       parsed.siteNavigation,
       parsed.navVisibility,
@@ -244,6 +245,7 @@ export async function readStoreConfig(): Promise<StoreConfig> {
 export async function writeStoreConfig(config: StoreConfig): Promise<void> {
   const normalized: StoreConfig = {
     ...config,
+    siteSettings: normalizeSiteSettings(config.siteSettings),
     siteNavigation: normalizeSiteNavigation(config.siteNavigation),
     banner: normalizeBanner(config.banner),
     marketingTracking: {

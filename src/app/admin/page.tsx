@@ -20,6 +20,8 @@ import {
   parseVariantsInput,
 } from "@/lib/store-config";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
+import { normalizeSiteSettings } from "@/lib/hero-settings";
 import {
   PRODUCT_STOCK_STATUS_OPTIONS,
   type ProductStockStatus,
@@ -236,7 +238,10 @@ export default function AdminPage() {
       const response = await fetch("/api/admin/config");
       if (!response.ok) throw new Error("Failed to load");
       const data = (await response.json()) as StoreConfig;
-      setConfig(data);
+      setConfig({
+        ...data,
+        siteSettings: normalizeSiteSettings(data.siteSettings),
+      });
     } catch {
       showToast({
         type: "error",
@@ -1600,71 +1605,41 @@ export default function AdminPage() {
         </section>
 
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Site Settings</h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            Hero-rubriker, beskrivning och logotyp styr den publika startsidan.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-zinc-900">Site Settings</h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                Hero-typografi och header-logotyp styr den publika startsidan.
+              </p>
+            </div>
+            <Link
+              href="/admin/site-settings"
+              className="text-sm font-medium text-rose-600 hover:text-rose-700"
+            >
+              Fullständig sajtinställning →
+            </Link>
+          </div>
+
+          {config && (
+            <div className="mt-6">
+              <HeroSettingsForm
+                siteSettings={config.siteSettings}
+                onChange={(siteSettings) =>
+                  setConfig((current) =>
+                    current ? { ...current, siteSettings } : current,
+                  )
+                }
+              />
+            </div>
+          )}
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="block sm:col-span-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Hero Badge
+                Header Logo Path (bild-URL)
               </span>
               <input
-                value={config.siteSettings.heroBadge}
-                onChange={(event) =>
-                  updateSiteSetting("heroBadge", event.target.value)
-                }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-              />
-            </label>
-
-            <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Hero Title
-              </span>
-              <input
-                value={config.siteSettings.heroTitle}
-                onChange={(event) =>
-                  updateSiteSetting("heroTitle", event.target.value)
-                }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-              />
-            </label>
-
-            <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Hero Tagline
-              </span>
-              <input
-                value={config.siteSettings.heroTagline ?? ""}
-                onChange={(event) =>
-                  updateSiteSetting("heroTagline", event.target.value)
-                }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-              />
-            </label>
-
-            <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Hero Description
-              </span>
-              <textarea
-                value={config.siteSettings.heroSubtitle}
-                onChange={(event) =>
-                  updateSiteSetting("heroSubtitle", event.target.value)
-                }
-                rows={3}
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
-              />
-            </label>
-
-            <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Logo Path (bild-URL)
-              </span>
-              <input
-                value={config.siteSettings.logoPath}
+                value={config?.siteSettings.logoPath ?? ""}
                 onChange={(event) =>
                   updateSiteSetting("logoPath", event.target.value)
                 }

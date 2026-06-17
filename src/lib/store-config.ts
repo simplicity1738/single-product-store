@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n/translations";
+import { DEFAULT_HERO_SITE_SETTINGS, type HeroFontFamily } from "@/lib/hero-settings";
 import type { SiteNavigation } from "@/lib/site-navigation";
 import { DEFAULT_SITE_NAVIGATION } from "@/lib/site-navigation";
 import {
@@ -205,11 +206,22 @@ export type ConfigFaq = {
 
 export type StoreConfig = {
   siteSettings: {
-    heroBadge: string;
-    heroTitle: string;
-    heroTagline: string;
-    heroSubtitle: string;
     logoPath: string;
+    heroBadge: string;
+    heroUseLogoImage: boolean;
+    heroLogoPath: string;
+    heroBrandText: string;
+    heroBrandFontSize: string;
+    heroBrandFontFamily: HeroFontFamily;
+    heroTitle: string;
+    heroTitleFontSize: string;
+    heroTitleFontFamily: HeroFontFamily;
+    heroTagline: string;
+    heroTaglineFontSize: string;
+    heroTaglineFontFamily: HeroFontFamily;
+    heroSubtitle: string;
+    heroDescriptionFontSize: string;
+    heroDescriptionFontFamily: HeroFontFamily;
   };
   /** Editable labels and visibility for storefront navigation and widgets. */
   siteNavigation: SiteNavigation;
@@ -279,14 +291,7 @@ export function influencerHandleToRef(handle: string): string {
 }
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {
-  siteSettings: {
-    heroBadge: "SUPPORT 24/7",
-    heroTitle: "Premiumingredienser för forskning",
-    heroTagline: "Renhet och kvalitet i fokus",
-    heroSubtitle:
-      "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
-    logoPath: "/logo.png",
-  },
+  siteSettings: DEFAULT_HERO_SITE_SETTINGS,
   siteNavigation: DEFAULT_SITE_NAVIGATION,
   banner: DEFAULT_BANNER,
   marketingTracking: DEFAULT_MARKETING_TRACKING,

@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { StoreConfig } from "@/lib/store-config";
+import { normalizeSiteSettings } from "@/lib/hero-settings";
+import HeroSettingsForm from "@/components/admin/HeroSettingsForm";
 import {
   normalizeSiteNavigation,
   SITE_NAV_ADMIN_META,
@@ -19,6 +21,9 @@ type ToastState = {
 
 export default function AdminSiteSettingsPage() {
   const [config, setConfig] = useState<StoreConfig | null>(null);
+  const [siteSettings, setSiteSettings] = useState(
+    normalizeSiteSettings(undefined),
+  );
   const [siteNavigation, setSiteNavigation] = useState<SiteNavigation>(
     normalizeSiteNavigation(undefined),
   );
@@ -40,6 +45,7 @@ export default function AdminSiteSettingsPage() {
       if (!response.ok) throw new Error("Failed to load");
       const data = (await response.json()) as StoreConfig;
       setConfig(data);
+      setSiteSettings(normalizeSiteSettings(data.siteSettings));
       setSiteNavigation(normalizeSiteNavigation(data.siteNavigation));
     } catch {
       showToast({
@@ -82,6 +88,7 @@ export default function AdminSiteSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...config,
+          siteSettings: normalizeSiteSettings(siteSettings),
           siteNavigation: normalizeSiteNavigation(siteNavigation),
         }),
       });
@@ -122,8 +129,8 @@ export default function AdminSiteSettingsPage() {
               Sajtkonfiguration
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-              Anpassa visningsnamn och styr synlighet separat för toppmenyn och
-              startsidans sektioner.
+              Anpassa hero-typografi, navigation och synlighet för den publika
+              startsidan.
             </p>
           </div>
 
@@ -150,10 +157,33 @@ export default function AdminSiteSettingsPage() {
         )}
 
         <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">Hero &amp; typografi</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Styr rubriker, storlekar, typsnitt och logotyp för hero-sektionen.
+          </p>
+
           {isLoading ? (
-            <p className="text-sm text-zinc-500">Laddar sajtinställningar…</p>
+            <p className="mt-6 text-sm text-zinc-500">Laddar hero-inställningar…</p>
           ) : (
-            <div className="space-y-4">
+            <div className="mt-6">
+              <HeroSettingsForm
+                siteSettings={siteSettings}
+                onChange={setSiteSettings}
+              />
+            </div>
+          )}
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">Navigation</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Styr synlighet och visningsnamn för menylänkar och widgets.
+          </p>
+
+          {isLoading ? (
+            <p className="mt-6 text-sm text-zinc-500">Laddar sajtinställningar…</p>
+          ) : (
+            <div className="mt-6 space-y-4">
               {SITE_NAV_KEYS.map((key) => {
                 const item = siteNavigation[key];
                 const meta = SITE_NAV_ADMIN_META[key];

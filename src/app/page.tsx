@@ -6,13 +6,16 @@ import ContactForm from "@/components/ContactForm";
 import TrustBar from "@/components/TrustBar";
 import Reviews from "@/components/Reviews";
 import Footer from "@/components/Footer";
+import { readStoreConfig } from "@/lib/store-config.server";
 
-export default function Home() {
+export default async function Home() {
+  const config = await readStoreConfig();
+
   return (
     <div className="min-h-full bg-white text-zinc-900">
       <Header />
       <main>
-        <Hero />
+        <Hero siteSettings={config.siteSettings} />
         <Products />
         <Features />
         <OrderForm />
