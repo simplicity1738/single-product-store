@@ -100,3 +100,52 @@ body {
 .animate-teacher-bot-blink {
   animation: teacher-bot-blink 4.5s ease-in-out infinite;
 }
+
+.calculator-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #fb7185 0%,
+    #e8a0a8 var(--slider-progress, 50%),
+    #fce7f3 var(--slider-progress, 50%),
+    #fce7f3 100%
+  );
+  outline: none;
+}
+
+.calculator-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  background: linear-gradient(135deg, #fb7185, #e8a0a8);
+  box-shadow: 0 2px 8px rgba(232, 160, 168, 0.55);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.calculator-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+  box-shadow: 0 3px 12px rgba(232, 160, 168, 0.7);
+}
+
+.calculator-slider::-moz-range-thumb {
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  background: linear-gradient(135deg, #fb7185, #e8a0a8);
+  box-shadow: 0 2px 8px rgba(232, 160, 168, 0.55);
+  cursor: pointer;
+}
+
+.calculator-slider::-moz-range-track {
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: #fce7f3;
+}

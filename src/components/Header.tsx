@@ -16,8 +16,12 @@ export default function Header() {
     { href: "/#features", label: t.nav.features },
     { href: "/#quality", label: t.nav.quality },
     { href: "/#checkout-form", label: t.nav.order },
+    { href: "/kalkylator", label: t.nav.calculator },
     { href: "/#contact", label: t.nav.contact },
   ];
+
+  const isStandalonePage = (href: string) =>
+    href.startsWith("/") && !href.includes("#");
 
   return (
     <>
@@ -38,15 +42,25 @@ export default function Header() {
         </Link>
 
         <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-zinc-600 transition-colors hover:text-rose-600"
-            >
-              {link.label}
-            </a>
-          ))}
+          {navLinks.map((link) =>
+            isStandalonePage(link.href) ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-zinc-600 transition-colors hover:text-rose-600"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-zinc-600 transition-colors hover:text-rose-600"
+              >
+                {link.label}
+              </a>
+            ),
+          )}
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">

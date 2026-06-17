@@ -11,6 +11,7 @@ export const translations = {
       quality: "Kvalitet",
       order: "Beställ",
       contact: "Kontakt",
+      calculator: "Kalkylator",
       buyNow: "Köp nu",
     },
     hero: {
@@ -456,6 +457,29 @@ export const translations = {
       discountProductMismatch: "Rabattkoden gäller inte produkterna i varukorgen.",
       serverError: "Kunde inte behandla din beställning.",
     },
+    calculator: {
+      eyebrow: "Verktyg",
+      title: "Peptidkalkylator",
+      subtitle:
+        "Beräkna exakt hur många enheter du ska dra upp efter rekonstitution — med precision i milligram.",
+      peptideAmount: "Peptidmängd (mg)",
+      waterVolume: "Tillsatt sterilt vatten (mL)",
+      desiredDose: "Önskad dosering (mg)",
+      syringeSize: "Sprutstorlek",
+      syringeU100: "U100 — 1 mL / 100 enheter",
+      syringeU50: "U50 — 0,5 mL / 50 enheter",
+      syringeU100Short: "U100 · 100 enheter",
+      syringeU50Short: "U50 · 50 enheter",
+      resultEyebrow: "Ditt resultat",
+      resultUnits: "Dra upp till {units} enheter på sprutan.",
+      resultTicks: "Det motsvarar exakt {ticks} streck.",
+      concentration: "Koncentration",
+      drawVolume: "Volym att dra upp",
+      exceedsWarning:
+        "Dosen överskrider den valda sprutans kapacitet ({max} enheter). Välj en större spruta eller justera doseringen.",
+      disclaimer:
+        "Kalkylatorn är ett vägledande verktyg. Dubbelkolla alltid beräkningen och följ produktens officiella instruktioner.",
+    },
   },
   en: {
     brand: "SimpliCity",
@@ -465,6 +489,7 @@ export const translations = {
       quality: "Quality",
       order: "Order",
       contact: "Contact",
+      calculator: "Calculator",
       buyNow: "Buy Now",
     },
     hero: {
@@ -909,6 +934,29 @@ export const translations = {
       discountExhausted: "This discount code has reached its usage limit.",
       discountProductMismatch: "This discount code doesn't apply to items in your cart.",
       serverError: "Unable to process your order.",
+    },
+    calculator: {
+      eyebrow: "Tool",
+      title: "Peptide Calculator",
+      subtitle:
+        "Calculate exactly how many units to draw after reconstitution — with milligram precision.",
+      peptideAmount: "Peptide amount (mg)",
+      waterVolume: "Sterile water added (mL)",
+      desiredDose: "Desired dose (mg)",
+      syringeSize: "Syringe size",
+      syringeU100: "U100 — 1 mL / 100 units",
+      syringeU50: "U50 — 0.5 mL / 50 units",
+      syringeU100Short: "U100 · 100 units",
+      syringeU50Short: "U50 · 50 units",
+      resultEyebrow: "Your result",
+      resultUnits: "Draw up to {units} units on the syringe.",
+      resultTicks: "That equals exactly {ticks} tick marks.",
+      concentration: "Concentration",
+      drawVolume: "Volume to draw",
+      exceedsWarning:
+        "This dose exceeds the selected syringe capacity ({max} units). Choose a larger syringe or adjust the dose.",
+      disclaimer:
+        "This calculator is for guidance only. Always double-check your calculation and follow the product's official instructions.",
     },
   },
 } as const;

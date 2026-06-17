@@ -115,7 +115,7 @@ export default function Faq() {
                   >
                     <div className="overflow-hidden">
                       <div className="border-t border-rose-100 bg-white px-4 py-3">
-                        <p className="text-sm leading-relaxed text-zinc-600">
+                        <p className="text-sm leading-relaxed text-zinc-600 whitespace-pre-line">
                           {entry.answer}
                         </p>
                       </div>
