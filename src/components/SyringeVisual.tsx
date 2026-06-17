@@ -7,7 +7,6 @@ type SyringeVisualProps = {
 };
 
 const BODY = "#FDF3F3";
-const LIQUID = "rgba(251, 113, 133, 0.42)";
 const TRIM = "#E8A0A8";
 const TRIM_DARK = "#D4898F";
 
@@ -17,88 +16,90 @@ export default function SyringeVisual({
   unitLabel,
 }: SyringeVisualProps) {
   const fillRatio = Math.min(Math.max(units / maxUnits, 0), 1);
-  const barrelTop = 72;
-  const barrelHeight = 168;
-  const barrelBottom = barrelTop + barrelHeight;
-  const fillHeight = fillRatio * barrelHeight;
-  const fillY = barrelBottom - fillHeight;
-  const markerY = fillY;
+  const barrelX = 88;
+  const barrelWidth = 320;
+  const barrelY = 34;
+  const barrelHeight = 48;
+  const fillWidth = fillRatio * barrelWidth;
+  const markerX = barrelX + fillWidth;
 
-  const majorTicks = maxUnits === 100 ? 10 : 5;
+  const tickCount = maxUnits === 100 ? 10 : 5;
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex w-full flex-col items-center">
       <svg
-        viewBox="0 0 140 280"
-        className="h-auto w-full max-w-[11rem] sm:max-w-[12.5rem]"
+        viewBox="0 0 480 120"
+        className="h-auto w-full max-w-3xl"
         aria-hidden
       >
         <defs>
-          <clipPath id="syringe-barrel-clip">
-            <rect x="46" y={barrelTop} width="48" height={barrelHeight} rx="4" />
+          <clipPath id="syringe-barrel-clip-horizontal">
+            <rect
+              x={barrelX}
+              y={barrelY}
+              width={barrelWidth}
+              height={barrelHeight}
+              rx="6"
+            />
           </clipPath>
-          <linearGradient id="syringe-liquid" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(251, 113, 133, 0.55)" />
-            <stop offset="100%" stopColor="rgba(244, 63, 94, 0.38)" />
+          <linearGradient id="syringe-liquid-horizontal" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="rgba(244, 63, 94, 0.32)" />
+            <stop offset="100%" stopColor="rgba(251, 113, 133, 0.52)" />
           </linearGradient>
         </defs>
 
         {/* Plunger */}
-        <rect x="58" y="28" width="24" height="36" rx="3" fill={BODY} stroke={TRIM_DARK} strokeWidth="1.2" />
-        <rect x="62" y="32" width="16" height="8" rx="2" fill={TRIM} opacity="0.5" />
-        <rect x="66" y="64" width="8" height="10" rx="1" fill="#FFFFFF" stroke={TRIM} strokeWidth="1" />
+        <rect x="18" y="42" width="52" height="32" rx="4" fill={BODY} stroke={TRIM_DARK} strokeWidth="1.4" />
+        <rect x="24" y="48" width="40" height="10" rx="2" fill={TRIM} opacity="0.45" />
+        <rect x="70" y="50" width="18" height="16" rx="2" fill="#FFFFFF" stroke={TRIM} strokeWidth="1" />
 
-        {/* Barrel outline */}
+        {/* Barrel */}
         <rect
-          x="44"
-          y={barrelTop}
-          width="52"
-          height={barrelHeight}
-          rx="6"
+          x={barrelX - 2}
+          y={barrelY - 2}
+          width={barrelWidth + 4}
+          height={barrelHeight + 4}
+          rx="8"
           fill="#FFFFFF"
           stroke={TRIM_DARK}
-          strokeWidth="1.5"
+          strokeWidth="1.6"
         />
 
         {/* Graduation ticks */}
-        {Array.from({ length: majorTicks + 1 }, (_, index) => {
-          const tickUnits = (index / majorTicks) * maxUnits;
-          const y = barrelBottom - (tickUnits / maxUnits) * barrelHeight;
-          const isMajor = index % 1 === 0;
+        {Array.from({ length: tickCount + 1 }, (_, index) => {
+          const tickUnits = (index / tickCount) * maxUnits;
+          const x = barrelX + (tickUnits / maxUnits) * barrelWidth;
 
           return (
             <g key={tickUnits}>
               <line
-                x1="38"
-                y1={y}
-                x2="44"
-                y2={y}
+                x1={x}
+                y1={barrelY - 6}
+                x2={x}
+                y2={barrelY - 1}
                 stroke={TRIM_DARK}
-                strokeWidth={isMajor ? "1.4" : "1"}
-                opacity={isMajor ? 1 : 0.6}
+                strokeWidth="1.4"
               />
-              {isMajor && (
-                <text
-                  x="32"
-                  y={y + 3}
-                  textAnchor="end"
-                  className="fill-zinc-500 text-[8px] font-medium"
-                >
-                  {Math.round(tickUnits)}
-                </text>
-              )}
+              <text
+                x={x}
+                y={barrelY - 10}
+                textAnchor="middle"
+                className="fill-zinc-500 text-[9px] font-semibold"
+              >
+                {Math.round(tickUnits)}
+              </text>
             </g>
           );
         })}
 
-        {/* Liquid fill */}
-        <g clipPath="url(#syringe-barrel-clip)">
+        {/* Pink liquid fill */}
+        <g clipPath="url(#syringe-barrel-clip-horizontal)">
           <rect
-            x="46"
-            y={fillY}
-            width="48"
-            height={fillHeight}
-            fill="url(#syringe-liquid)"
+            x={barrelX}
+            y={barrelY}
+            width={fillWidth}
+            height={barrelHeight}
+            fill="url(#syringe-liquid-horizontal)"
             className="transition-all duration-300 ease-out"
           />
         </g>
@@ -106,26 +107,49 @@ export default function SyringeVisual({
         {/* Active level marker */}
         {units > 0 && (
           <line
-            x1="44"
-            y1={markerY}
-            x2="96"
-            y2={markerY}
+            x1={markerX}
+            y1={barrelY - 4}
+            x2={markerX}
+            y2={barrelY + barrelHeight + 4}
             stroke="#FB7185"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeDasharray="4 3"
             className="transition-all duration-300 ease-out"
           />
         )}
 
-        {/* Needle hub */}
-        <rect x="62" y={barrelBottom} width="16" height="14" rx="2" fill={BODY} stroke={TRIM_DARK} strokeWidth="1.2" />
-        <line x1="70" y1={barrelBottom + 14} x2="70" y2="262" stroke={TRIM} strokeWidth="2" strokeLinecap="round" />
-        <line x1="70" y1="262" x2="70" y2="272" stroke={TRIM_DARK} strokeWidth="1.2" strokeLinecap="round" />
+        {/* Needle hub + needle */}
+        <rect
+          x={barrelX + barrelWidth}
+          y="46"
+          width="22"
+          height="24"
+          rx="3"
+          fill={BODY}
+          stroke={TRIM_DARK}
+          strokeWidth="1.2"
+        />
+        <line
+          x1={barrelX + barrelWidth + 11}
+          y1="58"
+          x2="462"
+          y2="58"
+          stroke={TRIM}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <line
+          x1="462"
+          y1="58"
+          x2="472"
+          y2="58"
+          stroke={TRIM_DARK}
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
       </svg>
 
-      <p className="mt-2 text-center text-xs font-medium text-zinc-500">
-        {unitLabel}
-      </p>
+      <p className="mt-3 text-center text-sm font-medium text-zinc-500">{unitLabel}</p>
     </div>
   );
 }
