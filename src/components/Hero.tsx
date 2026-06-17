@@ -39,28 +39,28 @@ export default function Hero({ siteSettings }: HeroProps) {
       <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           {siteSettings.heroUseLogoImage ? (
-            <div className="mb-6 flex justify-center">
+            <div className="mb-8 flex justify-center bg-transparent p-0">
               <Image
                 src={heroLogoSrc}
                 alt={siteSettings.heroBrandText}
-                width={320}
-                height={96}
+                width={480}
+                height={128}
                 priority
-                className="h-auto max-h-20 w-auto md:max-h-24"
+                className="h-auto max-h-24 w-auto object-contain md:max-h-32"
               />
             </div>
           ) : (
             <p
-              className={`${brandClass} mb-6 font-extrabold tracking-wide text-rose-500`}
+              className={`${brandClass} mb-8 font-extrabold tracking-wide text-rose-500`}
             >
               {siteSettings.heroBrandText}
             </p>
           )}
 
           <div className="flex w-full flex-col items-center space-y-8">
-            <div className="space-y-3">
+            <div className="flex w-full flex-col items-center space-y-4">
               <h1
-                className={`${titleClass} font-light tracking-tight text-slate-400/90`}
+                className={`${titleClass} font-light tracking-wide text-slate-400/90`}
               >
                 {siteSettings.heroTitle}
               </h1>
@@ -70,13 +70,13 @@ export default function Hero({ siteSettings }: HeroProps) {
               >
                 {siteSettings.heroTagline}
               </p>
-            </div>
 
-            <p
-              className={`${descriptionClass} max-w-2xl font-normal leading-relaxed text-zinc-500`}
-            >
-              {siteSettings.heroSubtitle}
-            </p>
+              <p
+                className={`${descriptionClass} max-w-2xl font-normal leading-relaxed text-zinc-500`}
+              >
+                {siteSettings.heroSubtitle}
+              </p>
+            </div>
 
             <div className="flex flex-col items-center gap-6">
               <div className="flex flex-wrap items-center justify-center gap-4">
