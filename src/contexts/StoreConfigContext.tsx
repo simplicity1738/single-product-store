@@ -61,8 +61,9 @@ type PublicStoreConfig = {
 };
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  heroBadge: "NOGGRANT UTVALT SORTIMENT",
-  heroTitle: "KVALITET UTAN KOMPROMISSER",
+  heroBadge: "SimpliCity",
+  heroTitle: "Premiumingredienser för forskning",
+  heroTagline: "Renhet och kvalitet i fokus",
   heroSubtitle:
     "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
   logoPath: "/logo.png",

@@ -4,12 +4,13 @@ import type { StoreConfig } from "@/lib/store-config";
 type HeroTranslations = {
   badge: string;
   title: string;
+  tagline: string;
   subtitle: string;
 };
 
 type HeroSiteSettings = Pick<
   StoreConfig["siteSettings"],
-  "heroBadge" | "heroTitle" | "heroSubtitle"
+  "heroBadge" | "heroTitle" | "heroTagline" | "heroSubtitle"
 >;
 
 export function resolveHeroContent(
@@ -21,6 +22,7 @@ export function resolveHeroContent(
     return {
       badge: hero.badge,
       title: hero.title,
+      tagline: hero.tagline,
       subtitle: hero.subtitle,
     };
   }
@@ -28,6 +30,7 @@ export function resolveHeroContent(
   return {
     badge: siteSettings.heroBadge || hero.badge,
     title: siteSettings.heroTitle || hero.title,
+    tagline: siteSettings.heroTagline || hero.tagline,
     subtitle: siteSettings.heroSubtitle || hero.subtitle,
   };
 }

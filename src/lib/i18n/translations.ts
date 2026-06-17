@@ -17,11 +17,12 @@ export const translations = {
       buyNow: "Köp nu",
     },
     hero: {
-      badge: "NOGGRANT UTVALT SORTIMENT",
-      title: "KVALITET UTAN KOMPROMISSER",
+      badge: "SimpliCity",
+      title: "Premiumingredienser för forskning",
+      tagline: "Renhet och kvalitet i fokus",
       subtitle:
         "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
-      ctaPrimary: "Köp nu — från {price}",
+      ctaPrimary: "Utforska sortiment",
       ctaSecondary: "Se fördelar",
       stats: {
         purity: { label: "Renhet", value: "100%" },
@@ -546,11 +547,12 @@ export const translations = {
       buyNow: "Buy Now",
     },
     hero: {
-      badge: "CAREFULLY SELECTED ASSORTMENT",
-      title: "QUALITY WITHOUT COMPROMISE",
+      badge: "SimpliCity",
+      title: "Premium ingredients for research",
+      tagline: "Purity and quality in focus",
       subtitle:
         "SimpliCity is built for customers who expect more — carefully selected peptides, verified purity, and a premium experience without compromise.",
-      ctaPrimary: "Buy Now — from {price}",
+      ctaPrimary: "Explore collection",
       ctaSecondary: "See Benefits",
       stats: {
         purity: { label: "Purity", value: "100%" },

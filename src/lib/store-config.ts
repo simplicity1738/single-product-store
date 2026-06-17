@@ -207,6 +207,7 @@ export type StoreConfig = {
   siteSettings: {
     heroBadge: string;
     heroTitle: string;
+    heroTagline: string;
     heroSubtitle: string;
     logoPath: string;
   };
@@ -279,8 +280,9 @@ export function influencerHandleToRef(handle: string): string {
 
 export const DEFAULT_STORE_CONFIG: StoreConfig = {
   siteSettings: {
-    heroBadge: "NOGGRANT UTVALT SORTIMENT",
-    heroTitle: "KVALITET UTAN KOMPROMISSER",
+    heroBadge: "SimpliCity",
+    heroTitle: "Premiumingredienser för forskning",
+    heroTagline: "Renhet och kvalitet i fokus",
     heroSubtitle:
       "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
     logoPath: "/logo.png",

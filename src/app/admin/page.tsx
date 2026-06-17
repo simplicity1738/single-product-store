@@ -1634,6 +1634,19 @@ export default function AdminPage() {
 
             <label className="block sm:col-span-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Hero Tagline
+              </span>
+              <input
+                value={config.siteSettings.heroTagline ?? ""}
+                onChange={(event) =>
+                  updateSiteSetting("heroTagline", event.target.value)
+                }
+                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+            </label>
+
+            <label className="block sm:col-span-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
                 Hero Description
               </span>
               <textarea
