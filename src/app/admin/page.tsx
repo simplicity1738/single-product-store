@@ -26,6 +26,14 @@ import ProductSaleFields, {
 } from "@/components/admin/ProductSaleFields";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
 import {
+  normalizeSiteNavigation,
+  SITE_NAV_ADMIN_META,
+  SITE_NAV_KEYS,
+  SITE_NAV_LABEL_MAX,
+  type SiteNavKey,
+  type SiteNavigation,
+} from "@/lib/site-navigation";
+import {
   PRODUCT_STOCK_STATUS_OPTIONS,
   type ProductStockStatus,
 } from "@/lib/product-stock";
@@ -197,6 +205,16 @@ const BANNER_STYLE_OPTIONS: { value: BannerStyle; label: string }[] = [
   { value: "urgent-alert", label: "Urgent Alert" },
 ];
 
+type AdminTab = "oversikt" | "kampanj" | "betalning" | "system" | "navigation";
+
+const ADMIN_TABS: { id: AdminTab; label: string; hint: string }[] = [
+  { id: "oversikt", label: "Översikt", hint: "Omsättning, ordrar och loggar" },
+  { id: "kampanj", label: "Kampanj", hint: "Banner, hero, rabatter och produkter" },
+  { id: "betalning", label: "Betalning", hint: "Crypto-plånböcker" },
+  { id: "system", label: "System", hint: "Telegram och spårning" },
+  { id: "navigation", label: "Navigation", hint: "Meny och synlighet" },
+];
+
 export default function AdminPage() {
   const [config, setConfig] = useState<StoreConfig | null>(null);
   const [newProduct, setNewProduct] = useState<ProductDraft>(emptyProduct());
@@ -231,6 +249,7 @@ export default function AdminPage() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editProduct, setEditProduct] = useState<EditProductForm | null>(null);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [activeTab, setActiveTab] = useState<AdminTab>("oversikt");
 
   const showToast = useCallback((next: ToastState) => {
     setToast(next);
@@ -510,6 +529,27 @@ export default function AdminPage() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function updateNavItem<K extends keyof SiteNavigation[SiteNavKey]>(
+    key: SiteNavKey,
+    field: K,
+    value: SiteNavigation[SiteNavKey][K],
+  ) {
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            siteNavigation: normalizeSiteNavigation({
+              ...current.siteNavigation,
+              [key]: {
+                ...current.siteNavigation[key],
+                [field]: value,
+              },
+            }),
+          }
+        : current,
+    );
   }
 
   function updateBanner<K extends keyof StoreConfig["banner"]>(
@@ -1272,79 +1312,117 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <section className="border-b border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50">
-        <div className="mx-auto grid max-w-5xl gap-4 px-4 py-6 sm:grid-cols-3 sm:px-6">
-          <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-            <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
-              Total Omsättning (SEK)
-            </p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
-              {formatSek(analytics.totalRevenue)}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-            <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
-              Antal Beställningar
-            </p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
-              {analytics.orderCount}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-            <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
-              Nyhetsbrevsprenumeranter
-            </p>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
-              {analytics.subscriberCount}
-            </p>
-          </div>
-        </div>
-      </section>
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
+        <aside className="shrink-0 sm:w-56">
+          <nav
+            aria-label="Admin-vyer"
+            className="sticky top-6 space-y-1 rounded-2xl border border-rose-100 bg-white p-2 shadow-sm"
+          >
+            {ADMIN_TABS.map((tab) => {
+              const selected = activeTab === tab.id;
 
-      <section className="border-b border-rose-100 bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-          <h2 className="text-lg font-bold text-zinc-900">Systemhälsa</h2>
-          <p className="mt-1 text-sm text-zinc-500">
-            Operativ överblick — försäljningstrender och prenumerationshastighet.
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                Beställningar idag
-              </p>
-              <p className="mt-1 text-2xl font-bold text-zinc-900">
-                {analytics.ordersToday}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                Beställningar (7 dagar)
-              </p>
-              <p className="mt-1 text-2xl font-bold text-zinc-900">
-                {analytics.ordersThisWeek}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
-                Nya prenumeranter idag
-              </p>
-              <p className="mt-1 text-2xl font-bold text-zinc-900">
-                {analytics.signupsToday}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
-                Nya prenumeranter (7 dagar)
-              </p>
-              <p className="mt-1 text-2xl font-bold text-zinc-900">
-                {analytics.signupsThisWeek}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full rounded-xl px-4 py-3 text-left transition ${
+                    selected
+                      ? "bg-rose-400 text-white shadow-sm shadow-rose-200"
+                      : "text-zinc-700 hover:bg-rose-50"
+                  }`}
+                >
+                  <span className="block text-sm font-semibold">{tab.label}</span>
+                  <span
+                    className={`mt-0.5 block text-xs ${
+                      selected ? "text-rose-50" : "text-zinc-500"
+                    }`}
+                  >
+                    {tab.hint}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
 
-      <main className="mx-auto max-w-5xl space-y-8 px-4 py-10 sm:px-6">
+        <div className="min-w-0 flex-1 space-y-8">
+          {activeTab === "oversikt" ? (
+            <>
+              <section className="rounded-3xl border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 p-6 shadow-sm sm:p-8">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                      Total Omsättning (SEK)
+                    </p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                      {formatSek(analytics.totalRevenue)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                      Antal Beställningar
+                    </p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                      {analytics.orderCount}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                      Nyhetsbrevsprenumeranter
+                    </p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                      {analytics.subscriberCount}
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="text-lg font-bold text-zinc-900">Systemhälsa</h2>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Operativ överblick — försäljningstrender och prenumerationshastighet.
+                </p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                      Beställningar idag
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                      {analytics.ordersToday}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                      Beställningar (7 dagar)
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                      {analytics.ordersThisWeek}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                      Nya prenumeranter idag
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                      {analytics.signupsToday}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                      Nya prenumeranter (7 dagar)
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                      {analytics.signupsThisWeek}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </>
+          ) : null}
+
+          <div className="space-y-8">
+          {activeTab === "oversikt" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Orderhantering</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -1454,7 +1532,9 @@ export default function AdminPage() {
             </div>
           )}
         </section>
+          )}
 
+        {activeTab === "system" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">
             Nyhetsbrevsprenumeranter
@@ -1514,7 +1594,9 @@ export default function AdminPage() {
             </div>
           )}
         </section>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">
             Smarta Kampanjpaneler
@@ -1636,7 +1718,9 @@ export default function AdminPage() {
             )}
           </div>
         </section>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1732,7 +1816,9 @@ export default function AdminPage() {
             </label>
           </div>
         </section>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Fraktinställningar</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -1785,7 +1871,9 @@ export default function AdminPage() {
             {isSavingShipping ? "Sparar…" : "Spara ändringar"}
           </button>
         </section>
+          )}
 
+        {activeTab === "betalning" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Crypto Payout Wallets</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -1819,7 +1907,9 @@ export default function AdminPage() {
             Wallet.
           </p>
         </section>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Products Manager</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -2067,7 +2157,9 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Rabatthanterare</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -2239,7 +2331,9 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">
             Influencer-samarbeten
@@ -2384,7 +2478,10 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
+          )}
 
+        {activeTab === "system" && (
+        <>
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">
             System Integration Settings
@@ -2475,7 +2572,10 @@ export default function AdminPage() {
             </label>
           </div>
         </section>
+        </>
+          )}
 
+        {activeTab === "kampanj" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">FAQ-hantering</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -2568,7 +2668,9 @@ export default function AdminPage() {
             </button>
           </div>
         </section>
+          )}
 
+        {activeTab === "oversikt" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
           <h2 className="text-lg font-bold text-zinc-900">Systemloggar</h2>
           <p className="mt-1 text-sm text-zinc-500">
@@ -2602,6 +2704,109 @@ export default function AdminPage() {
             </ul>
           )}
         </section>
+          )}
+
+        {activeTab === "navigation" && (
+        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">Navigation</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Styr synlighet och visningsnamn för menylänkar och widgets.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            {SITE_NAV_KEYS.map((key) => {
+              const item = config.siteNavigation[key];
+              const meta = SITE_NAV_ADMIN_META[key];
+
+              return (
+                <div
+                  key={key}
+                  className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5"
+                >
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900">
+                      {meta.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-zinc-500">{meta.hint}</p>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={item.hide_navbar}
+                        onChange={(event) =>
+                          updateNavItem(key, "hide_navbar", event.target.checked)
+                        }
+                        className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                      />
+                      <span className="text-sm leading-snug text-zinc-700">
+                        <span className="block font-semibold text-zinc-900">
+                          Dölj endast i toppmenyn
+                        </span>
+                        <span className="mt-0.5 block text-xs text-zinc-500">
+                          Länken försvinner från header och mobilmeny.
+                        </span>
+                      </span>
+                    </label>
+
+                    <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={item.hide_section}
+                        onChange={(event) =>
+                          updateNavItem(key, "hide_section", event.target.checked)
+                        }
+                        className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                      />
+                      <span className="text-sm leading-snug text-zinc-700">
+                        <span className="block font-semibold text-zinc-900">
+                          Dölj helt från hemsidan
+                        </span>
+                        <span className="mt-0.5 block text-xs text-zinc-500">
+                          Sektionen eller widgeten renderas inte på startsidan.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        Visningsnamn (SV)
+                      </span>
+                      <input
+                        value={item.label_sv}
+                        maxLength={SITE_NAV_LABEL_MAX}
+                        onChange={(event) =>
+                          updateNavItem(key, "label_sv", event.target.value)
+                        }
+                        placeholder={meta.title}
+                        className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                      />
+                    </label>
+
+                    <label className="block">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        Display name (EN)
+                      </span>
+                      <input
+                        value={item.label_en}
+                        maxLength={SITE_NAV_LABEL_MAX}
+                        onChange={(event) =>
+                          updateNavItem(key, "label_en", event.target.value)
+                        }
+                        placeholder={meta.title}
+                        className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                      />
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+          )}
 
         <div className="flex justify-end pb-10">
           <button
@@ -2613,7 +2818,9 @@ export default function AdminPage() {
             {isSaving ? "Sparar…" : "Spara ändringar"}
           </button>
         </div>
-      </main>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
