@@ -111,6 +111,10 @@ export default function Hero({
           .join(" · ")
     : "";
 
+  const campaignTag = siteSettings.campaignTag.trim();
+  const campaignHeadline = siteSettings.campaignHeadline.trim();
+  const hasHeroCopy = Boolean(campaignTag || campaignHeadline);
+
   return (
     <section className="relative overflow-hidden border-b border-rose-100 bg-gradient-to-b from-rose-50 to-white">
       <HeroThemeDecorations theme={campaignTheme} />
@@ -119,15 +123,25 @@ export default function Hero({
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <div className="relative z-10 flex flex-col text-left lg:py-4">
             <div className="relative z-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
-                {siteSettings.campaignTag}
-              </p>
+              {hasHeroCopy ? (
+                <div className="flex flex-col gap-5">
+                  {campaignTag ? (
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-rose-600">
+                      {campaignTag}
+                    </p>
+                  ) : null}
 
-              <h1 className="mt-5 max-w-xl text-balance text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                {siteSettings.campaignHeadline}
-              </h1>
+                  {campaignHeadline ? (
+                    <h1 className="max-w-xl text-balance text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                      {campaignHeadline}
+                    </h1>
+                  ) : null}
+                </div>
+              ) : null}
 
-              <div className="mt-8 flex flex-wrap items-center gap-3 sm:mt-10">
+              <div
+                className={`flex flex-wrap items-center gap-3 ${hasHeroCopy ? "mt-8 sm:mt-10" : ""}`}
+              >
                 <a
                   href="#products"
                   className="inline-flex h-12 items-center justify-center rounded-full bg-rose-400 px-8 text-sm font-semibold text-white shadow-lg shadow-rose-400/25 transition hover:bg-rose-500"
@@ -155,12 +169,14 @@ export default function Hero({
           <div className="relative z-10 rounded-3xl border border-rose-100/30 bg-gradient-to-br from-rose-50/30 to-white/40 p-6 md:p-8">
             {featuredProduct ? (
               <article className="relative rounded-3xl border border-rose-100 bg-white p-6 shadow-xl shadow-rose-100/40 sm:p-8">
-                <div
-                  className="absolute -left-3 -top-3 z-10 flex h-20 w-20 items-center justify-center rounded-full bg-red-600 p-2 text-center text-[11px] font-extrabold leading-tight text-white shadow-lg sm:-left-4 sm:-top-4 sm:h-24 sm:w-24 sm:text-xs"
-                  aria-label={siteSettings.campaignDiscountBadge}
-                >
-                  {siteSettings.campaignDiscountBadge}
-                </div>
+                {siteSettings.campaignDiscountBadge.trim() ? (
+                  <div
+                    className="absolute -left-3 -top-3 z-10 flex h-20 w-20 items-center justify-center rounded-full bg-red-600 p-2 text-center text-[11px] font-extrabold leading-tight text-white shadow-lg sm:-left-4 sm:-top-4 sm:h-24 sm:w-24 sm:text-xs"
+                    aria-label={siteSettings.campaignDiscountBadge}
+                  >
+                    {siteSettings.campaignDiscountBadge.trim()}
+                  </div>
+                ) : null}
 
                 <ProductSaleBadge
                   basePrice={basePrice}
@@ -299,9 +315,11 @@ export default function Hero({
                   <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent motion-safe:animate-progress-shimmer-wave" />
                 </div>
               </div>
-              <p className="text-xs font-medium text-rose-700 sm:text-sm">
-                {siteSettings.campaignTickerText}
-              </p>
+              {siteSettings.campaignTickerText.trim() ? (
+                <p className="text-xs font-medium text-rose-700 sm:text-sm">
+                  {siteSettings.campaignTickerText.trim()}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import ProductImage from "@/components/ProductImage";
 import type {
   BannerStyle,
+  BannerTimeDisplayMode,
   ConfigDiscount,
   ConfigFaq,
   ConfigProduct,
@@ -203,6 +204,20 @@ const BANNER_STYLE_OPTIONS: { value: BannerStyle; label: string }[] = [
   { value: "clean-minimalist", label: "Clean Minimalist" },
   { value: "flash-sale-pulse", label: "Flash Sale Pulse" },
   { value: "urgent-alert", label: "Urgent Alert" },
+];
+
+const BANNER_TIME_DISPLAY_OPTIONS: {
+  value: BannerTimeDisplayMode;
+  label: string;
+}[] = [
+  {
+    value: "countdown",
+    label: "⏱️ Live-nedräkningstimer (Tickar sekunder)",
+  },
+  {
+    value: "staticDate",
+    label: "📅 Statiskt datum (Visar endast sluttid)",
+  },
 ];
 
 type AdminTab = "oversikt" | "kampanj" | "betalning" | "system" | "navigation";
@@ -1690,6 +1705,54 @@ export default function AdminPage() {
               <span className="text-sm font-medium text-zinc-800">
                 Visa nedräkningstimer i bannern
               </span>
+            </label>
+
+            <fieldset className="rounded-xl border border-rose-100 bg-rose-50/30 p-4">
+              <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Tidsformat i bannern
+              </legend>
+              <div className="mt-2 space-y-2">
+                {BANNER_TIME_DISPLAY_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition ${
+                      config.banner.timeDisplayMode === option.value
+                        ? "border-rose-300 bg-white shadow-sm"
+                        : "border-transparent bg-transparent hover:border-rose-200 hover:bg-white/70"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="bannerTimeDisplayMode"
+                      value={option.value}
+                      checked={config.banner.timeDisplayMode === option.value}
+                      onChange={() =>
+                        updateBanner("timeDisplayMode", option.value)
+                      }
+                      className="mt-0.5 h-4 w-4 border-rose-300 text-rose-500 focus:ring-rose-400"
+                    />
+                    <span className="text-sm font-medium text-zinc-800">
+                      {option.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Anpassad text för slutdatum (t.ex. &apos;Söndag 23:59&apos; —
+                Lämna tom för att använda kalenderdatumet)
+              </span>
+              <input
+                type="text"
+                value={config.banner.customDateString}
+                onChange={(event) =>
+                  updateBanner("customDateString", event.target.value)
+                }
+                placeholder="Söndag kl 23:59"
+                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
             </label>
 
             {config.banner.countdownEnabled && (

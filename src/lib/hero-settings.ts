@@ -111,6 +111,12 @@ function normalizeText(value: unknown, fallback: string): string {
   return text || fallback;
 }
 
+/** Preserves intentionally cleared strings; only falls back when the value is absent. */
+function normalizeOptionalText(value: unknown, fallback: string): string {
+  if (value === undefined || value === null) return fallback;
+  return typeof value === "string" ? value.trim() : fallback;
+}
+
 function normalizeAddonPrice(value: unknown, fallback = 0): number {
   const parsed = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) return fallback;
@@ -213,8 +219,8 @@ export function normalizeSiteSettings(
 
   return {
     logoPath: normalizeText(input?.logoPath, defaults.logoPath),
-    heroEyebrow: normalizeText(input?.heroEyebrow, defaults.heroEyebrow),
-    heroBadge: normalizeText(input?.heroBadge, defaults.heroBadge),
+    heroEyebrow: normalizeOptionalText(input?.heroEyebrow, defaults.heroEyebrow),
+    heroBadge: normalizeOptionalText(input?.heroBadge, defaults.heroBadge),
     heroUseLogoImage: Boolean(input?.heroUseLogoImage),
     heroLogoPath: normalizeText(input?.heroLogoPath, defaults.heroLogoPath),
     heroBrandText: normalizeText(input?.heroBrandText, defaults.heroBrandText),
@@ -226,7 +232,7 @@ export function normalizeSiteSettings(
       input?.heroBrandFontFamily,
       defaults.heroBrandFontFamily,
     ),
-    heroTitle: normalizeText(input?.heroTitle, defaults.heroTitle),
+    heroTitle: normalizeOptionalText(input?.heroTitle, defaults.heroTitle),
     heroTitleFontSize: normalizeFontSize(
       input?.heroTitleFontSize,
       defaults.heroTitleFontSize,
@@ -235,7 +241,7 @@ export function normalizeSiteSettings(
       input?.heroTitleFontFamily,
       defaults.heroTitleFontFamily,
     ),
-    heroTagline: normalizeText(input?.heroTagline, defaults.heroTagline),
+    heroTagline: normalizeOptionalText(input?.heroTagline, defaults.heroTagline),
     heroTaglineFontSize: normalizeFontSize(
       input?.heroTaglineFontSize,
       defaults.heroTaglineFontSize,
@@ -244,7 +250,7 @@ export function normalizeSiteSettings(
       input?.heroTaglineFontFamily,
       defaults.heroTaglineFontFamily,
     ),
-    heroSubtitle: normalizeText(input?.heroSubtitle, defaults.heroSubtitle),
+    heroSubtitle: normalizeOptionalText(input?.heroSubtitle, defaults.heroSubtitle),
     heroDescriptionFontSize: normalizeFontSize(
       input?.heroDescriptionFontSize,
       defaults.heroDescriptionFontSize,
@@ -253,12 +259,12 @@ export function normalizeSiteSettings(
       input?.heroDescriptionFontFamily,
       defaults.heroDescriptionFontFamily,
     ),
-    campaignTag: normalizeText(input?.campaignTag, defaults.campaignTag),
-    campaignHeadline: normalizeText(
+    campaignTag: normalizeOptionalText(input?.campaignTag, defaults.campaignTag),
+    campaignHeadline: normalizeOptionalText(
       input?.campaignHeadline,
       defaults.campaignHeadline,
     ),
-    campaignDiscountBadge: normalizeText(
+    campaignDiscountBadge: normalizeOptionalText(
       input?.campaignDiscountBadge,
       defaults.campaignDiscountBadge,
     ),
@@ -271,7 +277,7 @@ export function normalizeSiteSettings(
         ? defaults.showAddons
         : Boolean(input.showAddons),
     campaignAddons: normalizeCampaignAddons(input),
-    campaignTickerText: normalizeText(
+    campaignTickerText: normalizeOptionalText(
       input?.campaignTickerText,
       defaults.campaignTickerText,
     ),

@@ -24,6 +24,23 @@ function formatRemaining(targetIso: string): string {
     .join(":");
 }
 
+function formatStaticEndDate(targetIso: string): string {
+  const target = new Date(targetIso);
+  if (Number.isNaN(target.getTime())) return "";
+
+  const datePart = target.toLocaleDateString("sv-SE", {
+    day: "numeric",
+    month: "long",
+  });
+  const timePart = target.toLocaleTimeString("sv-SE", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  return `Kampanjen slutar: ${datePart}, ${timePart}`;
+}
+
 function useCountdown(targetIso: string, enabled: boolean) {
   const [remaining, setRemaining] = useState(() =>
     enabled && targetIso ? formatRemaining(targetIso) : "",
@@ -45,21 +62,64 @@ function useCountdown(targetIso: string, enabled: boolean) {
   return remaining;
 }
 
-const STYLE_CLASSES: Record<BannerConfig["style"], string> = {
-  "clean-minimalist": "bg-zinc-900 text-white",
-  "flash-sale-pulse": "animate-banner-pulse bg-rose-600 text-white",
-  "urgent-alert": "bg-red-700 text-white",
+const STYLE_SHELL: Record<BannerConfig["style"], string> = {
+  "clean-minimalist":
+    "relative overflow-hidden bg-rose-400 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]",
+  "flash-sale-pulse":
+    "relative overflow-hidden bg-gradient-to-r from-rose-400 via-pink-500 to-amber-300 bg-[length:200%_auto] animate-banner-shimmer text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]",
+  "urgent-alert":
+    "relative overflow-hidden bg-gradient-to-r from-red-800 via-red-700 to-red-900 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]",
 };
 
-export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) {
-  const lines = useMemo(
-    () => banner.activeLines.filter((line) => line.trim().length > 0),
-    [banner.activeLines],
+function BannerTimeDisplay({ banner }: { banner: BannerConfig }) {
+  const showCountdown =
+    banner.countdownEnabled &&
+    banner.timeDisplayMode === "countdown" &&
+    banner.countdownEndsAt;
+
+  const showStaticDate =
+    banner.countdownEnabled &&
+    banner.timeDisplayMode === "staticDate" &&
+    banner.countdownEndsAt;
+
+  const countdown = useCountdown(
+    banner.countdownEndsAt,
+    Boolean(showCountdown),
   );
 
+  const staticLabel = useMemo(() => {
+    if (!showStaticDate) return "";
+
+    const custom = banner.customDateString.trim();
+    if (custom) return custom;
+
+    return formatStaticEndDate(banner.countdownEndsAt);
+  }, [banner.countdownEndsAt, banner.customDateString, showStaticDate]);
+
+  if (showCountdown && countdown) {
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/15 px-3 py-0.5 font-mono text-xs tabular-nums backdrop-blur-sm">
+        <span className="opacity-80">⏱</span>
+        {countdown}
+      </span>
+    );
+  }
+
+  if (showStaticDate && staticLabel) {
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/15 px-3 py-0.5 text-xs font-medium backdrop-blur-sm">
+        <span className="opacity-80">📅</span>
+        {staticLabel}
+      </span>
+    );
+  }
+
+  return null;
+}
+
+function RotatingLines({ lines }: { lines: string[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
-  const countdown = useCountdown(banner.countdownEndsAt, banner.countdownEnabled);
 
   useEffect(() => {
     if (lines.length <= 1) return;
@@ -72,16 +132,60 @@ export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) 
     return () => window.clearInterval(interval);
   }, [lines.length]);
 
-  if (lines.length === 0) return null;
-
   const currentLine = lines[activeIndex] ?? lines[0];
 
   return (
+    <span key={fadeKey} className="animate-banner-crossfade inline-block">
+      {currentLine}
+    </span>
+  );
+}
+
+function MarqueeLines({ lines }: { lines: string[] }) {
+  const items = useMemo(() => [...lines, ...lines], [lines]);
+
+  return (
+    <div className="relative w-full overflow-hidden">
+      <div className="flex w-max animate-banner-marquee items-center gap-10 whitespace-nowrap">
+        {items.map((text, index) => (
+          <span
+            key={`${text}-${index}`}
+            className="inline-flex items-center gap-10 text-sm font-semibold tracking-wide"
+          >
+            <span>{text}</span>
+            <span className="opacity-40" aria-hidden>
+              •
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) {
+  const lines = useMemo(
+    () => banner.activeLines.filter((line) => line.trim().length > 0),
+    [banner.activeLines],
+  );
+
+  if (lines.length === 0) return null;
+
+  const isUrgentMarquee = banner.style === "urgent-alert" && lines.length > 0;
+
+  return (
     <div
-      className={`relative overflow-hidden px-4 py-2.5 text-center text-sm font-semibold tracking-wide ${STYLE_CLASSES[banner.style]}`}
+      className={`px-4 py-2.5 text-center text-sm font-semibold tracking-wide ${STYLE_SHELL[banner.style]}`}
       role="status"
       aria-live="polite"
     >
+      {banner.style === "clean-minimalist" && (
+        <span
+          className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+          aria-hidden
+        />
+      )}
+
       {banner.style === "urgent-alert" && (
         <span
           className="absolute left-4 top-1/2 inline-block h-2 w-2 -translate-y-1/2 animate-banner-dot rounded-full bg-white"
@@ -89,21 +193,19 @@ export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) 
         />
       )}
 
-      <div className="mx-auto flex max-w-6xl items-center justify-center gap-3">
-        <span
-          key={fadeKey}
-          className="animate-banner-crossfade inline-block"
-        >
-          {currentLine}
-        </span>
-
-        {banner.countdownEnabled && countdown && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-black/20 px-3 py-0.5 font-mono text-xs tabular-nums">
-            <span className="opacity-80">⏱</span>
-            {countdown}
-          </span>
-        )}
-      </div>
+      {isUrgentMarquee ? (
+        <div className="relative mx-auto flex max-w-6xl items-center gap-4">
+          <div className="min-w-0 flex-1 pl-6">
+            <MarqueeLines lines={lines} />
+          </div>
+          <BannerTimeDisplay banner={banner} />
+        </div>
+      ) : (
+        <div className="relative mx-auto flex max-w-6xl items-center justify-center gap-3">
+          <RotatingLines lines={lines} />
+          <BannerTimeDisplay banner={banner} />
+        </div>
+      )}
     </div>
   );
 }

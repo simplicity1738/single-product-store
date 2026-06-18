@@ -71,6 +71,32 @@ body {
   animation: banner-dot 1s ease-in-out infinite;
 }
 
+@keyframes banner-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.animate-banner-shimmer {
+  animation: banner-shimmer 4s linear infinite;
+}
+
+@keyframes banner-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-banner-marquee {
+  animation: banner-marquee 28s linear infinite;
+}
+
 @keyframes teacher-bot-bob {
   0%,
   100% {

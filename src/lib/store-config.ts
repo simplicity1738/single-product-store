@@ -200,12 +200,18 @@ export type BannerStyle =
   | "flash-sale-pulse"
   | "urgent-alert";
 
+export type BannerTimeDisplayMode = "countdown" | "staticDate";
+
 export type BannerConfig = {
   activeLines: string[];
   style: BannerStyle;
   countdownEnabled: boolean;
   /** ISO datetime target when countdown is enabled */
   countdownEndsAt: string;
+  /** How end time is shown when countdown is enabled */
+  timeDisplayMode: BannerTimeDisplayMode;
+  /** Optional override for static end-date copy (e.g. "Söndag kl 23:59") */
+  customDateString: string;
 };
 
 export type MarketingTracking = {
@@ -297,6 +303,8 @@ export const DEFAULT_BANNER: BannerConfig = {
   style: "clean-minimalist",
   countdownEnabled: false,
   countdownEndsAt: "",
+  timeDisplayMode: "countdown",
+  customDateString: "",
 };
 
 export const DEFAULT_MARKETING_TRACKING: MarketingTracking = {

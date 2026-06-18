@@ -138,11 +138,14 @@ export default function HeroThemeDecorations({
 }
 
 export function HeroSupportBadge({ label }: { label: string }) {
+  const text = label.trim();
+  if (!text) return null;
+
   return (
     <div className="mt-5 flex flex-wrap items-center gap-3">
       <span className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold tracking-wide text-rose-700">
         <span className="h-1.5 w-1.5 rounded-full bg-rose-400" aria-hidden />
-        {label}
+        {text}
       </span>
     </div>
   );

@@ -57,6 +57,18 @@ function normalizeBanner(entry: Partial<BannerConfig> | undefined): BannerConfig
       ? style
       : "clean-minimalist";
 
+  const rawDisplayMode =
+    entry?.timeDisplayMode ??
+    (entry as { bannerTimeDisplayMode?: string } | undefined)
+      ?.bannerTimeDisplayMode;
+  const timeDisplayMode =
+    rawDisplayMode === "staticDate" ? "staticDate" : "countdown";
+
+  const rawCustomDate =
+    entry?.customDateString ??
+    (entry as { bannerCustomDateString?: string } | undefined)
+      ?.bannerCustomDateString;
+
   return {
     activeLines: Array.isArray(entry?.activeLines)
       ? entry.activeLines.map((line) => String(line).trim()).filter(Boolean)
@@ -65,6 +77,9 @@ function normalizeBanner(entry: Partial<BannerConfig> | undefined): BannerConfig
     countdownEnabled: Boolean(entry?.countdownEnabled),
     countdownEndsAt:
       typeof entry?.countdownEndsAt === "string" ? entry.countdownEndsAt : "",
+    timeDisplayMode,
+    customDateString:
+      typeof rawCustomDate === "string" ? rawCustomDate.trim() : "",
   };
 }
 
