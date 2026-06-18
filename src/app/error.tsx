@@ -16,7 +16,9 @@ export default function GlobalError({
   const { t } = useLanguage();
 
   useEffect(() => {
-    console.error("[SimpliCity] Unhandled error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[SimpliCity] Unhandled error:", error);
+    }
   }, [error]);
 
   return (

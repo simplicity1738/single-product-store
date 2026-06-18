@@ -202,6 +202,8 @@ export type BannerStyle =
 
 export type BannerTimeDisplayMode = "countdown" | "staticDate";
 
+export type BannerAnimation = "none" | "pulse" | "slide" | "shimmer";
+
 export type BannerConfig = {
   activeLines: string[];
   style: BannerStyle;
@@ -212,6 +214,8 @@ export type BannerConfig = {
   timeDisplayMode: BannerTimeDisplayMode;
   /** Optional override for static end-date copy (e.g. "Söndag kl 23:59") */
   customDateString: string;
+  /** Text and background motion for the announcement bar */
+  bannerAnimation: BannerAnimation;
 };
 
 export type MarketingTracking = {
@@ -305,7 +309,15 @@ export const DEFAULT_BANNER: BannerConfig = {
   countdownEndsAt: "",
   timeDisplayMode: "countdown",
   customDateString: "",
+  bannerAnimation: "none",
 };
+
+const VALID_BANNER_ANIMATIONS = new Set<BannerAnimation>([
+  "none",
+  "pulse",
+  "slide",
+  "shimmer",
+]);
 
 type BannerConfigInput = Partial<BannerConfig> & {
   bannerTimeDisplayMode?: string;
@@ -333,6 +345,13 @@ export function normalizeBanner(
   const rawCountdownEndsAt =
     entry?.countdownEndsAt ?? entry?.campaignCountdownDate;
 
+  const rawAnimation = entry?.bannerAnimation;
+  const bannerAnimation =
+    typeof rawAnimation === "string" &&
+    VALID_BANNER_ANIMATIONS.has(rawAnimation as BannerAnimation)
+      ? (rawAnimation as BannerAnimation)
+      : DEFAULT_BANNER.bannerAnimation;
+
   return {
     activeLines: Array.isArray(entry?.activeLines)
       ? entry.activeLines.map((line) => String(line).trim()).filter(Boolean)
@@ -344,6 +363,7 @@ export function normalizeBanner(
     timeDisplayMode,
     customDateString:
       typeof rawCustomDate === "string" ? rawCustomDate.trim() : "",
+    bannerAnimation,
   };
 }
 

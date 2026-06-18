@@ -1,20 +1,49 @@
 export const SESSION_COOKIE_NAME = "simplicity_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 
-const DEFAULT_ADMIN_PASSWORD = "Bestallning01";
-
 type SessionPayload = {
   exp: number;
   iat: number;
 };
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < a.length; index += 1) {
+    mismatch |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  }
+  return mismatch === 0;
+}
+
+export function isAdminPasswordConfigured(): boolean {
+  return getAdminPassword().length > 0;
+}
+
 export function getAdminPassword(): string {
   const configured = process.env.ADMIN_PASSWORD?.trim();
-  return configured || DEFAULT_ADMIN_PASSWORD;
+  if (configured) return configured;
+
+  if (process.env.NODE_ENV !== "production") {
+    return process.env.ADMIN_DEV_PASSWORD?.trim() ?? "";
+  }
+
+  return "";
+}
+
+function getSessionSigningSecret(): string {
+  const sessionSecret = process.env.ADMIN_SESSION_SECRET?.trim();
+  if (sessionSecret) return sessionSecret;
+
+  const adminPassword = getAdminPassword();
+  if (adminPassword) return adminPassword;
+
+  return "";
 }
 
 export function validateAdminPassword(password: string): boolean {
-  return password.trim() === getAdminPassword();
+  const expected = getAdminPassword();
+  if (!expected) return false;
+  return timingSafeEqual(password.trim(), expected);
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
@@ -41,9 +70,14 @@ function base64UrlDecode(value: string): Uint8Array {
 }
 
 async function signPayload(payloadB64: string): Promise<string> {
+  const secret = getSessionSigningSecret();
+  if (!secret) {
+    throw new Error("Admin session signing secret is not configured.");
+  }
+
   const key = await crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(getAdminPassword()),
+    new TextEncoder().encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
@@ -61,9 +95,12 @@ async function verifyPayloadSignature(
   signatureB64: string,
 ): Promise<boolean> {
   try {
+    const secret = getSessionSigningSecret();
+    if (!secret) return false;
+
     const key = await crypto.subtle.importKey(
       "raw",
-      new TextEncoder().encode(getAdminPassword()),
+      new TextEncoder().encode(secret),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["verify"],

@@ -9,6 +9,7 @@ import {
   SESSION_COOKIE_NAME,
   createSessionToken,
   getSessionCookieOptions,
+  isAdminPasswordConfigured,
   validateAdminPassword,
 } from "@/lib/admin-session";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -47,6 +48,16 @@ export async function POST(request: Request) {
           "Retry-After": String(rateLimit.retryAfterSeconds),
         },
       },
+    );
+  }
+
+  if (!isAdminPasswordConfigured()) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Admin login is not configured on this server.",
+      },
+      { status: 503 },
     );
   }
 

@@ -35,7 +35,9 @@ async function replyToOperator(chatId: string, text: string): Promise<void> {
 
 function isWebhookAuthorized(request: Request): boolean {
   const configuredSecret = env.telegramWebhookSecret;
-  if (!configuredSecret) return true;
+  if (!configuredSecret) {
+    return process.env.NODE_ENV !== "production";
+  }
 
   const headerSecret =
     request.headers.get("x-telegram-bot-api-secret-token")?.trim() ?? "";

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ProductImage from "@/components/ProductImage";
 import type {
+  BannerAnimation,
   BannerStyle,
   BannerTimeDisplayMode,
   ConfigDiscount,
@@ -204,6 +205,13 @@ const BANNER_STYLE_OPTIONS: { value: BannerStyle; label: string }[] = [
   { value: "clean-minimalist", label: "Clean Minimalist" },
   { value: "flash-sale-pulse", label: "Flash Sale Pulse" },
   { value: "urgent-alert", label: "Urgent Alert" },
+];
+
+const BANNER_ANIMATION_OPTIONS: { value: BannerAnimation; label: string }[] = [
+  { value: "none", label: "🛑 Stilla (Ingen animering)" },
+  { value: "pulse", label: "✨ Mjuk Pulsering (Andas elegant)" },
+  { value: "slide", label: "➡️ Rullande text (Glider sidleds)" },
+  { value: "shimmer", label: "⚡ Lyxigt Skimmer (Ljusvåg)" },
 ];
 
 const BANNER_TIME_DISPLAY_OPTIONS: {
@@ -1686,6 +1694,28 @@ export default function AdminPage() {
                 className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
               >
                 {BANNER_STYLE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Text &amp; Bakgrunds-animering
+              </span>
+              <select
+                value={config.banner.bannerAnimation}
+                onChange={(event) =>
+                  updateBanner(
+                    "bannerAnimation",
+                    event.target.value as BannerAnimation,
+                  )
+                }
+                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              >
+                {BANNER_ANIMATION_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>

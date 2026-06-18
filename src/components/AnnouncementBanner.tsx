@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { BannerConfig, BannerTimeDisplayMode } from "@/lib/store-config";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import type {
+  BannerAnimation,
+  BannerConfig,
+  BannerTimeDisplayMode,
+} from "@/lib/store-config";
 
 type AnnouncementBannerProps = {
   banner: BannerConfig;
@@ -66,7 +70,7 @@ const STYLE_SHELL: Record<BannerConfig["style"], string> = {
   "clean-minimalist":
     "relative overflow-hidden bg-rose-400 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]",
   "flash-sale-pulse":
-    "relative overflow-hidden bg-gradient-to-r from-rose-400 via-pink-500 to-amber-300 bg-[length:200%_auto] animate-banner-shimmer text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]",
+    "relative overflow-hidden bg-gradient-to-r from-rose-400 via-pink-500 to-amber-300 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]",
   "urgent-alert":
     "relative overflow-hidden bg-gradient-to-r from-red-800 via-red-700 to-red-900 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]",
 };
@@ -137,13 +141,13 @@ function RotatingLines({ lines }: { lines: string[] }) {
   );
 }
 
-function MarqueeLines({ lines }: { lines: string[] }) {
-  const items = useMemo(() => [...lines, ...lines], [lines]);
+function SlideTickerLines({ lines }: { lines: string[] }) {
+  const trackItems = useMemo(() => [...lines, ...lines], [lines]);
 
   return (
     <div className="relative w-full overflow-hidden">
-      <div className="flex w-max animate-banner-marquee items-center gap-10 whitespace-nowrap">
-        {items.map((text, index) => (
+      <div className="flex w-max animate-marquee items-center gap-10 whitespace-nowrap">
+        {trackItems.map((text, index) => (
           <span
             key={`${text}-${index}`}
             className="inline-flex items-center gap-10 text-sm font-semibold tracking-wide"
@@ -159,6 +163,54 @@ function MarqueeLines({ lines }: { lines: string[] }) {
   );
 }
 
+function BannerTextAnimationWrapper({
+  animation,
+  children,
+}: {
+  animation: BannerAnimation;
+  children: ReactNode;
+}) {
+  if (animation === "pulse") {
+    return (
+      <span className="inline-block animate-[pulse_3s_ease-in-out_infinite]">
+        {children}
+      </span>
+    );
+  }
+
+  if (animation === "shimmer") {
+    return (
+      <span className="relative inline-block overflow-hidden">
+        {children}
+        <span
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%] animate-shimmer"
+          aria-hidden
+        />
+      </span>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function BannerTextContent({
+  lines,
+  animation,
+}: {
+  lines: string[];
+  animation: BannerAnimation;
+}) {
+  if (animation === "slide") {
+    return <SlideTickerLines lines={lines} />;
+  }
+
+  return (
+    <BannerTextAnimationWrapper animation={animation}>
+      <RotatingLines lines={lines} />
+    </BannerTextAnimationWrapper>
+  );
+}
+
 export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) {
   const lines = useMemo(
     () => banner.activeLines.filter((line) => line.trim().length > 0),
@@ -167,7 +219,8 @@ export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) 
 
   if (lines.length === 0) return null;
 
-  const isUrgentMarquee = banner.style === "urgent-alert" && lines.length > 0;
+  const animation = banner.bannerAnimation ?? "none";
+  const isSlideLayout = animation === "slide";
 
   return (
     <div
@@ -175,30 +228,16 @@ export default function AnnouncementBanner({ banner }: AnnouncementBannerProps) 
       role="status"
       aria-live="polite"
     >
-      {banner.style === "clean-minimalist" && (
-        <span
-          className="pointer-events-none absolute inset-0 animate-pulse bg-gradient-to-r from-white/0 via-white/10 to-white/0"
-          aria-hidden
-        />
-      )}
-
-      {banner.style === "urgent-alert" && (
-        <span
-          className="absolute left-4 top-1/2 inline-block h-2 w-2 -translate-y-1/2 animate-banner-dot rounded-full bg-white"
-          aria-hidden
-        />
-      )}
-
-      {isUrgentMarquee ? (
+      {isSlideLayout ? (
         <div className="relative mx-auto flex max-w-6xl items-center gap-4">
-          <div className="min-w-0 flex-1 pl-6">
-            <MarqueeLines lines={lines} />
+          <div className="min-w-0 flex-1">
+            <BannerTextContent lines={lines} animation={animation} />
           </div>
           <BannerTimeDisplay banner={banner} />
         </div>
       ) : (
         <div className="relative mx-auto flex max-w-6xl items-center justify-center gap-3">
-          <RotatingLines lines={lines} />
+          <BannerTextContent lines={lines} animation={animation} />
           <BannerTimeDisplay banner={banner} />
         </div>
       )}
