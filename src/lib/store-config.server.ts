@@ -1,19 +1,18 @@
 import { env } from "@/lib/env";
 import { KV_KEYS, readKvData, writeKvData } from "@/lib/kv-store";
 import {
-  DEFAULT_BANNER,
   DEFAULT_FREE_SHIPPING_THRESHOLD,
   DEFAULT_INFLUENCERS,
   DEFAULT_MARKETING_TRACKING,
   DEFAULT_REVIEWS,
   DEFAULT_SHIPPING_FEE,
   DEFAULT_STORE_CONFIG,
+  normalizeBanner,
   normalizeDiscountCode,
   normalizeInfluencerHandle,
   normalizeTelegramHandle,
   parseVariantsInput,
   resolveConfigVariants,
-  type BannerConfig,
   type ConfigDiscount,
   type ConfigFaq,
   type ConfigProduct,
@@ -47,39 +46,6 @@ function normalizeDiscount(entry: Partial<ConfigDiscount>): ConfigDiscount {
     usageCount: Number.isFinite(entry.usageCount)
       ? Math.max(0, Math.floor(Number(entry.usageCount)))
       : 0,
-  };
-}
-
-function normalizeBanner(entry: Partial<BannerConfig> | undefined): BannerConfig {
-  const style = entry?.style;
-  const validStyle =
-    style === "flash-sale-pulse" || style === "urgent-alert"
-      ? style
-      : "clean-minimalist";
-
-  const rawDisplayMode =
-    entry?.timeDisplayMode ??
-    (entry as { bannerTimeDisplayMode?: string } | undefined)
-      ?.bannerTimeDisplayMode;
-  const timeDisplayMode =
-    rawDisplayMode === "staticDate" ? "staticDate" : "countdown";
-
-  const rawCustomDate =
-    entry?.customDateString ??
-    (entry as { bannerCustomDateString?: string } | undefined)
-      ?.bannerCustomDateString;
-
-  return {
-    activeLines: Array.isArray(entry?.activeLines)
-      ? entry.activeLines.map((line) => String(line).trim()).filter(Boolean)
-      : DEFAULT_BANNER.activeLines,
-    style: validStyle,
-    countdownEnabled: Boolean(entry?.countdownEnabled),
-    countdownEndsAt:
-      typeof entry?.countdownEndsAt === "string" ? entry.countdownEndsAt : "",
-    timeDisplayMode,
-    customDateString:
-      typeof rawCustomDate === "string" ? rawCustomDate.trim() : "",
   };
 }
 

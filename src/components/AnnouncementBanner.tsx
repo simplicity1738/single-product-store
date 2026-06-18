@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { BannerConfig } from "@/lib/store-config";
+import type { BannerConfig, BannerTimeDisplayMode } from "@/lib/store-config";
 
 type AnnouncementBannerProps = {
   banner: BannerConfig;
@@ -9,9 +9,12 @@ type AnnouncementBannerProps = {
 
 function formatRemaining(targetIso: string): string {
   const target = new Date(targetIso).getTime();
-  const diff = target - Date.now();
+  if (Number.isNaN(target) || !targetIso.trim()) {
+    return "";
+  }
 
-  if (Number.isNaN(target) || diff <= 0) {
+  const diff = target - Date.now();
+  if (diff <= 0) {
     return "00:00:00";
   }
 
@@ -24,21 +27,16 @@ function formatRemaining(targetIso: string): string {
     .join(":");
 }
 
-function formatStaticEndDate(targetIso: string): string {
+function formatLocalizedEndDate(targetIso: string): string {
   const target = new Date(targetIso);
-  if (Number.isNaN(target.getTime())) return "";
+  if (Number.isNaN(target.getTime()) || !targetIso.trim()) {
+    return "";
+  }
 
-  const datePart = target.toLocaleDateString("sv-SE", {
+  return target.toLocaleDateString("sv-SE", {
     day: "numeric",
     month: "long",
   });
-  const timePart = target.toLocaleTimeString("sv-SE", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-
-  return `Kampanjen slutar: ${datePart}, ${timePart}`;
 }
 
 function useCountdown(targetIso: string, enabled: boolean) {
@@ -47,7 +45,10 @@ function useCountdown(targetIso: string, enabled: boolean) {
   );
 
   useEffect(() => {
-    if (!enabled || !targetIso) return;
+    if (!enabled || !targetIso) {
+      setRemaining("");
+      return;
+    }
 
     function tick() {
       setRemaining(formatRemaining(targetIso));
@@ -58,7 +59,6 @@ function useCountdown(targetIso: string, enabled: boolean) {
     return () => window.clearInterval(interval);
   }, [enabled, targetIso]);
 
-  if (!enabled || !targetIso) return "";
   return remaining;
 }
 
@@ -72,49 +72,45 @@ const STYLE_SHELL: Record<BannerConfig["style"], string> = {
 };
 
 function BannerTimeDisplay({ banner }: { banner: BannerConfig }) {
-  const showCountdown =
-    banner.countdownEnabled &&
-    banner.timeDisplayMode === "countdown" &&
-    banner.countdownEndsAt;
-
-  const showStaticDate =
-    banner.countdownEnabled &&
-    banner.timeDisplayMode === "staticDate" &&
-    banner.countdownEndsAt;
+  const timeDisplayMode: BannerTimeDisplayMode = banner.timeDisplayMode;
+  const countdownEndsAt = banner.countdownEndsAt.trim();
+  const customDateString = banner.customDateString.trim();
+  const isStaticDate = timeDisplayMode === "staticDate";
 
   const countdown = useCountdown(
-    banner.countdownEndsAt,
-    Boolean(showCountdown),
+    countdownEndsAt,
+    banner.countdownEnabled && !isStaticDate && Boolean(countdownEndsAt),
   );
 
   const staticLabel = useMemo(() => {
-    if (!showStaticDate) return "";
+    if (!isStaticDate) return "";
+    if (customDateString) return customDateString;
+    if (countdownEndsAt) return formatLocalizedEndDate(countdownEndsAt);
+    return "";
+  }, [countdownEndsAt, customDateString, isStaticDate]);
 
-    const custom = banner.customDateString.trim();
-    if (custom) return custom;
+  const pillLabel = isStaticDate ? staticLabel : countdown;
 
-    return formatStaticEndDate(banner.countdownEndsAt);
-  }, [banner.countdownEndsAt, banner.customDateString, showStaticDate]);
-
-  if (showCountdown && countdown) {
-    return (
-      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/15 px-3 py-0.5 font-mono text-xs tabular-nums backdrop-blur-sm">
-        <span className="opacity-80">⏱</span>
-        {countdown}
-      </span>
-    );
+  if (!banner.countdownEnabled || !pillLabel) {
+    return null;
   }
 
-  if (showStaticDate && staticLabel) {
-    return (
-      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/15 px-3 py-0.5 text-xs font-medium backdrop-blur-sm">
-        <span className="opacity-80">📅</span>
-        {staticLabel}
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-black/15 px-3 py-0.5 text-xs backdrop-blur-sm ${
+        isStaticDate ? "font-medium" : "font-mono tabular-nums"
+      }`}
+    >
+      <span className="opacity-80" aria-hidden>
+        {isStaticDate ? "📅" : "⏱"}
       </span>
-    );
-  }
-
-  return null;
+      {isStaticDate ? (
+        <span>{staticLabel}</span>
+      ) : (
+        <span>{countdown}</span>
+      )}
+    </span>
+  );
 }
 
 function RotatingLines({ lines }: { lines: string[] }) {

@@ -307,6 +307,46 @@ export const DEFAULT_BANNER: BannerConfig = {
   customDateString: "",
 };
 
+type BannerConfigInput = Partial<BannerConfig> & {
+  bannerTimeDisplayMode?: string;
+  bannerCustomDateString?: string;
+  campaignCountdownDate?: string;
+};
+
+export function normalizeBanner(
+  entry: BannerConfigInput | undefined,
+): BannerConfig {
+  const style = entry?.style;
+  const validStyle =
+    style === "flash-sale-pulse" || style === "urgent-alert"
+      ? style
+      : "clean-minimalist";
+
+  const rawDisplayMode =
+    entry?.timeDisplayMode ?? entry?.bannerTimeDisplayMode;
+  const timeDisplayMode =
+    rawDisplayMode === "staticDate" ? "staticDate" : "countdown";
+
+  const rawCustomDate =
+    entry?.customDateString ?? entry?.bannerCustomDateString;
+
+  const rawCountdownEndsAt =
+    entry?.countdownEndsAt ?? entry?.campaignCountdownDate;
+
+  return {
+    activeLines: Array.isArray(entry?.activeLines)
+      ? entry.activeLines.map((line) => String(line).trim()).filter(Boolean)
+      : DEFAULT_BANNER.activeLines,
+    style: validStyle,
+    countdownEnabled: Boolean(entry?.countdownEnabled),
+    countdownEndsAt:
+      typeof rawCountdownEndsAt === "string" ? rawCountdownEndsAt : "",
+    timeDisplayMode,
+    customDateString:
+      typeof rawCustomDate === "string" ? rawCustomDate.trim() : "",
+  };
+}
+
 export const DEFAULT_MARKETING_TRACKING: MarketingTracking = {
   googleAnalyticsId: "",
   tiktokPixelId: "",

@@ -18,6 +18,7 @@ import {
   DEFAULT_MARKETING_TRACKING,
   DEFAULT_SHIPPING_FEE,
   getCatalogProducts,
+  normalizeBanner,
   getConfigReviews,
   getProductLineLabelFromConfig,
   getProductTitle,
@@ -140,7 +141,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       const data = (await response.json()) as PublicStoreConfig;
       setSiteSettings(normalizeSiteSettings(data.siteSettings));
       setSiteNavigation(normalizeSiteNavigation(data.siteNavigation));
-      setBanner({ ...DEFAULT_BANNER, ...data.banner });
+      setBanner(normalizeBanner(data.banner));
       setMarketingTracking({
         ...DEFAULT_MARKETING_TRACKING,
         ...data.marketingTracking,
