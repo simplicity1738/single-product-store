@@ -180,42 +180,46 @@ export const translations = {
       },
       continueToPayment: "Fortsätt till betalning",
     },
-    payment: {
-      eyebrow: "Kryptobetalning",
-      title: "Slutför din betalning",
+    checkoutMethod: {
+      eyebrow: "Betalning",
+      title: "Välj betalsätt",
       subtitle:
-        "Välj nätverk och token, granska livekursen och generera din unika betalningsadress.",
+        "Betala direkt med kort, Klarna eller Link — eller skicka Bitcoin manuellt.",
       backToDetails: "← Tillbaka till leveransuppgifter",
-      selectNetwork: "Välj nätverk",
-      selectToken: "Välj token",
-      tokens: {
-        usdt: { label: "USDT", subtitle: "Tether" },
-        btc: { label: "BTC", subtitle: "Bitcoin" },
-      },
-      networks: {
-        tron: {
-          label: "TRON",
-          standard: "TRC-20",
-          fee: "~$1 avgift · Direkt",
-        },
-        bsc: {
-          label: "Binance Smart Chain",
-          standard: "BEP-20",
-          fee: "~$0.10 avgift · Direkt",
-        },
-        bitcoin: {
-          label: "Bitcoin Network",
-          standard: "BTC",
-          fee: "Rörlig avgift · 10–30 min",
-        },
-        ethereum: {
-          label: "Ethereum",
-          standard: "ERC-20",
-          fee: "~$2–5 avgift · 2–5 min",
+      continue: "Fortsätt →",
+      stripe: {
+        title: "Betala med kort / Klarna",
+        subtitle: "Automatisk betalning via Stripe",
+        badge: "Automatisk",
+        note: "Bekräftas direkt efter betalning. Klarna, kort och Link stöds.",
+        eyebrow: "Stripe Checkout",
+        description:
+          "Du skickas vidare till Stripe för säker betalning. Ordern markeras som betald automatiskt.",
+        orderTotal: "Att betala",
+        secureNote: "Säker betalning via Stripe. Leveransadress samlas in för Sverige.",
+        checkoutButton: "Gå till säker betalning →",
+        processing: "Förbereder betalning...",
+        backToMethod: "← Tillbaka till betalsätt",
+        errors: {
+          submitFailed: "Kunde inte starta Stripe-betalningen. Försök igen.",
         },
       },
+      bitcoin: {
+        title: "Betala med Bitcoin",
+        subtitle: "Manuell BTC-betalning",
+        badge: "Manuell",
+        note: "Generera en BTC-adress och skicka betalningen. Vi godkänner manuellt efter verifiering.",
+      },
+    },
+    payment: {
+      eyebrow: "Bitcoin-betalning",
+      title: "Slutför din BTC-betalning",
+      subtitle:
+        "Granska livekursen och generera din unika Bitcoin-betalningsadress.",
+      backToDetails: "← Tillbaka till leveransuppgifter",
+      backToMethod: "← Tillbaka till betalsätt",
       walletWarning:
-        "Skicka från en personlig plånbok eller Revolut. Skicka inte direkt från ett overifierat nätverk.",
+        "Skicka endast Bitcoin (BTC) till adressen nedan. Skicka från en personlig plånbok eller Revolut.",
       exchangeBoard: {
         title: "Växlingskurs",
         liveBadge: "LIVEKURS",
@@ -254,6 +258,13 @@ export const translations = {
       subtitle:
         "Din beställning har registrerats. För att slutföra ditt köp måste din kryptotransaktion verifieras på blockchain-nätverket. Vi förbereder din leverans så snart din betalning har godkänts manuellt av oss (vanligtvis inom 10-30 minuter).",
       pendingStatus: "🔴 Status: Väntar på betalning",
+      paidStatus: "🟢 Status: Betalning bekräftad",
+      stripeTitle: "Tack för din beställning!",
+      stripeSubtitle:
+        "Din Stripe-betalning har bekräftats. Vi förbereder din leverans och skickar en bekräftelse till din e-post.",
+      bitcoinTitle: "Order Mottagen - Väntar på betalningsbekräftelse",
+      bitcoinSubtitle:
+        "Din beställning har registrerats. För att slutföra ditt köp måste din Bitcoin-transaktion verifieras. Vi förbereder din leverans så snart din betalning har godkänts manuellt av oss (vanligtvis inom 10-30 minuter).",
       receipt: "Kvitto",
       justNow: "Just nu",
       customer: "Kund",
@@ -452,7 +463,7 @@ export const translations = {
       },
       payment: {
         title: "Säker betalning",
-        description: "Krypto via USDC, USDT och Bitcoin",
+        description: "Kort, Klarna, Link eller Bitcoin",
       },
       quality: {
         title: "Premium kvalitet",
@@ -766,42 +777,46 @@ export const translations = {
       },
       continueToPayment: "Continue to payment",
     },
-    payment: {
-      eyebrow: "Crypto payment",
-      title: "Complete your payment",
+    checkoutMethod: {
+      eyebrow: "Payment",
+      title: "Choose payment method",
       subtitle:
-        "Choose a network and token, review the live rate, and generate your unique payment address.",
+        "Pay instantly with card, Klarna, or Link — or send Bitcoin manually.",
       backToDetails: "← Back to shipping details",
-      selectNetwork: "Select network",
-      selectToken: "Select token",
-      tokens: {
-        usdt: { label: "USDT", subtitle: "Tether" },
-        btc: { label: "BTC", subtitle: "Bitcoin" },
-      },
-      networks: {
-        tron: {
-          label: "TRON",
-          standard: "TRC-20",
-          fee: "~$1 fee · Instant",
-        },
-        bsc: {
-          label: "Binance Smart Chain",
-          standard: "BEP-20",
-          fee: "~$0.10 fee · Instant",
-        },
-        bitcoin: {
-          label: "Bitcoin Network",
-          standard: "BTC",
-          fee: "Variable fee · 10–30 min",
-        },
-        ethereum: {
-          label: "Ethereum",
-          standard: "ERC-20",
-          fee: "~$2–5 fee · 2–5 min",
+      continue: "Continue →",
+      stripe: {
+        title: "Pay with Card / Klarna",
+        subtitle: "Automatic payment via Stripe",
+        badge: "Automatic",
+        note: "Confirmed instantly after payment. Klarna, card, and Link supported.",
+        eyebrow: "Stripe Checkout",
+        description:
+          "You'll be redirected to Stripe for secure payment. Your order is marked paid automatically.",
+        orderTotal: "Amount due",
+        secureNote: "Secure payment via Stripe. Shipping address collected for Sweden.",
+        checkoutButton: "Go to secure checkout →",
+        processing: "Preparing payment...",
+        backToMethod: "← Back to payment method",
+        errors: {
+          submitFailed: "Could not start Stripe checkout. Please try again.",
         },
       },
+      bitcoin: {
+        title: "Pay with Bitcoin",
+        subtitle: "Manual BTC payment",
+        badge: "Manual",
+        note: "Generate a BTC address and send payment. We approve manually after verification.",
+      },
+    },
+    payment: {
+      eyebrow: "Bitcoin payment",
+      title: "Complete your BTC payment",
+      subtitle:
+        "Review the live rate and generate your unique Bitcoin payment address.",
+      backToDetails: "← Back to shipping details",
+      backToMethod: "← Back to payment method",
       walletWarning:
-        "Send from a personal wallet or Revolut. Do not send directly from an unverified network.",
+        "Send Bitcoin (BTC) only to the address below. Send from a personal wallet or Revolut.",
       exchangeBoard: {
         title: "Exchange rate",
         liveBadge: "LIVE RATE",
@@ -840,6 +855,13 @@ export const translations = {
       subtitle:
         "Your order has been registered. To complete your purchase, your crypto transaction must be verified on the blockchain. We will prepare your shipment as soon as your payment is manually approved by us (usually within 10–30 minutes).",
       pendingStatus: "🔴 Status: Awaiting payment",
+      paidStatus: "🟢 Status: Payment confirmed",
+      stripeTitle: "Thank you for your order!",
+      stripeSubtitle:
+        "Your Stripe payment has been confirmed. We're preparing your shipment and will email you a confirmation.",
+      bitcoinTitle: "Order Received — Awaiting Payment Confirmation",
+      bitcoinSubtitle:
+        "Your order has been registered. To complete your purchase, your Bitcoin transaction must be verified. We will prepare your shipment as soon as your payment is manually approved by us (usually within 10–30 minutes).",
       receipt: "Receipt",
       justNow: "Just now",
       customer: "Customer",
@@ -1038,7 +1060,7 @@ export const translations = {
       },
       payment: {
         title: "Secure Payment",
-        description: "Crypto via USDC, USDT, and Bitcoin",
+        description: "Card, Klarna, Link, or Bitcoin",
       },
       quality: {
         title: "Premium Quality",

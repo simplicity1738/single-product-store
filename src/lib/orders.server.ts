@@ -7,6 +7,11 @@ import {
   ORDER_STATUS,
   type OrderStatus,
 } from "@/lib/order-status";
+import {
+  PAYMENT_METHOD,
+  type PaymentMethod,
+  type StripePaymentType,
+} from "@/lib/order-payment";
 
 export { ORDER_STATUS, type OrderStatus } from "@/lib/order-status";
 
@@ -15,10 +20,22 @@ export type StoredOrder = {
   total: number;
   placedAt: string;
   status: OrderStatus;
+  paymentMethod?: PaymentMethod;
+  stripeSessionId?: string;
+  stripePaymentType?: StripePaymentType;
   affiliateHandle?: string;
   commissionSek?: number;
   commissionPercent?: number;
 };
+
+export function generateOrderId(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let suffix = "";
+  for (let index = 0; index < 5; index += 1) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `SIMP-${suffix}`;
+}
 
 function normalizeOrder(order: StoredOrder): StoredOrder {
   return {
@@ -79,11 +96,45 @@ export async function deleteOrder(orderId: string): Promise<boolean> {
   return true;
 }
 
+export async function findOrderById(
+  orderId: string,
+): Promise<StoredOrder | null> {
+  const orders = await readOrders();
+  const order = orders.find((entry) => entry.id === orderId);
+  return order ? normalizeOrder(order) : null;
+}
+
+export async function updateOrder(
+  orderId: string,
+  patch: Partial<
+    Pick<
+      StoredOrder,
+      | "status"
+      | "paymentMethod"
+      | "stripeSessionId"
+      | "stripePaymentType"
+    >
+  >,
+): Promise<StoredOrder | null> {
+  const orders = await readOrders();
+  const index = orders.findIndex((order) => order.id === orderId);
+  if (index === -1) return null;
+
+  const updatedOrder: StoredOrder = {
+    ...orders[index],
+    ...patch,
+  };
+  orders[index] = updatedOrder;
+  await writeOrders(orders);
+  return updatedOrder;
+}
+
 export async function approveOrder(orderId: string): Promise<StoredOrder | null> {
   const orders = await readOrders();
   const order = orders.find((entry) => entry.id === orderId);
   if (!order) return null;
   if (order.status !== ORDER_STATUS.PENDING) return null;
+  if (order.paymentMethod === PAYMENT_METHOD.STRIPE) return null;
 
   return updateOrderStatus(orderId, ORDER_STATUS.APPROVED);
 }

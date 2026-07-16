@@ -5,6 +5,11 @@ import {
   getTelegramCredentials,
   isTelegramConfiguredFromCredentials,
 } from "@/lib/store-config.server";
+import {
+  formatPaymentMethodBadge,
+  getStripeDashboardSessionUrl,
+  type StripePaymentType,
+} from "@/lib/order-payment";
 
 const EXPLORER_URLS: Record<PaymentNetwork, (address: string) => string> = {
   tron: (address) => `https://tronscan.org/#/address/${address}`,
@@ -136,6 +141,76 @@ export async function sendOrderNotification(
       inline_keyboard: [
         [{ text: "🔗 Verifiera Betalning", url: explorerUrl }],
       ],
+    },
+  });
+}
+
+export type StripeOrderPaidNotificationPayload = {
+  orderId: string;
+  name: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  cartSummary: string;
+  totalSek: string;
+  stripeSessionId: string;
+  stripePaymentType?: StripePaymentType;
+  affiliateHandle?: string;
+  commissionSek?: number;
+  commissionPercent?: number;
+};
+
+export async function sendStripeOrderPaidNotification(
+  payload: StripeOrderPaidNotificationPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeOrderId = escapeTelegramHtml(payload.orderId);
+  const safeName = escapeTelegramHtml(payload.name);
+  const safeEmail = escapeTelegramHtml(payload.email);
+  const safeAddress = escapeTelegramHtml(payload.address);
+  const safeZip = escapeTelegramHtml(payload.zip);
+  const safeCity = escapeTelegramHtml(payload.city);
+  const safeState = escapeTelegramHtml(payload.state);
+  const safeCartSummary = escapeTelegramHtml(payload.cartSummary);
+  const safeTotalSek = escapeTelegramHtml(payload.totalSek);
+  const paymentBadge = escapeTelegramHtml(
+    formatPaymentMethodBadge("stripe", payload.stripePaymentType),
+  );
+  const safeAffiliateHandle = payload.affiliateHandle
+    ? escapeTelegramHtml(payload.affiliateHandle)
+    : undefined;
+
+  const fullAddress = `${safeAddress}, ${safeZip} ${safeCity}, ${safeState}, Sweden`;
+  const dashboardUrl = getStripeDashboardSessionUrl(payload.stripeSessionId);
+
+  const text = [
+    "✅ BETALNING BEKRÄFTAD - SIMPLICITY STORE",
+    "",
+    `Order: ${safeOrderId}`,
+    `Belopp: ${safeTotalSek}`,
+    `Betalmetod: ${paymentBadge}`,
+    "",
+    `👤 Kund: ${safeName}`,
+    `📧 E-post: ${safeEmail}`,
+    `📦 Leveransadress: ${fullAddress}`,
+    `🛒 Varukorg: ${safeCartSummary}`,
+    ...(safeAffiliateHandle &&
+    payload.commissionSek !== undefined &&
+    payload.commissionPercent !== undefined
+      ? [
+          "",
+          "📢 <b>AFFILIATE-SÄLJ</b>",
+          `👤 <b>Partner:</b> ${safeAffiliateHandle}`,
+          `💸 <b>Provision:</b> ${payload.commissionSek} kr (${payload.commissionPercent}%)`,
+        ]
+      : []),
+  ].join("\n");
+
+  return sendTelegramMessage({
+    text,
+    replyMarkup: {
+      inline_keyboard: [[{ text: "🔗 Visa i Stripe", url: dashboardUrl }]],
     },
   });
 }

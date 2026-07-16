@@ -7,6 +7,10 @@ import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { isSiteSectionVisible } from "@/lib/site-navigation";
 import ProductImage from "@/components/ProductImage";
 import PaymentStep from "@/components/PaymentStep";
+import CheckoutMethodSelector, {
+  type CheckoutPaymentChoice,
+} from "@/components/CheckoutMethodSelector";
+import StripeCheckoutStep from "@/components/StripeCheckoutStep";
 import {
   formatCurrency,
 } from "@/lib/product";
@@ -16,7 +20,7 @@ import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 const inputClassName =
   "w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
 
-type CheckoutStep = "details" | "payment";
+type CheckoutStep = "details" | "method" | "payment";
 
 export default function OrderForm() {
   const { locale, t } = useLanguage();
@@ -26,6 +30,9 @@ export default function OrderForm() {
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("details");
+  const [paymentChoice, setPaymentChoice] = useState<CheckoutPaymentChoice | null>(
+    null,
+  );
   const [form, setForm] = useState<Omit<OrderFormData, "items" | "discountCode">>({
     name: "",
     email: "",
@@ -105,8 +112,21 @@ export default function OrderForm() {
     }
 
     setIsSubmitting(true);
-    setCheckoutStep("payment");
+    setCheckoutStep("method");
     setIsSubmitting(false);
+  }
+
+  function handleContinueFromMethod() {
+    if (!paymentChoice) return;
+    setCheckoutStep("payment");
+  }
+
+  function handleBackFromPayment() {
+    setCheckoutStep("method");
+  }
+
+  function handleBackFromMethod() {
+    setCheckoutStep("details");
   }
 
   if (!isSiteSectionVisible(siteNavigation, "bestall")) {
@@ -127,12 +147,26 @@ export default function OrderForm() {
         </div>
 
         <div className="mt-14 grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
-          {checkoutStep === "payment" ? (
+          {checkoutStep === "payment" && paymentChoice === "bitcoin" ? (
             <PaymentStep
               orderTotal={displayTotal}
               payload={orderPayload}
               summary={summary}
-              onBack={() => setCheckoutStep("details")}
+              onBack={handleBackFromPayment}
+            />
+          ) : checkoutStep === "payment" && paymentChoice === "stripe" ? (
+            <StripeCheckoutStep
+              orderTotal={displayTotal}
+              payload={orderPayload}
+              summary={summary}
+              onBack={handleBackFromPayment}
+            />
+          ) : checkoutStep === "method" ? (
+            <CheckoutMethodSelector
+              selected={paymentChoice}
+              onSelect={setPaymentChoice}
+              onBack={handleBackFromMethod}
+              onContinue={handleContinueFromMethod}
             />
           ) : (
           <form

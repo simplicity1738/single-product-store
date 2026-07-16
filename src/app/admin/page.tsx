@@ -18,6 +18,13 @@ import {
   type OrderStatus,
 } from "@/lib/order-status";
 import {
+  formatPaymentMethodBadge,
+  getStripeDashboardSessionUrl,
+  PAYMENT_METHOD,
+  type PaymentMethod,
+  type StripePaymentType,
+} from "@/lib/order-payment";
+import {
   formatVariantsInput,
   parseVariantsInput,
 } from "@/lib/store-config";
@@ -80,10 +87,20 @@ type AdminOrder = {
   total: number;
   placedAt: string;
   status: OrderStatus;
+  paymentMethod?: PaymentMethod;
+  stripeSessionId?: string;
+  stripePaymentType?: StripePaymentType;
   affiliateHandle?: string;
   commissionSek?: number;
   commissionPercent?: number;
 };
+
+function paymentMethodBadgeClassName(paymentMethod?: PaymentMethod): string {
+  if (paymentMethod === PAYMENT_METHOD.STRIPE) {
+    return "border-indigo-200 bg-indigo-50 text-indigo-700";
+  }
+  return "border-orange-200 bg-orange-50 text-orange-700";
+}
 
 const emptyDiscount = (): ConfigDiscount => ({
   id: "",
@@ -1467,6 +1484,9 @@ export default function AdminPage() {
                       Datum
                     </th>
                     <th className="px-4 py-3 font-semibold">Belopp</th>
+                    <th className="hidden px-4 py-3 font-semibold lg:table-cell">
+                      Betalmetod
+                    </th>
                     <th className="px-4 py-3 font-semibold">Status</th>
                     <th className="px-4 py-3 text-right font-semibold">
                       Åtgärd
@@ -1497,6 +1517,29 @@ export default function AdminPage() {
                         <td className="px-4 py-4 font-semibold text-zinc-900">
                           {formatSek(order.total)}
                         </td>
+                        <td className="hidden px-4 py-4 lg:table-cell">
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${paymentMethodBadgeClassName(order.paymentMethod)}`}
+                          >
+                            {formatPaymentMethodBadge(
+                              order.paymentMethod ?? PAYMENT_METHOD.BITCOIN,
+                              order.stripePaymentType,
+                            )}
+                          </span>
+                          {order.paymentMethod === PAYMENT_METHOD.STRIPE &&
+                            order.stripeSessionId && (
+                              <a
+                                href={getStripeDashboardSessionUrl(
+                                  order.stripeSessionId,
+                                )}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-2 block text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                              >
+                                Visa i Stripe →
+                              </a>
+                            )}
+                        </td>
                         <td className="px-4 py-4">
                           <span
                             className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${orderStatusClassName(order.status)}`}
@@ -1506,7 +1549,9 @@ export default function AdminPage() {
                         </td>
                         <td className="px-4 py-4 text-right">
                           <div className="flex flex-col items-end gap-2">
-                            {order.status === ORDER_STATUS.PENDING ? (
+                            {order.status === ORDER_STATUS.PENDING &&
+                            (order.paymentMethod === PAYMENT_METHOD.BITCOIN ||
+                              !order.paymentMethod) ? (
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1517,7 +1562,7 @@ export default function AdminPage() {
                               >
                                 {updatingOrderId === order.id
                                   ? "Godkänner…"
-                                  : "Godkänn & Markera som betald"}
+                                  : "Godkänn BTC-betalning"}
                               </button>
                             ) : order.status === ORDER_STATUS.APPROVED ||
                               order.status === ORDER_STATUS.COMPLETED ? (

@@ -2,14 +2,12 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { formatCurrency } from "@/lib/product";
 import { translations } from "@/lib/i18n/translations";
-import { getPaymentWalletsFromConfig } from "@/lib/payment-wallets.server";
 import { type OrderFormData } from "@/lib/order";
 import {
   incrementDiscountUsage,
   readStoreConfig,
 } from "@/lib/store-config.server";
 import {
-  getProductTitle,
   getProductLineLabelFromConfig,
   isValidStoreCartItem,
   calculateStoreOrderTotal,
@@ -17,11 +15,19 @@ import {
   influencerHandleToRef,
 } from "@/lib/store-config";
 import { REF_COOKIE_NAME } from "@/lib/ref-tracking";
-import { appendOrder, generateOrderId, ORDER_STATUS, resolveAffiliateAttribution } from "@/lib/orders.server";
-import { sendOrderNotification } from "@/lib/telegram";
+import {
+  appendOrder,
+  generateOrderId,
+  ORDER_STATUS,
+  resolveAffiliateAttribution,
+} from "@/lib/orders.server";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { appendSystemLog } from "@/lib/system-logs.server";
-import { CHECKOUT_FIELD_LIMITS, sanitizeEmail, sanitizePlainText } from "@/lib/sanitize";
+import {
+  CHECKOUT_FIELD_LIMITS,
+  sanitizeEmail,
+  sanitizePlainText,
+} from "@/lib/sanitize";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { logServerError } from "@/lib/safe-log";
 import {
@@ -29,11 +35,37 @@ import {
   incrementInfluencerPurchase,
 } from "@/lib/influencer-stats.server";
 import { PAYMENT_METHOD } from "@/lib/order-payment";
+import { isStripeConfigured } from "@/lib/env";
+import { getStripeClient } from "@/lib/stripe.server";
+
+function getRequestOrigin(request: Request): string {
+  const origin = request.headers.get("origin")?.trim();
+  if (origin) return origin;
+
+  const host = request.headers.get("host")?.trim();
+  if (host) {
+    const protocol = host.includes("localhost") ? "http" : "https";
+    return `${protocol}://${host}`;
+  }
+
+  return "http://localhost:3000";
+}
+
+function sekToStripeAmount(value: number): number {
+  return Math.round(value * 100);
+}
 
 export async function POST(request: Request) {
   try {
+    if (!isStripeConfigured()) {
+      return NextResponse.json(
+        { success: false, message: "Stripe is not configured." },
+        { status: 503 },
+      );
+    }
+
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`orders:${clientIp}`, 12, 60 * 60 * 1000);
+    const rateLimit = checkRateLimit(`checkout:${clientIp}`, 12, 60 * 60 * 1000);
     if (!rateLimit.allowed) {
       return NextResponse.json(
         {
@@ -75,11 +107,6 @@ export async function POST(request: Request) {
     const zip = body.zip
       ? sanitizePlainText(body.zip, CHECKOUT_FIELD_LIMITS.zip)
       : undefined;
-    const paymentNetwork = body.paymentNetwork;
-    const cryptoTotal = body.cryptoTotal
-      ? sanitizePlainText(body.cryptoTotal, CHECKOUT_FIELD_LIMITS.cryptoTotal) ||
-        "—"
-      : "—";
 
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -107,26 +134,11 @@ export async function POST(request: Request) {
               ? messages.discountProductMismatch
               : messages.invalidDiscount;
 
-        await appendSystemLog(
-          `Ogiltig kupong "${discountCode}": ${validation.reason}`,
-          "checkout",
-        );
-
         return NextResponse.json(
           { success: false, message },
           { status: 400 },
         );
       }
-    }
-
-    if (
-      paymentNetwork &&
-      paymentNetwork !== "bitcoin"
-    ) {
-      return NextResponse.json(
-        { success: false, message: messages.invalidCart },
-        { status: 400 },
-      );
     }
 
     if (!name || !email || !address || !city || !state || !zip) {
@@ -136,10 +148,15 @@ export async function POST(request: Request) {
       );
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 900));
-
     const { subtotal, shipping, discount, total, lineItems } =
       calculateStoreOrderTotal(storeConfig, items, discountCode);
+
+    if (total <= 0) {
+      return NextResponse.json(
+        { success: false, message: messages.invalidCart },
+        { status: 400 },
+      );
+    }
 
     const basketSubtotal = Math.max(0, subtotal - discount);
     const cookieStore = await cookies();
@@ -174,32 +191,95 @@ export async function POST(request: Request) {
       await incrementInfluencerPurchase(affiliate.influencerId);
     }
 
-    const paymentWallets = await getPaymentWalletsFromConfig();
-    const localeCode = locale === "en" ? "en-US" : "sv-SE";
-    const totalSek = formatCurrency(total, localeCode);
-
-    const cartSummary = lineItems
-      .map((line) => {
-        const label = getProductLineLabelFromConfig(
-          storeConfig,
-          line.productId,
-          line.variantMg,
-          line.selectedStrength,
-          undefined,
-          line.campaignAddonId,
-        );
-        return `${label} × ${line.quantity}`;
-      })
-      .join(", ");
-
     const orderId = generateOrderId();
+    const origin = getRequestOrigin(request);
+    const localeCode = locale === "en" ? "en-US" : "sv-SE";
+
+    const stripeLineItems = lineItems.map((line) => ({
+      price_data: {
+        currency: "sek",
+        product_data: {
+          name: getProductLineLabelFromConfig(
+            storeConfig,
+            line.productId,
+            line.variantMg,
+            line.selectedStrength,
+            undefined,
+            line.campaignAddonId,
+          ),
+        },
+        unit_amount: sekToStripeAmount(line.unitPrice),
+      },
+      quantity: line.quantity,
+    }));
+
+    if (discount > 0) {
+      stripeLineItems.push({
+        price_data: {
+          currency: "sek",
+          product_data: {
+            name: "Rabatt",
+          },
+          unit_amount: -sekToStripeAmount(discount),
+        },
+        quantity: 1,
+      });
+    }
+
+    if (shipping > 0) {
+      stripeLineItems.push({
+        price_data: {
+          currency: "sek",
+          product_data: {
+            name: "Frakt",
+          },
+          unit_amount: sekToStripeAmount(shipping),
+        },
+        quantity: 1,
+      });
+    }
+
+    const stripe = getStripeClient();
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      currency: "sek",
+      customer_email: email,
+      payment_method_types: ["card", "klarna", "link"],
+      line_items: stripeLineItems,
+      shipping_address_collection: {
+        allowed_countries: ["SE"],
+      },
+      metadata: {
+        orderId,
+        customerName: name,
+        customerEmail: email,
+        customerAddress: `${address}, ${zip} ${city}, ${state}, SE`.slice(0, 450),
+        cartSummary: lineItems
+          .map((line) => {
+            const label = getProductLineLabelFromConfig(
+              storeConfig,
+              line.productId,
+              line.variantMg,
+              line.selectedStrength,
+              undefined,
+              line.campaignAddonId,
+            );
+            return `${label} × ${line.quantity}`;
+          })
+          .join(", ")
+          .slice(0, 450),
+      },
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}&paid=stripe`,
+      cancel_url: `${origin}/#checkout-form`,
+    });
 
     await appendOrder({
       id: orderId,
       total,
       placedAt: new Date().toISOString(),
       status: ORDER_STATUS.PENDING,
-      paymentMethod: PAYMENT_METHOD.BITCOIN,
+      paymentMethod: PAYMENT_METHOD.STRIPE,
+      stripeSessionId: session.id,
       ...(affiliate
         ? {
             affiliateHandle: affiliate.handle,
@@ -238,59 +318,28 @@ export async function POST(request: Request) {
       );
     }
 
-    if (paymentNetwork && paymentWallets[paymentNetwork]) {
-      const networkInfo = paymentWallets[paymentNetwork];
-
-      try {
-        const telegramResult = await sendOrderNotification({
-          name,
-          email,
-          address,
-          city,
-          state,
-          zip,
-          cartSummary,
-          totalSek,
-          cryptoTotal,
-          networkLabel: networkInfo.label,
-          network: paymentNetwork,
-          walletAddress: networkInfo.address,
-          ...(affiliate
-            ? {
-                affiliateHandle: affiliate.handle,
-                commissionSek: affiliate.commissionSek,
-                commissionPercent: affiliate.commissionPercent,
-              }
-            : {}),
-        });
-
-        if (!telegramResult.ok) {
-          await appendSystemLog(
-            "Telegram-notis misslyckades — timeout eller nätverksfel.",
-            "telegram",
-          );
-        }
-      } catch {
-        await appendSystemLog(
-          "Telegram-notis kraschade — kontrollera bot-token och chat-ID.",
-          "telegram",
-        );
-      }
+    if (!session.url) {
+      return NextResponse.json(
+        { success: false, message: messages.serverError },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
       success: true,
       orderId,
+      sessionId: session.id,
+      checkoutUrl: session.url,
       subtotal,
       shipping,
       discount,
       total,
       placedAt: new Date().toISOString(),
-      paymentWallets,
+      totalFormatted: formatCurrency(total, localeCode),
     });
   } catch (error) {
-    logServerError("checkout", error);
-    await appendSystemLog("Checkout-fel: oväntat serverfel.", "checkout");
+    logServerError("stripe-checkout", error);
+    await appendSystemLog("Stripe checkout-fel: oväntat serverfel.", "checkout");
 
     return NextResponse.json(
       {

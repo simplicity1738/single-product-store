@@ -11,17 +11,12 @@ import {
 } from "@/lib/crypto-payment-uri";
 import {
   convertSekToBtc,
-  convertSekToUsdt,
   fetchExchangeRates,
   formatCountdown,
   getRemainingLockSeconds,
   type LockedExchangeRates,
 } from "@/lib/payment-rates";
-import {
-  ADMIN_DEPOSIT_WALLETS,
-  type PaymentNetwork,
-  type PaymentToken,
-} from "@/lib/payment-wallets";
+import { ADMIN_DEPOSIT_WALLETS } from "@/lib/payment-wallets";
 import { formatCurrency } from "@/lib/product";
 import {
   calculateStoreOrderTotal,
@@ -38,13 +33,8 @@ type PaymentStepProps = {
   onBack: () => void;
 };
 
-const NETWORK_ORDER: PaymentNetwork[] = [
-  "tron",
-  "bsc",
-  "bitcoin",
-  "ethereum",
-];
-
+const NETWORK = "bitcoin" as const;
+const TOKEN = "btc" as const;
 const QR_SIZE = 220;
 const QR_MARGIN = 2;
 
@@ -125,17 +115,6 @@ function PaymentQrCode({ value, size = QR_SIZE }: { value: string; size?: number
   );
 }
 
-function isNetworkEnabled(network: PaymentNetwork, token: PaymentToken): boolean {
-  if (token === "btc") {
-    return network === "bitcoin";
-  }
-  return network !== "bitcoin";
-}
-
-function defaultNetworkForToken(token: PaymentToken): PaymentNetwork {
-  return token === "btc" ? "bitcoin" : "tron";
-}
-
 export default function PaymentStep({
   orderTotal,
   payload,
@@ -148,21 +127,15 @@ export default function PaymentStep({
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
   const getWalletInput = useCallback(
-    (networkId: PaymentNetwork) =>
-      resolveNetworkWalletInput(storeConfig, networkId),
+    () => resolveNetworkWalletInput(storeConfig, NETWORK),
     [storeConfig],
   );
 
-  const getDepositAddress = useCallback(
-    (networkId: PaymentNetwork) => {
-      const walletInput = getWalletInput(networkId);
-      return walletInput ? extractDisplayAddress(walletInput) : "";
-    },
-    [getWalletInput],
-  );
+  const getDepositAddress = useCallback(() => {
+    const walletInput = getWalletInput();
+    return walletInput ? extractDisplayAddress(walletInput) : "";
+  }, [getWalletInput]);
 
-  const [token, setToken] = useState<PaymentToken>("usdt");
-  const [network, setNetwork] = useState<PaymentNetwork>("tron");
   const [rates, setRates] = useState<LockedExchangeRates | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -199,60 +172,41 @@ export default function PaymentStep({
     return () => window.clearInterval(interval);
   }, [rates]);
 
-  const handleTokenChange = useCallback((next: PaymentToken) => {
-    setToken(next);
-    setNetwork(defaultNetworkForToken(next));
-    setAddressGenerated(false);
-    setCopied(false);
-  }, []);
-
   const cryptoAmount = useMemo(() => {
     if (!rates || orderTotal <= 0) {
       return null;
     }
 
-    if (token === "usdt") {
-      return {
-        kind: "usdt" as const,
-        value: convertSekToUsdt(orderTotal, rates.tetherSek),
-      };
-    }
-
-    return {
-      kind: "btc" as const,
-      value: convertSekToBtc(orderTotal, rates.bitcoinSek),
-    };
-  }, [rates, orderTotal, token]);
+    return convertSekToBtc(orderTotal, rates.bitcoinSek);
+  }, [rates, orderTotal]);
 
   const formattedCryptoAmount = useMemo(() => {
-    if (!cryptoAmount) return "—";
-
-    if (cryptoAmount.kind === "usdt") {
-      return `≈ $${cryptoAmount.value.toFixed(2)} USDT`;
-    }
+    if (cryptoAmount === null) return "—";
 
     const btc =
-      cryptoAmount.value >= 0.0001
-        ? cryptoAmount.value.toFixed(4)
-        : cryptoAmount.value.toFixed(8);
+      cryptoAmount >= 0.0001
+        ? cryptoAmount.toFixed(4)
+        : cryptoAmount.toFixed(8);
     return `≈ ${btc} BTC`;
   }, [cryptoAmount]);
 
   const qrPaymentUri = useMemo(() => {
     const rawWallet =
-      walletInput.trim() || getWalletInput(network) || storeConfig.cryptoWallets[network]?.trim() || "";
-    return buildCryptoWalletDeepLink(rawWallet, network, cryptoAmount);
-  }, [walletInput, network, cryptoAmount, getWalletInput, storeConfig.cryptoWallets]);
+      walletInput.trim() ||
+      getWalletInput() ||
+      storeConfig.cryptoWallets.bitcoin?.trim() ||
+      "";
+    return buildCryptoWalletDeepLink(
+      rawWallet,
+      NETWORK,
+      cryptoAmount !== null ? { kind: "btc", value: cryptoAmount } : null,
+    );
+  }, [walletInput, cryptoAmount, getWalletInput, storeConfig.cryptoWallets.bitcoin]);
 
   async function handleGenerateAddress() {
     setError(null);
 
-    if (!isNetworkEnabled(network, token)) {
-      setError(t.payment.errors.selectNetwork);
-      return;
-    }
-
-    const resolvedWalletInput = getWalletInput(network);
+    const resolvedWalletInput = getWalletInput();
     if (!resolvedWalletInput) {
       setError(t.payment.errors.walletNotConfigured);
       return;
@@ -269,8 +223,8 @@ export default function PaymentStep({
         },
         body: JSON.stringify({
           ...payload,
-          paymentNetwork: network,
-          paymentToken: token,
+          paymentNetwork: NETWORK,
+          paymentToken: TOKEN,
           cryptoTotal: formattedCryptoAmount,
         }),
       });
@@ -297,7 +251,7 @@ export default function PaymentStep({
       }));
 
       const address =
-        data.paymentWallets?.[network]?.address ?? getDepositAddress(network);
+        data.paymentWallets?.[NETWORK]?.address ?? getDepositAddress();
 
       sessionStorage.setItem(
         ORDER_STORAGE_KEY,
@@ -310,9 +264,10 @@ export default function PaymentStep({
           discount: data.discount,
           total: data.total,
           placedAt: data.placedAt,
+          paymentMethod: "bitcoin",
           payment: {
-            token,
-            network,
+            token: TOKEN,
+            network: NETWORK,
             address,
             cryptoAmount: formattedCryptoAmount,
           },
@@ -345,59 +300,6 @@ export default function PaymentStep({
     }
   }
 
-  const networkCards = NETWORK_ORDER.map((networkId) => {
-    const copy = t.payment.networks[networkId];
-    const enabled = isNetworkEnabled(networkId, token);
-    const selected = network === networkId;
-
-    return (
-      <button
-        key={networkId}
-        type="button"
-        disabled={!enabled}
-        onClick={() => {
-          if (!enabled) return;
-          setNetwork(networkId);
-          setAddressGenerated(false);
-          setCopied(false);
-        }}
-        className={`rounded-2xl border p-4 text-left transition ${
-          selected
-            ? "border-rose-400 bg-rose-50 shadow-sm shadow-rose-100"
-            : enabled
-              ? "border-rose-100 bg-white hover:border-rose-300 hover:bg-rose-50/40"
-              : "cursor-not-allowed border-rose-100/60 bg-zinc-50 opacity-45"
-        }`}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-zinc-900">{copy.label}</p>
-            <p className="mt-0.5 text-xs text-zinc-500">{copy.standard}</p>
-          </div>
-          {selected && (
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-400 text-white">
-              <svg
-                className="h-3 w-3"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
-                aria-hidden
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.5 12.75l6 6 9-13.5"
-                />
-              </svg>
-            </span>
-          )}
-        </div>
-        <p className="mt-3 text-xs font-medium text-rose-600">{copy.fee}</p>
-      </button>
-    );
-  });
-
   return (
     <div className="rounded-2xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
       <button
@@ -405,7 +307,7 @@ export default function PaymentStep({
         onClick={onBack}
         className="text-sm font-medium text-rose-600 transition hover:text-rose-700"
       >
-        {t.payment.backToDetails}
+        {t.payment.backToMethod}
       </button>
 
       <div className="mt-6">
@@ -418,45 +320,6 @@ export default function PaymentStep({
         <p className="mt-2 text-sm leading-relaxed text-zinc-600">
           {t.payment.subtitle}
         </p>
-      </div>
-
-      <div className="mt-8">
-        <h4 className="text-sm font-semibold text-zinc-900">
-          {t.payment.selectNetwork}
-        </h4>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">{networkCards}</div>
-      </div>
-
-      <div className="mt-8">
-        <h4 className="text-sm font-semibold text-zinc-900">
-          {t.payment.selectToken}
-        </h4>
-        <div className="mt-3 flex flex-wrap gap-3">
-          {(["usdt", "btc"] as const).map((tokenId) => {
-            const copy = t.payment.tokens[tokenId];
-            const selected = token === tokenId;
-
-            return (
-              <button
-                key={tokenId}
-                type="button"
-                onClick={() => handleTokenChange(tokenId)}
-                className={`inline-flex min-w-[8.5rem] flex-col items-center rounded-2xl border px-6 py-4 transition ${
-                  selected
-                    ? "border-rose-400 bg-rose-50 shadow-sm shadow-rose-100"
-                    : "border-rose-100 bg-white hover:border-rose-300 hover:bg-rose-50/40"
-                }`}
-              >
-                <span className="text-base font-bold text-zinc-900">
-                  {copy.label}
-                </span>
-                <span className="mt-0.5 text-xs text-zinc-500">
-                  {copy.subtitle}
-                </span>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       <div className="mt-5 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
@@ -553,8 +416,7 @@ export default function PaymentStep({
               </span>
             </p>
             <p className="mt-1 text-xs text-zinc-500">
-              {ADMIN_DEPOSIT_WALLETS[network].label} ·{" "}
-              {t.payment.tokens[token].label}
+              {ADMIN_DEPOSIT_WALLETS.bitcoin.label}
             </p>
           </div>
 

@@ -40,6 +40,8 @@ export type OrderReceipt = Omit<OrderFormData, "items"> & {
   discount: number;
   total: number;
   placedAt: string;
+  paymentMethod?: "stripe" | "bitcoin";
+  stripeSessionId?: string;
 };
 
 export const ORDER_STORAGE_KEY = "simplicity-store-order";
