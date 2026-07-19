@@ -239,11 +239,7 @@ export default function CartDrawer() {
             {t.cart.checkout}
           </button>
 
-          <PaymentTrustBadges
-            variant="monochrome"
-            className="mt-5"
-            hideLabel
-          />
+          <PaymentTrustBadges className="mt-5" hideLabel />
         </div>
       </aside>
     </>
