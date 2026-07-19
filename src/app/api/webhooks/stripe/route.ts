@@ -15,6 +15,8 @@ import { env, isStripeConfigured } from "@/lib/env";
 import { getStripeClient } from "@/lib/stripe.server";
 import { sendStripeOrderPaidNotification } from "@/lib/telegram";
 import { logServerError } from "@/lib/safe-log";
+import { sendOrderConfirmationEmail } from "@/lib/email";
+import { readStoreConfig } from "@/lib/store-config.server";
 
 export const runtime = "nodejs";
 
@@ -103,16 +105,35 @@ export async function POST(request: Request) {
   }
 
   const stripePaymentType = await resolveStripePaymentType(stripe, session);
+  const customerDetails = session.customer_details;
+  const shippingAddress = customerDetails?.address;
 
   await updateOrder(orderId, {
     status: ORDER_STATUS.APPROVED,
     paymentMethod: PAYMENT_METHOD.STRIPE,
     stripeSessionId: session.id,
     stripePaymentType,
+    customerName:
+      customerDetails?.name ??
+      session.metadata?.customerName ??
+      existingOrder.customerName,
+    customerEmail:
+      customerDetails?.email ??
+      session.metadata?.customerEmail ??
+      existingOrder.customerEmail,
+    shippingAddress:
+      [
+        shippingAddress?.line1,
+        shippingAddress?.postal_code,
+        shippingAddress?.city,
+        shippingAddress?.state,
+      ]
+        .filter(Boolean)
+        .join(", ") ||
+      session.metadata?.customerAddress ||
+      existingOrder.shippingAddress,
   });
 
-  const customerDetails = session.customer_details;
-  const shippingAddress = customerDetails?.address;
   const totalSek = formatCurrency(existingOrder.total, "sv-SE");
   const metadataAddress = session.metadata?.customerAddress ?? "—";
 
@@ -145,6 +166,34 @@ export async function POST(request: Request) {
       `Telegram-notis kraschade för betald Stripe-order ${orderId}.`,
       "telegram",
     );
+  }
+
+  const customerEmail =
+    customerDetails?.email ?? session.metadata?.customerEmail ?? "";
+  const customerName =
+    customerDetails?.name ?? session.metadata?.customerName ?? "Kund";
+
+  if (customerEmail) {
+    try {
+      const storeConfig = await readStoreConfig();
+      await sendOrderConfirmationEmail({
+        orderId,
+        customerEmail,
+        customerName,
+        lines: [],
+        subtotal: existingOrder.total,
+        shipping: 0,
+        discount: 0,
+        total: existingOrder.total,
+        cartSummary: session.metadata?.cartSummary ?? "",
+        templates: storeConfig.orderEmail,
+      });
+    } catch {
+      await appendSystemLog(
+        `Orderbekräftelse via e-post misslyckades för betald Stripe-order ${orderId}.`,
+        "email",
+      );
+    }
   }
 
   await appendSystemLog(

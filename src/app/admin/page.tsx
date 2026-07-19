@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import ProductImage from "@/components/ProductImage";
 import type {
   BannerAnimation,
@@ -21,6 +22,7 @@ import {
   formatPaymentMethodBadge,
   getStripeDashboardSessionUrl,
   PAYMENT_METHOD,
+  STRIPE_PAYMENT_TYPE,
   type PaymentMethod,
   type StripePaymentType,
 } from "@/lib/order-payment";
@@ -46,6 +48,15 @@ import {
   PRODUCT_STOCK_STATUS_OPTIONS,
   type ProductStockStatus,
 } from "@/lib/product-stock";
+import {
+  REVIEW_STATUS,
+  type CustomerReview,
+} from "@/lib/customer-reviews";
+import {
+  buildAdminVariantStockRows,
+  normalizeStockManagement,
+  type StockManagementConfig,
+} from "@/lib/stock-management";
 
 type ProductDraft = {
   id: string;
@@ -93,7 +104,89 @@ type AdminOrder = {
   affiliateHandle?: string;
   commissionSek?: number;
   commissionPercent?: number;
+  customerName?: string;
+  customerEmail?: string;
+  shippingAddress?: string;
 };
+
+type OrderStatusFilter = "all" | "approved" | "pending" | "refunded";
+type OrderPaymentFilter = "all" | "stripe_card" | "crypto";
+type OrderSortOption = "newest" | "oldest" | "highest" | "lowest";
+
+const orderFilterClassName =
+  "rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
+
+function matchesOrderSearch(order: AdminOrder, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+
+  const fields = [
+    order.id,
+    order.customerName ?? "",
+    order.customerEmail ?? "",
+    order.shippingAddress ?? "",
+  ];
+
+  return fields.some((field) => field.toLowerCase().includes(needle));
+}
+
+function matchesOrderStatusFilter(
+  order: AdminOrder,
+  filter: OrderStatusFilter,
+): boolean {
+  switch (filter) {
+    case "approved":
+      return order.status === ORDER_STATUS.APPROVED;
+    case "pending":
+      return order.status === ORDER_STATUS.PENDING;
+    case "refunded":
+      return order.status === ORDER_STATUS.REFUNDED;
+    default:
+      return true;
+  }
+}
+
+function matchesOrderPaymentFilter(
+  order: AdminOrder,
+  filter: OrderPaymentFilter,
+): boolean {
+  switch (filter) {
+    case "stripe_card":
+      return (
+        order.paymentMethod === PAYMENT_METHOD.STRIPE &&
+        order.stripePaymentType !== STRIPE_PAYMENT_TYPE.KLARNA &&
+        order.stripePaymentType !== STRIPE_PAYMENT_TYPE.LINK
+      );
+    case "crypto":
+      return (
+        order.paymentMethod === PAYMENT_METHOD.BITCOIN || !order.paymentMethod
+      );
+    default:
+      return true;
+  }
+}
+
+function sortOrders(orders: AdminOrder[], sort: OrderSortOption): AdminOrder[] {
+  const sorted = [...orders];
+
+  switch (sort) {
+    case "oldest":
+      return sorted.sort(
+        (a, b) =>
+          new Date(a.placedAt).getTime() - new Date(b.placedAt).getTime(),
+      );
+    case "highest":
+      return sorted.sort((a, b) => b.total - a.total);
+    case "lowest":
+      return sorted.sort((a, b) => a.total - b.total);
+    case "newest":
+    default:
+      return sorted.sort(
+        (a, b) =>
+          new Date(b.placedAt).getTime() - new Date(a.placedAt).getTime(),
+      );
+  }
+}
 
 function paymentMethodBadgeClassName(paymentMethod?: PaymentMethod): string {
   if (paymentMethod === PAYMENT_METHOD.STRIPE) {
@@ -140,6 +233,9 @@ const emptyInfluencer = (): InfluencerPartner => ({
 
 type AnalyticsSummary = {
   totalRevenue: number;
+  revenueThisWeek: number;
+  revenueThisMonth: number;
+  revenueThisYear: number;
   orderCount: number;
   subscriberCount: number;
   ordersToday: number;
@@ -213,6 +309,8 @@ function orderStatusClassName(status: OrderStatus): string {
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case ORDER_STATUS.COMPLETED:
       return "border-sky-200 bg-sky-50 text-sky-700";
+    case ORDER_STATUS.REFUNDED:
+      return "border-red-200 bg-red-50 text-red-700";
     default:
       return "border-amber-200 bg-amber-50 text-amber-700";
   }
@@ -245,17 +343,27 @@ const BANNER_TIME_DISPLAY_OPTIONS: {
   },
 ];
 
-type AdminTab = "oversikt" | "kampanj" | "betalning" | "system" | "navigation";
+type AdminTab =
+  | "oversikt"
+  | "kampanj"
+  | "betalning"
+  | "system"
+  | "navigation"
+  | "recensioner"
+  | "lager";
 
 const ADMIN_TABS: { id: AdminTab; label: string; hint: string }[] = [
   { id: "oversikt", label: "Översikt", hint: "Omsättning, ordrar och loggar" },
   { id: "kampanj", label: "Kampanj", hint: "Banner, hero, rabatter och produkter" },
+  { id: "lager", label: "Lager", hint: "Lagerantal per variant och synlighet" },
   { id: "betalning", label: "Betalning", hint: "Crypto-plånböcker" },
+  { id: "recensioner", label: "Recensioner", hint: "Godkänn och hantera kundrecensioner" },
   { id: "system", label: "System", hint: "Telegram och spårning" },
   { id: "navigation", label: "Navigation", hint: "Meny och synlighet" },
 ];
 
 export default function AdminPage() {
+  const searchParams = useSearchParams();
   const [config, setConfig] = useState<StoreConfig | null>(null);
   const [newProduct, setNewProduct] = useState<ProductDraft>(emptyProduct());
   const [newDiscount, setNewDiscount] = useState<ConfigDiscount>(emptyDiscount());
@@ -265,6 +373,9 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [analytics, setAnalytics] = useState<AnalyticsSummary>({
     totalRevenue: 0,
+    revenueThisWeek: 0,
+    revenueThisMonth: 0,
+    revenueThisYear: 0,
     orderCount: 0,
     subscriberCount: 0,
     ordersToday: 0,
@@ -283,13 +394,26 @@ export default function AdminPage() {
   const [subscribers, setSubscribers] = useState<SubscriberEntry[]>([]);
   const [removingEmail, setRemovingEmail] = useState<string | null>(null);
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] =
+    useState<OrderStatusFilter>("all");
+  const [orderPaymentFilter, setOrderPaymentFilter] =
+    useState<OrderPaymentFilter>("all");
+  const [orderSortOption, setOrderSortOption] =
+    useState<OrderSortOption>("newest");
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [isRefunding, setIsRefunding] = useState(false);
   const [newFaq, setNewFaq] = useState<ConfigFaq>(emptyFaq());
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [editProduct, setEditProduct] = useState<EditProductForm | null>(null);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>("oversikt");
+  const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [approvingReviewId, setApprovingReviewId] = useState<string | null>(null);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
   const showToast = useCallback((next: ToastState) => {
     setToast(next);
@@ -369,6 +493,23 @@ export default function AdminPage() {
     }
   }, []);
 
+  const loadReviews = useCallback(async () => {
+    setIsLoadingReviews(true);
+    try {
+      const response = await fetch("/api/admin/reviews");
+      if (!response.ok) throw new Error("Failed to load reviews");
+      const data = (await response.json()) as { reviews?: CustomerReview[] };
+      setCustomerReviews(Array.isArray(data.reviews) ? data.reviews : []);
+    } catch {
+      showToast({
+        type: "error",
+        message: "Kunde inte ladda recensioner.",
+      });
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  }, [showToast]);
+
   async function handleRemoveSubscriber(email: string) {
     setRemovingEmail(email);
     try {
@@ -431,14 +572,7 @@ export default function AdminPage() {
           order.id === orderId ? { ...order, status: nextStatus } : order,
         ),
       );
-      if (typeof data.totalRevenue === "number") {
-        setAnalytics((current) => ({
-          ...current,
-          totalRevenue: data.totalRevenue,
-        }));
-      } else {
-        void loadAnalytics();
-      }
+      void loadAnalytics();
       showToast({
         type: "success",
         message:
@@ -475,18 +609,7 @@ export default function AdminPage() {
       }
 
       setOrders((current) => current.filter((order) => order.id !== orderId));
-      if (typeof data.totalRevenue === "number") {
-        setAnalytics((current) => ({
-          ...current,
-          totalRevenue: data.totalRevenue,
-          orderCount:
-            typeof data.orderCount === "number"
-              ? data.orderCount
-              : current.orderCount - 1,
-        }));
-      } else {
-        void loadAnalytics();
-      }
+      void loadAnalytics();
       showToast({
         type: "success",
         message: data.message ?? "Order borttagen.",
@@ -501,6 +624,118 @@ export default function AdminPage() {
     }
   }
 
+  async function handleRefundOrder(orderId: string) {
+    setIsRefunding(true);
+    try {
+      const response = await fetch("/api/admin/refund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Refund failed");
+      }
+
+      setOrders((current) =>
+        current.map((order) =>
+          order.id === orderId
+            ? { ...order, status: ORDER_STATUS.REFUNDED }
+            : order,
+        ),
+      );
+      void loadAnalytics();
+      setRefundOrderId(null);
+      showToast({
+        type: "success",
+        message: data.message ?? "Stripe-återbetalning genomförd.",
+      });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Kunde inte genomföra återbetalningen.",
+      });
+    } finally {
+      setIsRefunding(false);
+    }
+  }
+
+  async function handleApproveReview(reviewId: string) {
+    setApprovingReviewId(reviewId);
+    try {
+      const response = await fetch("/api/admin/reviews", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Approve failed");
+      }
+
+      setCustomerReviews((current) =>
+        current.map((review) =>
+          review.id === reviewId
+            ? { ...review, status: REVIEW_STATUS.APPROVED }
+            : review,
+        ),
+      );
+      showToast({
+        type: "success",
+        message: data.message ?? "Recensionen har godkänts.",
+      });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Kunde inte godkänna recensionen.",
+      });
+    } finally {
+      setApprovingReviewId(null);
+    }
+  }
+
+  async function handleDeleteReview(reviewId: string) {
+    setDeletingReviewId(reviewId);
+    try {
+      const response = await fetch("/api/admin/reviews", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewId }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Delete failed");
+      }
+
+      setCustomerReviews((current) =>
+        current.filter((review) => review.id !== reviewId),
+      );
+      showToast({
+        type: "success",
+        message: data.message ?? "Recensionen har tagits bort.",
+      });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Kunde inte ta bort recensionen.",
+      });
+    } finally {
+      setDeletingReviewId(null);
+    }
+  }
+
   useEffect(() => {
     void Promise.resolve().then(() => {
       void loadConfig();
@@ -508,8 +743,23 @@ export default function AdminPage() {
       void loadSubscribers();
       void loadInfluencerStats();
       void loadOrders();
+      void loadReviews();
     });
-  }, [loadConfig, loadAnalytics, loadSubscribers, loadInfluencerStats, loadOrders]);
+  }, [
+    loadConfig,
+    loadAnalytics,
+    loadSubscribers,
+    loadInfluencerStats,
+    loadOrders,
+    loadReviews,
+  ]);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "recensioner") {
+      setActiveTab("recensioner");
+    }
+  }, [searchParams]);
 
   async function handleSaveShipping() {
     if (!config) return;
@@ -620,6 +870,38 @@ export default function AdminPage() {
           }
         : current,
     );
+  }
+
+  function updateStockManagement<K extends keyof StockManagementConfig>(
+    key: K,
+    value: StockManagementConfig[K],
+  ) {
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            stockManagement: normalizeStockManagement({
+              ...current.stockManagement,
+              [key]: value,
+            }),
+          }
+        : current,
+    );
+  }
+
+  function updateVariantStockCount(key: string, quantity: number) {
+    setConfig((current) => {
+      if (!current) return current;
+      const counts = { ...current.stockManagement.counts };
+      counts[key] = Math.max(0, Math.floor(quantity));
+      return {
+        ...current,
+        stockManagement: normalizeStockManagement({
+          ...current.stockManagement,
+          counts,
+        }),
+      };
+    });
   }
 
   function addBannerLine() {
@@ -1020,6 +1302,22 @@ export default function AdminPage() {
     });
   }
 
+  const filteredOrders = useMemo(() => {
+    const filtered = orders.filter(
+      (order) =>
+        matchesOrderSearch(order, orderSearchQuery) &&
+        matchesOrderStatusFilter(order, orderStatusFilter) &&
+        matchesOrderPaymentFilter(order, orderPaymentFilter),
+    );
+    return sortOrders(filtered, orderSortOption);
+  }, [
+    orders,
+    orderSearchQuery,
+    orderStatusFilter,
+    orderPaymentFilter,
+    orderSortOption,
+  ]);
+
   if (isLoading || !config) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-rose-50 text-zinc-600">
@@ -1042,6 +1340,47 @@ export default function AdminPage() {
           role="status"
         >
           {toast.message}
+        </div>
+      )}
+
+      {refundOrderId && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="refund-order-title"
+            className="w-full max-w-md rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl"
+          >
+            <h2
+              id="refund-order-title"
+              className="text-lg font-bold text-zinc-900"
+            >
+              Bekräfta återbetalning
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+              Are you sure you want to refund this order? Stripe will refund the
+              full payment and ordern markeras som Återbetald.
+            </p>
+            <p className="mt-2 font-mono text-xs text-zinc-500">{refundOrderId}</p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setRefundOrderId(null)}
+                disabled={isRefunding}
+                className="rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-rose-50 disabled:opacity-60"
+              >
+                Avbryt
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleRefundOrder(refundOrderId)}
+                disabled={isRefunding}
+                className="rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-60"
+              >
+                {isRefunding ? "Återbetalar…" : "Refund order"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1390,10 +1729,13 @@ export default function AdminPage() {
           {activeTab === "oversikt" ? (
             <>
               <section className="rounded-3xl border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 p-6 shadow-sm sm:p-8">
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
                     <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
                       Total Omsättning (SEK)
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Endast godkända order
                     </p>
                     <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
                       {formatSek(analytics.totalRevenue)}
@@ -1401,7 +1743,43 @@ export default function AdminPage() {
                   </div>
                   <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
                     <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                      Denna vecka
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Senaste 7 dagarna · godkända
+                    </p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                      {formatSek(analytics.revenueThisWeek)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                      Denna månad
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Innevarande månad · godkända
+                    </p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                      {formatSek(analytics.revenueThisMonth)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                      Detta år
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Innevarande år · godkända
+                    </p>
+                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                      {formatSek(analytics.revenueThisYear)}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
                       Antal Beställningar
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Endast godkända order
                     </p>
                     <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
                       {analytics.orderCount}
@@ -1470,9 +1848,96 @@ export default function AdminPage() {
             innan de räknas in i total omsättning.
           </p>
 
+          <div className="mt-6 space-y-4">
+            <div className="relative">
+              <svg
+                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
+              </svg>
+              <input
+                type="search"
+                value={orderSearchQuery}
+                onChange={(event) => setOrderSearchQuery(event.target.value)}
+                placeholder="Sök namn, e-post, order-ID eller adress…"
+                className="w-full rounded-2xl border border-rose-200 bg-white py-3 pl-11 pr-4 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Status
+                </span>
+                <select
+                  value={orderStatusFilter}
+                  onChange={(event) =>
+                    setOrderStatusFilter(event.target.value as OrderStatusFilter)
+                  }
+                  className={`${orderFilterClassName} w-full`}
+                >
+                  <option value="all">Alla</option>
+                  <option value="approved">Godkänd</option>
+                  <option value="pending">Väntar på godkännande</option>
+                  <option value="refunded">Återbetald</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Betalmetod
+                </span>
+                <select
+                  value={orderPaymentFilter}
+                  onChange={(event) =>
+                    setOrderPaymentFilter(
+                      event.target.value as OrderPaymentFilter,
+                    )
+                  }
+                  className={`${orderFilterClassName} w-full`}
+                >
+                  <option value="all">Alla</option>
+                  <option value="stripe_card">Stripe - Card</option>
+                  <option value="crypto">Crypto / Bitcoin</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Sortera
+                </span>
+                <select
+                  value={orderSortOption}
+                  onChange={(event) =>
+                    setOrderSortOption(event.target.value as OrderSortOption)
+                  }
+                  className={`${orderFilterClassName} w-full`}
+                >
+                  <option value="newest">Nyast först</option>
+                  <option value="oldest">Äldst först</option>
+                  <option value="highest">Högsta belopp</option>
+                  <option value="lowest">Lägsta belopp</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
           {orders.length === 0 ? (
             <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
               Inga beställningar ännu.
+            </p>
+          ) : filteredOrders.length === 0 ? (
+            <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+              Inga beställningar matchar dina filter.
             </p>
           ) : (
             <div className="mt-6 overflow-hidden rounded-2xl border border-rose-100">
@@ -1480,6 +1945,9 @@ export default function AdminPage() {
                 <thead className="bg-rose-50/80 text-left text-xs uppercase tracking-wide text-zinc-500">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Order-ID</th>
+                    <th className="hidden px-4 py-3 font-semibold lg:table-cell">
+                      Kund
+                    </th>
                     <th className="hidden px-4 py-3 font-semibold md:table-cell">
                       Datum
                     </th>
@@ -1494,13 +1962,7 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...orders]
-                    .sort(
-                      (a, b) =>
-                        new Date(b.placedAt).getTime() -
-                        new Date(a.placedAt).getTime(),
-                    )
-                    .map((order) => (
+                  {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
                         className="border-t border-rose-100 bg-white"
@@ -1510,6 +1972,26 @@ export default function AdminPage() {
                           <span className="mt-1 block text-xs text-zinc-500 md:hidden">
                             {formatOrderDate(order.placedAt)}
                           </span>
+                          {(order.customerName || order.customerEmail) && (
+                            <span className="mt-1 block text-xs text-zinc-500 lg:hidden">
+                              {order.customerName ?? order.customerEmail}
+                            </span>
+                          )}
+                        </td>
+                        <td className="hidden px-4 py-4 lg:table-cell">
+                          <p className="font-medium text-zinc-900">
+                            {order.customerName ?? "—"}
+                          </p>
+                          {order.customerEmail && (
+                            <p className="mt-0.5 text-xs text-zinc-500">
+                              {order.customerEmail}
+                            </p>
+                          )}
+                          {order.shippingAddress && (
+                            <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
+                              {order.shippingAddress}
+                            </p>
+                          )}
                         </td>
                         <td className="hidden px-4 py-4 text-zinc-500 md:table-cell">
                           {formatOrderDate(order.placedAt)}
@@ -1528,16 +2010,28 @@ export default function AdminPage() {
                           </span>
                           {order.paymentMethod === PAYMENT_METHOD.STRIPE &&
                             order.stripeSessionId && (
-                              <a
-                                href={getStripeDashboardSessionUrl(
-                                  order.stripeSessionId,
+                              <div className="mt-2 space-y-1">
+                                <a
+                                  href={getStripeDashboardSessionUrl(
+                                    order.stripeSessionId,
+                                  )}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="block text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                                >
+                                  Visa i Stripe →
+                                </a>
+                                {order.status === ORDER_STATUS.APPROVED && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setRefundOrderId(order.id)}
+                                    disabled={isRefunding}
+                                    className="block text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                                  >
+                                    Refund
+                                  </button>
                                 )}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="mt-2 block text-xs font-semibold text-indigo-600 hover:text-indigo-700"
-                              >
-                                Visa i Stripe →
-                              </a>
+                              </div>
                             )}
                         </td>
                         <td className="px-4 py-4">
@@ -1566,6 +2060,11 @@ export default function AdminPage() {
                               </button>
                             ) : order.status === ORDER_STATUS.APPROVED ||
                               order.status === ORDER_STATUS.COMPLETED ? (
+                              order.paymentMethod === PAYMENT_METHOD.STRIPE ? (
+                                <span className="text-xs text-zinc-400">
+                                  Använd Refund
+                                </span>
+                              ) : (
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1578,6 +2077,9 @@ export default function AdminPage() {
                                   ? "Återställer…"
                                   : "Häv godkännande"}
                               </button>
+                              )
+                            ) : order.status === ORDER_STATUS.REFUNDED ? (
+                              <span className="text-xs text-zinc-400">—</span>
                             ) : (
                               <span className="text-xs text-zinc-400">—</span>
                             )}
@@ -2843,6 +3345,213 @@ export default function AdminPage() {
           )}
         </section>
           )}
+
+        {activeTab === "recensioner" && (
+        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">Kundrecensioner</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Granska inkomna recensioner. Endast godkända recensioner visas i butiken.
+          </p>
+
+          {isLoadingReviews ? (
+            <p className="mt-8 text-sm text-zinc-500">Laddar recensioner…</p>
+          ) : customerReviews.length === 0 ? (
+            <p className="mt-8 text-sm text-zinc-500">
+              Inga recensioner har skickats in ännu.
+            </p>
+          ) : (
+            <div className="mt-8 overflow-x-auto">
+              <table className="min-w-full divide-y divide-rose-100 text-sm">
+                <thead>
+                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <th className="px-3 py-3">Kund</th>
+                    <th className="px-3 py-3">Produkt</th>
+                    <th className="px-3 py-3">Betyg</th>
+                    <th className="px-3 py-3">Recension</th>
+                    <th className="px-3 py-3">Datum</th>
+                    <th className="px-3 py-3">Status</th>
+                    <th className="px-3 py-3 text-right">Åtgärder</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-rose-50">
+                  {customerReviews.map((review) => {
+                    const isPending = review.status === REVIEW_STATUS.PENDING;
+                    const isApproving = approvingReviewId === review.id;
+                    const isDeleting = deletingReviewId === review.id;
+
+                    return (
+                      <tr key={review.id} className="align-top">
+                        <td className="px-3 py-4 font-semibold text-zinc-900">
+                          {review.name}
+                          {review.isVerified && (
+                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                              Verifierat köp
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-4">
+                          {review.productTag ? (
+                            <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                              {review.productTag}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-zinc-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-4">
+                          <span className="inline-flex items-center gap-1 font-semibold text-amber-600">
+                            {review.rating}
+                            <span aria-hidden>★</span>
+                          </span>
+                        </td>
+                        <td className="max-w-xs px-3 py-4 text-zinc-600">
+                          <p className="line-clamp-4 whitespace-pre-wrap">
+                            {review.text}
+                          </p>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-zinc-500">
+                          {new Date(review.createdAt).toLocaleDateString("sv-SE", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </td>
+                        <td className="px-3 py-4">
+                          {isPending ? (
+                            <span className="inline-flex rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-700">
+                              Väntar på godkännande
+                            </span>
+                          ) : (
+                            <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                              Godkänd
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex flex-col items-end gap-2 sm:flex-row sm:justify-end">
+                            {isPending && (
+                              <button
+                                type="button"
+                                onClick={() => void handleApproveReview(review.id)}
+                                disabled={isApproving || isDeleting}
+                                className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
+                              >
+                                {isApproving ? "Godkänner…" : "Godkänn"}
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => void handleDeleteReview(review.id)}
+                              disabled={isApproving || isDeleting}
+                              className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                            >
+                              {isDeleting ? "Tar bort…" : "Ta bort"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+        )}
+
+        {activeTab === "lager" && config && (
+        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">Lagerhantering</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Ange lagerantal per produktvariant. Aktivera synlighet för att visa
+            lagerstatus för köpare på produktsidan.
+          </p>
+
+          <div className="mt-6 space-y-6">
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-rose-100 bg-rose-50/40 px-4 py-4">
+              <div>
+                <span className="block text-sm font-semibold text-zinc-900">
+                  Visa lagerstatus för köpare
+                </span>
+                <span className="mt-1 block text-xs text-zinc-500">
+                  Visar pulserande lageretikett vid lågt lager och &quot;Slutsåld&quot; vid 0.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={config.stockManagement.showStockToBuyers}
+                onChange={(event) =>
+                  updateStockManagement("showStockToBuyers", event.target.checked)
+                }
+                className="h-5 w-5 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+              />
+            </label>
+
+            <label className="block max-w-xs">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Tröskel för lågt lager
+              </span>
+              <input
+                type="number"
+                min={1}
+                value={config.stockManagement.lowStockThreshold}
+                onChange={(event) =>
+                  updateStockManagement(
+                    "lowStockThreshold",
+                    Number(event.target.value),
+                  )
+                }
+                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+              />
+              <span className="mt-1 block text-xs text-zinc-500">
+                Vid detta antal eller lägre visas &quot;Endast X kvar i lager!&quot;
+              </span>
+            </label>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold text-zinc-900">Lager per variant</h3>
+              {buildAdminVariantStockRows(config).length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+                  Lägg till produkter under Kampanj för att hantera lager.
+                </p>
+              ) : (
+                buildAdminVariantStockRows(config).map((row) => (
+                  <div
+                    key={row.key}
+                    className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-900">
+                        {row.productName}
+                      </p>
+                      <p className="text-xs font-medium uppercase tracking-wide text-rose-600">
+                        {row.variantLabel}
+                      </p>
+                    </div>
+                    <label className="flex items-center gap-3 sm:min-w-[10rem]">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        Antal
+                      </span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={config.stockManagement.counts[row.key] ?? 0}
+                        onChange={(event) =>
+                          updateVariantStockCount(
+                            row.key,
+                            Number(event.target.value),
+                          )
+                        }
+                        className="w-full rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-rose-400 sm:w-28"
+                      />
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+        )}
 
         {activeTab === "navigation" && (
         <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">

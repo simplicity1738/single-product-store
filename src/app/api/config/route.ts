@@ -21,6 +21,7 @@ export async function GET() {
       faqs: config.faqs,
       bestSellerProductIds: config.bestSellerProductIds,
       premiumProductIds: config.premiumProductIds,
+      stockManagement: config.stockManagement,
     },
     {
       headers: {

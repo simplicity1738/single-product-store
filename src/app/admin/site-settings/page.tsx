@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { StoreConfig } from "@/lib/store-config";
+import { DEFAULT_ORDER_EMAIL_TEMPLATES } from "@/lib/store-config";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
 import HeroCampaignForm from "@/components/admin/HeroCampaignForm";
 import {
@@ -27,6 +28,7 @@ export default function AdminSiteSettingsPage() {
   const [siteNavigation, setSiteNavigation] = useState<SiteNavigation>(
     normalizeSiteNavigation(undefined),
   );
+  const [orderEmail, setOrderEmail] = useState(DEFAULT_ORDER_EMAIL_TEMPLATES);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
@@ -47,6 +49,7 @@ export default function AdminSiteSettingsPage() {
       setConfig(data);
       setSiteSettings(normalizeSiteSettings(data.siteSettings));
       setSiteNavigation(normalizeSiteNavigation(data.siteNavigation));
+      setOrderEmail(data.orderEmail ?? DEFAULT_ORDER_EMAIL_TEMPLATES);
     } catch {
       showToast({
         type: "error",
@@ -90,6 +93,7 @@ export default function AdminSiteSettingsPage() {
           ...config,
           siteSettings: normalizeSiteSettings(siteSettings),
           siteNavigation: normalizeSiteNavigation(siteNavigation),
+          orderEmail,
         }),
       });
 
@@ -279,6 +283,54 @@ export default function AdminSiteSettingsPage() {
               })}
             </div>
           )}
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">
+            Orderbekräftelse via e-post
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Anpassa ämne och brödtext för orderbekräftelser. Placeholders:{" "}
+            <code className="rounded bg-rose-50 px-1">{`{{orderId}}`}</code>,{" "}
+            <code className="rounded bg-rose-50 px-1">{`{{customerName}}`}</code>,{" "}
+            <code className="rounded bg-rose-50 px-1">{`{{total}}`}</code>,{" "}
+            <code className="rounded bg-rose-50 px-1">{`{{cartSummary}}`}</code>
+          </p>
+
+          <div className="mt-6 space-y-4">
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Ämne för orderbekräftelse
+              </span>
+              <input
+                value={orderEmail.emailSubject}
+                onChange={(event) =>
+                  setOrderEmail((current) => ({
+                    ...current,
+                    emailSubject: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                Text för orderbekräftelse
+              </span>
+              <textarea
+                value={orderEmail.emailBody}
+                onChange={(event) =>
+                  setOrderEmail((current) => ({
+                    ...current,
+                    emailBody: event.target.value,
+                  }))
+                }
+                rows={8}
+                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm leading-relaxed outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              />
+            </label>
+          </div>
         </section>
 
         <p className="mt-6 text-sm text-zinc-500">

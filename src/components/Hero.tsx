@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ProductImage from "@/components/ProductImage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
+import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { resolveCampaignAddons } from "@/lib/campaign-addons";
 import { formatMgOption } from "@/lib/i18n/translations";
 import {
@@ -21,6 +22,13 @@ import IncludedItemsBadge from "@/components/IncludedItemsBadge";
 import HeroThemeDecorations, {
   HeroSupportBadge,
 } from "@/components/HeroThemeDecorations";
+import VariantStockLabel, {
+  isVariantPurchasableWithStock,
+} from "@/components/VariantStockLabel";
+import {
+  getVariantLabelForSelection,
+  resolveVariantStockDisplay,
+} from "@/lib/stock-management";
 
 type HeroProps = {
   siteSettings: StoreConfig["siteSettings"];
@@ -67,6 +75,7 @@ export default function Hero({
     setCampaignAddonSelected,
     isCampaignAddonSelected,
   } = useProductSelection();
+  const { stockManagement } = useStoreConfig();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
   const shippingMessage = useSameDayShippingMessage();
   const campaignProgressPercent =
@@ -85,7 +94,9 @@ export default function Hero({
   const includedItems = featuredConfigProduct?.includedItems?.trim() ?? "";
 
   const variantMg = featuredProduct?.variants[0]?.mg ?? 0;
-  const variantLabel = featuredProduct?.variantLabels?.[0];
+  const variantLabel = featuredProduct
+    ? getVariantLabelForSelection(featuredProduct, variantMg, featuredProduct.variantLabels?.[0])
+    : "";
   const basePrice = featuredProduct
     ? getVariantBasePrice(featuredProduct, variantMg, variantLabel)
     : 0;
@@ -100,8 +111,19 @@ export default function Hero({
     0,
   );
   const bundleTotal = displayPrice + selectedAddonTotal;
+  const stockDisplay = featuredProduct
+    ? resolveVariantStockDisplay(
+        stockManagement,
+        featuredProduct.id,
+        variantLabel,
+      )
+    : { visible: false, quantity: 0, isLow: false, isSoldOut: false };
   const purchasable =
-    featuredProduct && isProductPurchasable(featuredProduct.status);
+    featuredProduct &&
+    isVariantPurchasableWithStock(
+      isProductPurchasable(featuredProduct.status),
+      stockDisplay,
+    );
 
   const variantSummary = featuredProduct
     ? featuredProduct.variantLabels && featuredProduct.variantLabels.length > 0
@@ -278,16 +300,31 @@ export default function Hero({
                     </div>
                   ) : null}
 
-                  {purchasable ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        addToCart(featuredProduct.id, variantMg, variantLabel)
-                      }
-                      className="mt-1 w-full rounded-full bg-rose-400 py-3 text-sm font-semibold text-white shadow-md shadow-rose-400/20 transition hover:bg-rose-500"
-                    >
-                      {t.products.addToCart}
-                    </button>
+                  {purchasable || stockDisplay.isSoldOut ? (
+                    <>
+                      <VariantStockLabel
+                        display={stockDisplay}
+                        className="mt-2 text-center"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          purchasable
+                            ? addToCart(
+                                featuredProduct.id,
+                                variantMg,
+                                featuredProduct.variantLabels?.[0],
+                              )
+                            : undefined
+                        }
+                        disabled={!purchasable}
+                        className="mt-1 w-full rounded-full bg-rose-400 py-3 text-sm font-semibold text-white shadow-md shadow-rose-400/20 transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:hover:bg-zinc-300"
+                      >
+                        {stockDisplay.isSoldOut
+                          ? t.products.soldOut
+                          : t.products.addToCart}
+                      </button>
+                    </>
                   ) : null}
                 </div>
               </article>

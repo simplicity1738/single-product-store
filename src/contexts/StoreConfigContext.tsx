@@ -16,6 +16,7 @@ import {
   DEFAULT_BANNER,
   DEFAULT_FREE_SHIPPING_THRESHOLD,
   DEFAULT_MARKETING_TRACKING,
+  DEFAULT_ORDER_EMAIL_TEMPLATES,
   DEFAULT_SHIPPING_FEE,
   getCatalogProducts,
   normalizeBanner,
@@ -44,6 +45,11 @@ import {
   normalizeSiteNavigation,
   type SiteNavigation,
 } from "@/lib/site-navigation";
+import {
+  DEFAULT_STOCK_MANAGEMENT,
+  normalizeStockManagement,
+  type StockManagementConfig,
+} from "@/lib/stock-management";
 
 type SiteSettings = StoreConfig["siteSettings"];
 
@@ -65,6 +71,7 @@ type PublicStoreConfig = {
   faqs: ConfigFaq[];
   bestSellerProductIds: string[];
   premiumProductIds: string[];
+  stockManagement: StockManagementConfig;
 };
 
 type StoreConfigContextValue = {
@@ -83,6 +90,7 @@ type StoreConfigContextValue = {
   discounts: ConfigDiscount[];
   faqs: ConfigFaq[];
   catalogProducts: Product[];
+  stockManagement: StockManagementConfig;
   storeConfig: StoreConfig;
   isLoading: boolean;
   refresh: () => Promise<void>;
@@ -132,6 +140,9 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(
     DEFAULT_FREE_SHIPPING_THRESHOLD,
   );
+  const [stockManagement, setStockManagement] = useState<StockManagementConfig>(
+    DEFAULT_STOCK_MANAGEMENT,
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -178,6 +189,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
           ? Math.max(0, data.freeShippingThreshold)
           : DEFAULT_FREE_SHIPPING_THRESHOLD,
       );
+      setStockManagement(normalizeStockManagement(data.stockManagement));
     } catch {
       // Keep defaults when config is unavailable.
     } finally {
@@ -213,6 +225,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       freeShippingThreshold,
       telegramHandle,
       contactEmail,
+      orderEmail: DEFAULT_ORDER_EMAIL_TEMPLATES,
       cryptoWallets,
       systemIntegration: { telegramBotToken: "", telegramChatId: "" },
       products,
@@ -221,6 +234,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       bestSellerProductIds,
       premiumProductIds,
       faqs,
+      stockManagement,
     }),
     [
       siteSettings,
@@ -238,6 +252,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       bestSellerProductIds,
       premiumProductIds,
       faqs,
+      stockManagement,
     ],
   );
 
@@ -310,6 +325,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       discounts,
       faqs,
       catalogProducts,
+      stockManagement,
       storeConfig,
       isLoading,
       refresh,
@@ -334,6 +350,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       discounts,
       faqs,
       catalogProducts,
+      stockManagement,
       storeConfig,
       isLoading,
       refresh,

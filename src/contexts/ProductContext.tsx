@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -13,6 +14,10 @@ import {
   getCampaignAddonPrice,
   isKnownCampaignAddonId,
 } from "@/lib/campaign-addons";
+import {
+  loadCartFromStorage,
+  saveCartToStorage,
+} from "@/lib/cart-storage";
 import { getVariantPrice } from "@/lib/store-config";
 import {
   getCartItemKey,
@@ -20,6 +25,10 @@ import {
   type ProductId,
 } from "@/lib/product";
 import { isProductPurchasable } from "@/lib/product-stock";
+import {
+  getVariantLabelForSelection,
+  isVariantSoldOutByStock,
+} from "@/lib/stock-management";
 
 type ProductContextValue = {
   cart: CartItem[];
@@ -37,6 +46,9 @@ type ProductContextValue = {
     campaignAddonId?: string,
   ) => void;
   cartItemCount: number;
+  isCartOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 };
 
 const ProductContext = createContext<ProductContextValue | null>(null);
@@ -56,11 +68,23 @@ function cartItemMatchesKey(
 }
 
 export function ProductProvider({ children }: { children: React.ReactNode }) {
-  const { catalogProducts, siteSettings } = useStoreConfig();
+  const { catalogProducts, siteSettings, stockManagement } = useStoreConfig();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartHydrated, setIsCartHydrated] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [cardVariantOverrides, setCardVariantOverrides] = useState<
     Record<string, number>
   >({});
+
+  useEffect(() => {
+    setCart(loadCartFromStorage());
+    setIsCartHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isCartHydrated) return;
+    saveCartToStorage(cart);
+  }, [cart, isCartHydrated]);
 
   const defaultCardVariants = useMemo(() => {
     const next: Record<string, number> = {};
@@ -84,6 +108,14 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [cardVariants],
   );
 
+  const openCart = useCallback(() => {
+    setIsCartOpen(true);
+  }, []);
+
+  const closeCart = useCallback(() => {
+    setIsCartOpen(false);
+  }, []);
+
   const addToCart = useCallback(
     (productId: string, variantMg?: number, selectedStrength?: string) => {
       const product = catalogProducts.find((entry) => entry.id === productId);
@@ -98,6 +130,12 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       const strength =
         selectedStrength?.trim() ||
         (labels.length > 0 ? labels[mg] ?? labels[0] : undefined);
+      const variantLabel = getVariantLabelForSelection(product, mg, strength);
+      if (
+        isVariantSoldOutByStock(stockManagement, productId, variantLabel)
+      ) {
+        return;
+      }
       const unitPrice = getVariantPrice(product, mg, strength);
 
       setCart((current) => {
@@ -130,13 +168,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         ];
       });
 
-      window.requestAnimationFrame(() => {
-        document
-          .getElementById("checkout-form")
-          ?.scrollIntoView({ behavior: "smooth" });
-      });
+      setIsCartOpen(true);
     },
-    [catalogProducts],
+    [catalogProducts, stockManagement],
   );
 
   const setCampaignAddonSelected = useCallback(
@@ -234,6 +268,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       isCampaignAddonSelected,
       updateCartQuantity,
       cartItemCount,
+      isCartOpen,
+      openCart,
+      closeCart,
     }),
     [
       cart,
@@ -245,6 +282,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       isCampaignAddonSelected,
       updateCartQuantity,
       cartItemCount,
+      isCartOpen,
+      openCart,
+      closeCart,
     ],
   );
 

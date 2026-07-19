@@ -2,7 +2,7 @@ import type { InfluencerPartner } from "@/lib/store-config";
 import { findInfluencerByRef } from "@/lib/influencer-stats.server";
 import { KV_KEYS, readKvData, writeKvData } from "@/lib/kv-store";
 import {
-  isRevenueCountedStatus,
+  isApprovedOrderStatus,
   normalizeOrderStatus,
   ORDER_STATUS,
   type OrderStatus,
@@ -26,6 +26,9 @@ export type StoredOrder = {
   affiliateHandle?: string;
   commissionSek?: number;
   commissionPercent?: number;
+  customerName?: string;
+  customerEmail?: string;
+  shippingAddress?: string;
 };
 
 export function generateOrderId(): string {
@@ -113,6 +116,9 @@ export async function updateOrder(
       | "paymentMethod"
       | "stripeSessionId"
       | "stripePaymentType"
+      | "customerName"
+      | "customerEmail"
+      | "shippingAddress"
     >
   >,
 ): Promise<StoredOrder | null> {
@@ -145,6 +151,7 @@ export async function revertOrderToPending(
   const orders = await readOrders();
   const order = orders.find((entry) => entry.id === orderId);
   if (!order) return null;
+  if (order.status === ORDER_STATUS.REFUNDED) return null;
   if (
     order.status !== ORDER_STATUS.APPROVED &&
     order.status !== ORDER_STATUS.COMPLETED
@@ -153,6 +160,15 @@ export async function revertOrderToPending(
   }
 
   return updateOrderStatus(orderId, ORDER_STATUS.PENDING);
+}
+
+export async function refundOrder(orderId: string): Promise<StoredOrder | null> {
+  const order = await findOrderById(orderId);
+  if (!order) return null;
+  if (order.status !== ORDER_STATUS.APPROVED) return null;
+  if (order.paymentMethod !== PAYMENT_METHOD.STRIPE) return null;
+
+  return updateOrderStatus(orderId, ORDER_STATUS.REFUNDED);
 }
 
 export function calculateInfluencerCommission(
@@ -186,15 +202,17 @@ export function resolveAffiliateAttribution(
 
 export async function getOrderAnalytics(): Promise<{
   totalRevenue: number;
+  revenueThisWeek: number;
+  revenueThisMonth: number;
+  revenueThisYear: number;
   orderCount: number;
   ordersToday: number;
   ordersThisWeek: number;
 }> {
   const orders = await readOrders();
-  const totalRevenue = orders.reduce((sum, order) => {
-    if (!isRevenueCountedStatus(order.status)) return sum;
-    return sum + (Number.isFinite(order.total) ? order.total : 0);
-  }, 0);
+  const approvedOrders = orders.filter((order) =>
+    isApprovedOrderStatus(order.status),
+  );
 
   const now = new Date();
   const startOfToday = new Date(now);
@@ -204,19 +222,38 @@ export async function getOrderAnalytics(): Promise<{
   startOfWeek.setDate(now.getDate() - 7);
   startOfWeek.setHours(0, 0, 0, 0);
 
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+  let totalRevenue = 0;
+  let revenueThisWeek = 0;
+  let revenueThisMonth = 0;
+  let revenueThisYear = 0;
   let ordersToday = 0;
   let ordersThisWeek = 0;
 
-  for (const order of orders) {
+  for (const order of approvedOrders) {
+    const total = Number.isFinite(order.total) ? order.total : 0;
+    totalRevenue += total;
+
     const placedAt = new Date(order.placedAt);
     if (Number.isNaN(placedAt.getTime())) continue;
+
     if (placedAt >= startOfToday) ordersToday += 1;
-    if (placedAt >= startOfWeek) ordersThisWeek += 1;
+    if (placedAt >= startOfWeek) {
+      ordersThisWeek += 1;
+      revenueThisWeek += total;
+    }
+    if (placedAt >= startOfMonth) revenueThisMonth += total;
+    if (placedAt >= startOfYear) revenueThisYear += total;
   }
 
   return {
     totalRevenue,
-    orderCount: orders.length,
+    revenueThisWeek,
+    revenueThisMonth,
+    revenueThisYear,
+    orderCount: approvedOrders.length,
     ordersToday,
     ordersThisWeek,
   };

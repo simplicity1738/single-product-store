@@ -16,6 +16,11 @@ import {
   type PaymentNetwork,
 } from "@/lib/payment-wallets";
 import {
+  DEFAULT_STOCK_MANAGEMENT,
+  normalizeStockManagement,
+  type StockManagementConfig,
+} from "@/lib/stock-management";
+import {
   DEFAULT_PRODUCT_STOCK_STATUS,
   type ProductStockStatus,
 } from "@/lib/product-stock";
@@ -243,6 +248,17 @@ export type ConfigFaq = {
   answer: string;
 };
 
+export type OrderEmailTemplates = {
+  emailSubject: string;
+  emailBody: string;
+};
+
+export const DEFAULT_ORDER_EMAIL_TEMPLATES: OrderEmailTemplates = {
+  emailSubject: "SimpliCity — Orderbekräftelse {{orderId}}",
+  emailBody:
+    "Hej {{customerName}},\n\nTack för din beställning hos SimpliCity! Din betalning är bekräftad.\n\nOrdernummer: {{orderId}}\nTotalsumma: {{total}}\n\nVi förbereder din leverans och återkommer vid behov.",
+};
+
 export type StoreConfig = {
   siteSettings: {
     logoPath: string;
@@ -282,6 +298,8 @@ export type StoreConfig = {
   telegramHandle: string;
   /** Store contact email shown on the storefront and used for customer communication. */
   contactEmail: string;
+  /** Custom subject/body for order confirmation emails. Supports {{orderId}}, {{customerName}}, {{total}}, {{cartSummary}}. */
+  orderEmail: OrderEmailTemplates;
   cryptoWallets: CryptoWallets;
   systemIntegration: SystemIntegration;
   products: ConfigProduct[];
@@ -292,6 +310,7 @@ export type StoreConfig = {
   /** Product IDs manually marked as premium. */
   premiumProductIds: string[];
   faqs: ConfigFaq[];
+  stockManagement: StockManagementConfig;
 };
 
 export const DEFAULT_REVIEWS: ConfigReview[] = FALLBACK_REVIEWS.map(
@@ -407,6 +426,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   freeShippingThreshold: DEFAULT_FREE_SHIPPING_THRESHOLD,
   telegramHandle: "@simplicity",
   contactEmail: "hello@simplicity.se",
+  orderEmail: DEFAULT_ORDER_EMAIL_TEMPLATES,
   cryptoWallets: {
     tron: "TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     bsc: "0x0000000000000000000000000000000000000000",
@@ -423,6 +443,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   bestSellerProductIds: [],
   premiumProductIds: [],
   faqs: [],
+  stockManagement: DEFAULT_STOCK_MANAGEMENT,
 };
 
 export function normalizeTelegramHandle(handle: string): string {

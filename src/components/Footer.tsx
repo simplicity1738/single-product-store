@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
+import PaymentTrustBadges from "@/components/PaymentTrustBadges";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { getSiteNavLabel, isSiteNavLinkVisible } from "@/lib/site-navigation";
@@ -103,6 +104,8 @@ export default function Footer() {
             <p className="mt-3 text-sm text-zinc-600">{newsletterStatus}</p>
           )}
         </div>
+
+        <PaymentTrustBadges className="mb-8 border-t border-rose-100 pt-8" />
 
         <nav className="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           {legalLinks.map((link) => (

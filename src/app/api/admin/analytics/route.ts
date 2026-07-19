@@ -9,7 +9,15 @@ export async function GET() {
   if (unauthorized) return unauthorized;
 
   const [
-    { totalRevenue, orderCount, ordersToday, ordersThisWeek },
+    {
+      totalRevenue,
+      revenueThisWeek,
+      revenueThisMonth,
+      revenueThisYear,
+      orderCount,
+      ordersToday,
+      ordersThisWeek,
+    },
     subscribers,
     { signupsToday, signupsThisWeek },
     systemLogs,
@@ -22,6 +30,9 @@ export async function GET() {
 
   return NextResponse.json({
     totalRevenue,
+    revenueThisWeek,
+    revenueThisMonth,
+    revenueThisYear,
     orderCount,
     subscriberCount: subscribers.length,
     ordersToday,

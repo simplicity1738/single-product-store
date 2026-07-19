@@ -280,6 +280,9 @@ export async function POST(request: Request) {
       status: ORDER_STATUS.PENDING,
       paymentMethod: PAYMENT_METHOD.STRIPE,
       stripeSessionId: session.id,
+      customerName: name,
+      customerEmail: email,
+      shippingAddress: `${address}, ${zip} ${city}, ${state}, SE`,
       ...(affiliate
         ? {
             affiliateHandle: affiliate.handle,
@@ -310,6 +313,7 @@ export async function POST(request: Request) {
         shipping,
         discount,
         total,
+        templates: storeConfig.orderEmail,
       });
     } catch {
       await appendSystemLog(

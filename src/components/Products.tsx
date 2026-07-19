@@ -23,6 +23,13 @@ import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import { isProductPurchasable } from "@/lib/product-stock";
 import StockStatusBadge from "@/components/StockStatusBadge";
 import IncludedItemsBadge from "@/components/IncludedItemsBadge";
+import VariantStockLabel, {
+  isVariantPurchasableWithStock,
+} from "@/components/VariantStockLabel";
+import {
+  getVariantLabelForSelection,
+  resolveVariantStockDisplay,
+} from "@/lib/stock-management";
 
 const selectClassName =
   "mt-2 w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-9 text-sm font-medium text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -35,7 +42,7 @@ type DisplayProduct = Product & {
 
 export default function Products() {
   const { locale, t } = useLanguage();
-  const { products: configProducts, catalogProducts, siteNavigation } =
+  const { products: configProducts, catalogProducts, siteNavigation, stockManagement } =
     useStoreConfig();
   const { cardVariants, setCardVariantMg, addToCart } = useProductSelection();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
@@ -99,13 +106,28 @@ export default function Products() {
               variantMg,
               activeStrength,
             );
-            const purchasable = isProductPurchasable(product.status);
+            const variantLabel = getVariantLabelForSelection(
+              product,
+              variantMg,
+              activeStrength,
+            );
+            const stockDisplay = resolveVariantStockDisplay(
+              stockManagement,
+              product.id,
+              variantLabel,
+            );
+            const purchasable = isVariantPurchasableWithStock(
+              isProductPurchasable(product.status),
+              stockDisplay,
+            );
             const buttonLabel =
               product.status === "kommer_snart"
                 ? t.products.comingSoonButton
-                : product.status === "ej_i_lager"
+                : stockDisplay.isSoldOut
                   ? t.products.soldOut
-                  : t.products.addToCart;
+                  : product.status === "ej_i_lager"
+                    ? t.products.soldOut
+                    : t.products.addToCart;
 
             return (
               <article
@@ -202,7 +224,9 @@ export default function Products() {
                   </p>
                 ) : null}
 
-                <div className="mt-5 flex items-end justify-between gap-3 border-t border-rose-100 pt-5">
+                <div className="mt-5 flex flex-col gap-3 border-t border-rose-100 pt-5">
+                  <VariantStockLabel display={stockDisplay} />
+                  <div className="flex items-end justify-between gap-3">
                   <div>
                     <ProductSalePrice
                       basePrice={basePrice}
@@ -225,6 +249,7 @@ export default function Products() {
                   >
                     {buttonLabel}
                   </button>
+                  </div>
                 </div>
               </article>
             );
@@ -244,113 +269,118 @@ const featureIcons = [
   "M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15",
 ];
 
-export function Features() {
+export function QualitySection() {
   const { t } = useLanguage();
   const { siteNavigation } = useStoreConfig();
-  const showFeatures = isSiteSectionVisible(siteNavigation, "fordelar");
   const showQuality = isSiteSectionVisible(siteNavigation, "kvalitet");
 
-  if (!showFeatures && !showQuality) {
+  if (!showQuality) {
     return null;
   }
 
   return (
-    <>
-      {showFeatures && (
-      <section id="features" className="scroll-mt-24 bg-rose-50/50 py-20 sm:py-24">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
-              {t.features.eyebrow}
-            </p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-              {t.features.title}
-            </h2>
-            <p className="mt-4 text-lg text-zinc-600">{t.features.subtitle}</p>
-          </div>
-
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {t.features.items.map((feature, index) => (
-              <article
-                key={feature.title}
-                className="group rounded-2xl border border-rose-100 bg-white p-6 transition hover:border-rose-200 hover:shadow-lg hover:shadow-rose-100/50"
-              >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-rose-400 text-white transition group-hover:bg-rose-500">
+    <section
+      id="quality"
+      className="scroll-mt-24 border-y border-rose-900/20 bg-zinc-900 py-20 text-white sm:py-24"
+    >
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-rose-400">
+            {t.quality.eyebrow}
+          </p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+            {t.quality.title}
+          </h2>
+          <p className="mt-6 text-lg leading-relaxed text-zinc-300">
+            {t.quality.description}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-zinc-700 bg-zinc-800/50 p-8">
+          <ul className="space-y-5">
+            {t.quality.checklist.map((item) => (
+              <li key={item} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-400/20 text-rose-400">
                   <svg
-                    className="h-5 w-5"
+                    className="h-3 w-3"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    strokeWidth={1.5}
+                    strokeWidth={3}
                     aria-hidden
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d={featureIcons[index]}
+                      d="M4.5 12.75l6 6 9-13.5"
                     />
                   </svg>
-                </div>
-                <h3 className="text-base font-semibold text-zinc-900">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-                  {feature.description}
-                </p>
-              </article>
+                </span>
+                <span className="text-sm leading-relaxed text-zinc-200">
+                  {item}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-      </section>
-      )}
+      </div>
+    </section>
+  );
+}
 
-      {showQuality && (
-      <section
-        id="quality"
-        className="scroll-mt-24 border-y border-rose-900/20 bg-zinc-900 py-20 text-white sm:py-24"
-      >
-        <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-rose-400">
-              {t.quality.eyebrow}
-            </p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              {t.quality.title}
-            </h2>
-            <p className="mt-6 text-lg leading-relaxed text-zinc-300">
-              {t.quality.description}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-zinc-700 bg-zinc-800/50 p-8">
-            <ul className="space-y-5">
-              {t.quality.checklist.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-400/20 text-rose-400">
-                    <svg
-                      className="h-3 w-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                      aria-hidden
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 12.75l6 6 9-13.5"
-                      />
-                    </svg>
-                  </span>
-                  <span className="text-sm leading-relaxed text-zinc-200">
-                    {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+export function Features() {
+  const { t } = useLanguage();
+  const { siteNavigation } = useStoreConfig();
+  const showFeatures = isSiteSectionVisible(siteNavigation, "fordelar");
+
+  if (!showFeatures) {
+    return null;
+  }
+
+  return (
+    <section id="features" className="scroll-mt-24 bg-rose-50/50 py-20 sm:py-24">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+            {t.features.eyebrow}
+          </p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+            {t.features.title}
+          </h2>
+          <p className="mt-4 text-lg text-zinc-600">{t.features.subtitle}</p>
         </div>
-      </section>
-      )}
-    </>
+
+        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {t.features.items.map((feature, index) => (
+            <article
+              key={feature.title}
+              className="group rounded-2xl border border-rose-100 bg-white p-6 transition hover:border-rose-200 hover:shadow-lg hover:shadow-rose-100/50"
+            >
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-rose-400 text-white transition group-hover:bg-rose-500">
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d={featureIcons[index]}
+                  />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-zinc-900">
+                {feature.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                {feature.description}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -7,6 +7,7 @@ import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { isSiteSectionVisible } from "@/lib/site-navigation";
 import ProductImage from "@/components/ProductImage";
 import PaymentStep from "@/components/PaymentStep";
+import PaymentTrustBadges from "@/components/PaymentTrustBadges";
 import CheckoutMethodSelector, {
   type CheckoutPaymentChoice,
 } from "@/components/CheckoutMethodSelector";
@@ -310,6 +311,8 @@ export default function OrderForm() {
             >
               {isSubmitting ? t.order.processing : t.order.continueToPayment}
             </button>
+
+            <PaymentTrustBadges className="mt-6" />
           </form>
           )}
 

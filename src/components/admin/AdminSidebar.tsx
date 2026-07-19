@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Översikt", exact: true },
   { href: "/admin/site-settings", label: "Sajtkonfiguration", exact: false },
   { href: "/admin/blog", label: "Blogg", exact: false },
   { href: "/admin/lab-tests", label: "Labbtester", exact: false },
+  { href: "/admin?tab=recensioner", label: "Recensioner", exact: false },
 ] as const;
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   return (
     <aside className="hidden w-56 shrink-0 border-r border-rose-100 bg-white/90 lg:block">
@@ -25,9 +27,12 @@ export default function AdminSidebar() {
 
         <nav className="mt-8 space-y-1">
           {NAV_ITEMS.map((item) => {
-            const active = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+            const active = item.href.includes("tab=recensioner")
+              ? pathname === "/admin" &&
+                searchParams.get("tab") === "recensioner"
+              : item.exact
+                ? pathname === item.href && searchParams.get("tab") !== "recensioner"
+                : pathname.startsWith(item.href);
 
             return (
               <Link

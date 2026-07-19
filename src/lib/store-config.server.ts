@@ -7,6 +7,7 @@ import {
   DEFAULT_REVIEWS,
   DEFAULT_SHIPPING_FEE,
   DEFAULT_STORE_CONFIG,
+  DEFAULT_ORDER_EMAIL_TEMPLATES,
   normalizeBanner,
   normalizeDiscountCode,
   normalizeInfluencerHandle,
@@ -32,6 +33,10 @@ import {
   normalizeProductStockStatus,
   type ProductStockStatus,
 } from "@/lib/product-stock";
+import {
+  DEFAULT_STOCK_MANAGEMENT,
+  normalizeStockManagement,
+} from "@/lib/stock-management";
 
 function normalizeDiscount(entry: Partial<ConfigDiscount>): ConfigDiscount {
   return {
@@ -162,6 +167,18 @@ function normalizeCryptoWallets(
   };
 }
 
+function normalizeOrderEmail(
+  value: Partial<StoreConfig["orderEmail"]> | undefined,
+): StoreConfig["orderEmail"] {
+  const subject = value?.emailSubject?.trim();
+  const body = value?.emailBody?.trim();
+
+  return {
+    emailSubject: subject || DEFAULT_ORDER_EMAIL_TEMPLATES.emailSubject,
+    emailBody: body || DEFAULT_ORDER_EMAIL_TEMPLATES.emailBody,
+  };
+}
+
 function mergeStoreConfig(
   parsed: Partial<StoreConfig> & {
     btcWalletInput?: string;
@@ -197,6 +214,7 @@ function mergeStoreConfig(
       typeof parsed.contactEmail === "string" && parsed.contactEmail.trim()
         ? parsed.contactEmail.trim()
         : DEFAULT_STORE_CONFIG.contactEmail,
+    orderEmail: normalizeOrderEmail(parsed.orderEmail),
     cryptoWallets: normalizeCryptoWallets(parsed),
     systemIntegration: {
       ...DEFAULT_STORE_CONFIG.systemIntegration,
@@ -222,6 +240,7 @@ function mergeStoreConfig(
     faqs: Array.isArray(parsed.faqs)
       ? parsed.faqs.map((entry) => normalizeFaq(entry)).filter((entry) => entry.question)
       : [],
+    stockManagement: normalizeStockManagement(parsed.stockManagement),
   };
 }
 
@@ -262,6 +281,7 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
     ),
     telegramHandle: normalizeTelegramHandle(config.telegramHandle),
     contactEmail: config.contactEmail?.trim() || DEFAULT_STORE_CONFIG.contactEmail,
+    orderEmail: normalizeOrderEmail(config.orderEmail),
     cryptoWallets: normalizeCryptoWallets(config),
     reviews: Array.isArray(config.reviews) ? config.reviews : DEFAULT_REVIEWS,
     discounts: Array.isArray(config.discounts)
@@ -277,6 +297,7 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
           normalizeConfigProduct(entry, entry.id?.trim() || `product-${Date.now()}`),
         )
       : [],
+    stockManagement: normalizeStockManagement(config.stockManagement),
   };
   await writeKvData(KV_KEYS.STORE_CONFIG, "store-config.json", normalized);
 }

@@ -9,6 +9,8 @@ import {
   revertOrderToPending,
 } from "@/lib/orders.server";
 import { sanitizeOrderId } from "@/lib/sanitize";
+import { sendOrderDeletedNotification } from "@/lib/telegram";
+import { logServerError } from "@/lib/safe-log";
 
 export async function GET() {
   const unauthorized = await requireAdminSession();
@@ -65,6 +67,7 @@ export async function PATCH(request: Request) {
           : `Order ${orderId} markerad som ${ORDER_STATUS.APPROVED}.`,
       order: updatedOrder,
       totalRevenue: analytics.totalRevenue,
+      orderCount: analytics.orderCount,
     });
   } catch {
     return NextResponse.json(
@@ -95,6 +98,12 @@ export async function DELETE(request: Request) {
         { success: false, message: "Ordern hittades inte." },
         { status: 404 },
       );
+    }
+
+    try {
+      await sendOrderDeletedNotification(orderId);
+    } catch (error) {
+      logServerError("admin:orders:delete:telegram", error);
     }
 
     const analytics = await getOrderAnalytics();

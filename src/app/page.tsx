@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Products, { Features } from "@/components/Products";
+import Products, { QualitySection } from "@/components/Products";
 import OrderForm from "@/components/OrderForm";
 import ContactForm from "@/components/ContactForm";
 import TrustBar from "@/components/TrustBar";
@@ -27,8 +27,8 @@ export default async function Home() {
           featuredProduct={featuredProduct}
           featuredConfigProduct={featuredConfigProduct}
         />
+        <QualitySection />
         <Products />
-        <Features />
         <OrderForm />
         <ContactForm />
         <TrustBar />

@@ -2,6 +2,12 @@ import nodemailer from "nodemailer";
 import { env, isSmtpConfigured } from "@/lib/env";
 import { escapeHtml } from "@/lib/sanitize";
 import { logServerError, redactEmail } from "@/lib/safe-log";
+import type { OrderEmailTemplates } from "@/lib/store-config";
+import {
+  renderOrderEmailTemplate,
+  resolveOrderEmailTemplates,
+  type OrderEmailVariables,
+} from "@/lib/order-email-templates";
 
 const NEWSLETTER_SUBJECT = "SimpliCity — Nyheter";
 
@@ -112,6 +118,14 @@ export type OrderConfirmationLine = {
   lineSubtotal: number;
 };
 
+function formatSekAmount(amount: number): string {
+  return new Intl.NumberFormat("sv-SE", {
+    style: "currency",
+    currency: "SEK",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export type OrderConfirmationPayload = {
   orderId: string;
   customerEmail: string;
@@ -121,17 +135,36 @@ export type OrderConfirmationPayload = {
   shipping: number;
   discount: number;
   total: number;
+  cartSummary?: string;
+  templates?: Partial<OrderEmailTemplates>;
 };
 
-function formatSekAmount(amount: number): string {
-  return new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-    maximumFractionDigits: 0,
-  }).format(amount);
+function buildOrderEmailVariables(
+  payload: OrderConfirmationPayload,
+): OrderEmailVariables {
+  return {
+    orderId: payload.orderId,
+    customerName: payload.customerName,
+    total: formatSekAmount(payload.total),
+    subtotal: formatSekAmount(payload.subtotal),
+    shipping:
+      payload.shipping === 0
+        ? "Fri frakt"
+        : formatSekAmount(payload.shipping),
+    discount:
+      payload.discount > 0 ? formatSekAmount(-payload.discount) : "",
+    cartSummary: payload.cartSummary ?? "",
+  };
 }
 
-function formatOrderConfirmationHtml(payload: OrderConfirmationPayload): string {
+function formatOrderConfirmationHtml(
+  payload: OrderConfirmationPayload,
+  bodyTemplate: string,
+): string {
+  const variables = buildOrderEmailVariables(payload);
+  const introHtml = escapeHtml(renderOrderEmailTemplate(bodyTemplate, variables))
+    .replace(/\n/g, "<br>");
+
   const lineRows = payload.lines
     .map(
       (line) => `
@@ -179,13 +212,10 @@ function formatOrderConfirmationHtml(payload: OrderConfirmationPayload): string 
             </tr>
             <tr>
               <td style="padding:28px 32px;font-size:16px;line-height:1.7;color:#3f3f46;">
-                <p style="margin:0 0 16px;">Hej ${escapeHtml(payload.customerName)},</p>
-                <p style="margin:0 0 24px;">Vi har tagit emot din beställning. Spara ditt ordernummer för spårning:</p>
-                <div style="margin:0 0 24px;padding:16px 20px;border-radius:14px;background:#fff1f2;border:1px solid #fecdd3;text-align:center;">
-                  <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#e11d48;">Ordernummer</p>
-                  <p style="margin:0;font-size:22px;font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#18181b;">${escapeHtml(payload.orderId)}</p>
-                </div>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
+                ${introHtml}
+                ${
+                  payload.lines.length > 0
+                    ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:24px;margin-bottom:16px;">
                   ${lineRows}
                   <tr>
                     <td style="padding:8px 0;color:#71717a;font-size:14px;">Delsumma</td>
@@ -200,8 +230,9 @@ function formatOrderConfirmationHtml(payload: OrderConfirmationPayload): string 
                     <td style="padding:12px 0 0;font-size:16px;font-weight:700;color:#18181b;border-top:2px solid #fda4af;">Totalt</td>
                     <td style="padding:12px 0 0;font-size:16px;font-weight:700;color:#18181b;text-align:right;border-top:2px solid #fda4af;">${escapeHtml(formatSekAmount(payload.total))}</td>
                   </tr>
-                </table>
-                <p style="margin:0;font-size:14px;color:#71717a;">Vi återkommer när din betalning är bekräftad.</p>
+                </table>`
+                    : ""
+                }
               </td>
             </tr>
           </table>
@@ -212,7 +243,17 @@ function formatOrderConfirmationHtml(payload: OrderConfirmationPayload): string 
 </html>`;
 }
 
-function formatOrderConfirmationText(payload: OrderConfirmationPayload): string {
+function formatOrderConfirmationText(
+  payload: OrderConfirmationPayload,
+  bodyTemplate: string,
+): string {
+  const variables = buildOrderEmailVariables(payload);
+  const intro = renderOrderEmailTemplate(bodyTemplate, variables);
+
+  if (payload.lines.length === 0) {
+    return intro;
+  }
+
   const lines = payload.lines
     .map(
       (line) =>
@@ -221,11 +262,7 @@ function formatOrderConfirmationText(payload: OrderConfirmationPayload): string 
     .join("\n");
 
   return [
-    `Hej ${payload.customerName},`,
-    "",
-    "Tack för din beställning hos SimpliCity!",
-    "",
-    `Ordernummer: ${payload.orderId}`,
+    intro,
     "",
     "Din beställning:",
     lines,
@@ -234,8 +271,6 @@ function formatOrderConfirmationText(payload: OrderConfirmationPayload): string 
     payload.discount > 0 ? `Rabatt: ${formatSekAmount(-payload.discount)}` : null,
     `Frakt: ${payload.shipping === 0 ? "Fri frakt" : formatSekAmount(payload.shipping)}`,
     `Totalt: ${formatSekAmount(payload.total)}`,
-    "",
-    "Vi återkommer när din betalning är bekräftad.",
   ]
     .filter((line): line is string => line !== null)
     .join("\n");
@@ -244,8 +279,10 @@ function formatOrderConfirmationText(payload: OrderConfirmationPayload): string 
 export async function sendOrderConfirmationEmail(
   payload: OrderConfirmationPayload,
 ): Promise<{ ok: boolean; mock: boolean }> {
-  const subject = `SimpliCity — Orderbekräftelse ${payload.orderId}`;
-  const text = formatOrderConfirmationText(payload);
+  const templates = resolveOrderEmailTemplates(payload.templates);
+  const variables = buildOrderEmailVariables(payload);
+  const subject = renderOrderEmailTemplate(templates.emailSubject, variables);
+  const text = formatOrderConfirmationText(payload, templates.emailBody);
 
   if (!isSmtpConfigured()) {
     if (process.env.NODE_ENV === "development") {
@@ -273,7 +310,7 @@ export async function sendOrderConfirmationEmail(
     to: payload.customerEmail,
     subject,
     text,
-    html: formatOrderConfirmationHtml(payload),
+    html: formatOrderConfirmationHtml(payload, templates.emailBody),
   });
 
   return { ok: true, mock: false };

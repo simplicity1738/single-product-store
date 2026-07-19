@@ -300,3 +300,31 @@ export async function sendGuideFeedbackNotification(
 
   return sendTelegramMessage({ text });
 }
+
+export async function sendReviewPendingNotification(
+  customerName: string,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeName = escapeTelegramHtml(customerName.trim() || "Okänd kund");
+  const text = `📝 Ny recension väntar på godkännande från ${safeName}!`;
+  return sendTelegramMessage({ text });
+}
+
+export async function sendRefundProcessedNotification(
+  orderId: string,
+  amountSek: number,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeOrderId = escapeTelegramHtml(orderId);
+  const formattedAmount = escapeTelegramHtml(
+    new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 0 }).format(amountSek),
+  );
+  const text = `💸 Order ${safeOrderId} har blivit återbetald via Stripe. Belopp: ${formattedAmount} kr.`;
+  return sendTelegramMessage({ text });
+}
+
+export async function sendOrderDeletedNotification(
+  orderId: string,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeOrderId = escapeTelegramHtml(orderId);
+  const text = `🗑️ Order ${safeOrderId} raderades permanent från databasen.`;
+  return sendTelegramMessage({ text });
+}

@@ -200,6 +200,9 @@ export async function POST(request: Request) {
       placedAt: new Date().toISOString(),
       status: ORDER_STATUS.PENDING,
       paymentMethod: PAYMENT_METHOD.BITCOIN,
+      customerName: name,
+      customerEmail: email,
+      shippingAddress: `${address}, ${zip} ${city}, ${state}, SE`,
       ...(affiliate
         ? {
             affiliateHandle: affiliate.handle,
@@ -230,6 +233,7 @@ export async function POST(request: Request) {
         shipping,
         discount,
         total,
+        templates: storeConfig.orderEmail,
       });
     } catch {
       await appendSystemLog(
