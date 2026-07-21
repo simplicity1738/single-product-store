@@ -22,13 +22,13 @@ import {
   type OrderStatus,
 } from "@/lib/order-status";
 import {
-  formatPaymentMethodBadge,
   getStripeDashboardSessionUrl,
   PAYMENT_METHOD,
   STRIPE_PAYMENT_TYPE,
   type PaymentMethod,
   type StripePaymentType,
 } from "@/lib/order-payment";
+import AdminPaymentMethodBadge from "@/components/admin/AdminPaymentMethodBadge";
 import {
   formatVariantsInput,
   parseVariantsInput,
@@ -207,12 +207,11 @@ function sortOrders(orders: AdminOrder[], sort: OrderSortOption): AdminOrder[] {
   }
 }
 
-function paymentMethodBadgeClassName(paymentMethod?: PaymentMethod): string {
-  if (paymentMethod === PAYMENT_METHOD.STRIPE) {
-    return "border-indigo-200 bg-indigo-50 text-indigo-700";
-  }
-  return "border-orange-200 bg-orange-50 text-orange-700";
-}
+type DestructiveConfirmAction = {
+  type: "refund" | "delete";
+  orderId: string;
+  amount: number;
+};
 
 const emptyDiscount = (): ConfigDiscount => ({
   id: "",
@@ -433,7 +432,8 @@ export default function AdminPage() {
     useState<OrderSortOption>("newest");
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
-  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [destructiveConfirm, setDestructiveConfirm] =
+    useState<DestructiveConfirmAction | null>(null);
   const [isRefunding, setIsRefunding] = useState(false);
   const [newFaq, setNewFaq] = useState<ConfigFaq>(emptyFaq());
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -450,10 +450,35 @@ export default function AdminPage() {
 
   const showToast = useCallback((next: ToastState) => {
     setToast(next);
-    if (next?.type === "success") {
-      window.setTimeout(() => setToast(null), 4000);
+    if (next?.type === "success" || next?.type === "info") {
+      window.setTimeout(() => setToast(null), 3500);
     }
   }, []);
+
+  async function copyShippingAddress(order: AdminOrder) {
+    const lines = [
+      order.customerName?.trim() || "",
+      order.shippingAddress?.trim() || "",
+    ].filter(Boolean);
+
+    if (lines.length === 0) {
+      showToast({
+        type: "error",
+        message: "Ingen leveransadress att kopiera.",
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      showToast({ type: "success", message: "Kopierad!" });
+    } catch {
+      showToast({
+        type: "error",
+        message: "Kunde inte kopiera adressen.",
+      });
+    }
+  }
 
   const loadConfig = useCallback(async () => {
     setIsLoading(true);
@@ -619,17 +644,7 @@ export default function AdminPage() {
       void loadAnalytics();
       showToast({
         type: "success",
-        message:
-          data.message ??
-          (action === "approve"
-            ? "Order godkänd och väntar på packning."
-            : action === "pack"
-              ? "Order markerad som Packad."
-              : action === "ship"
-                ? "Order markerad som Levererad."
-                : action === "waiting_pack"
-                  ? "Order återställd till Väntar på packning."
-                  : "Godkännande hävt. Ordern väntar på betalning."),
+        message: `Status uppdaterad för ${orderId}`,
       });
     } catch {
       showToast({
@@ -657,6 +672,7 @@ export default function AdminPage() {
 
       setOrders((current) => current.filter((order) => order.id !== orderId));
       void loadAnalytics();
+      setDestructiveConfirm(null);
       showToast({
         type: "success",
         message: data.message ?? "Order borttagen.",
@@ -693,7 +709,7 @@ export default function AdminPage() {
         ),
       );
       void loadAnalytics();
-      setRefundOrderId(null);
+      setDestructiveConfirm(null);
       showToast({
         type: "success",
         message: data.message ?? "Stripe-återbetalning genomförd.",
@@ -1430,7 +1446,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white text-zinc-900">
       {toast && (
         <div
-          className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full px-6 py-3 text-sm font-semibold shadow-lg ${
+          className={`fixed top-6 right-6 z-50 max-w-sm rounded-2xl px-5 py-3 text-sm font-semibold shadow-lg ${
             toast.type === "success"
               ? "bg-emerald-500 text-white shadow-emerald-500/30"
               : toast.type === "error"
@@ -1443,41 +1459,57 @@ export default function AdminPage() {
         </div>
       )}
 
-      {refundOrderId && (
+      {destructiveConfirm && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
-            aria-labelledby="refund-order-title"
+            aria-labelledby="destructive-confirm-title"
             className="w-full max-w-md rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl"
           >
             <h2
-              id="refund-order-title"
+              id="destructive-confirm-title"
               className="text-lg font-bold text-zinc-900"
             >
-              Bekräfta återbetalning
+              Bekräfta åtgärd
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-zinc-600">
-              Are you sure you want to refund this order? Stripe will refund the
-              full payment and ordern markeras som Återbetald.
+              Är du säker på att du vill genomföra{" "}
+              {destructiveConfirm.type === "refund"
+                ? "Återbetalning"
+                : "Borttagning"}{" "}
+              för order{" "}
+              <span className="font-mono font-semibold text-zinc-900">
+                {destructiveConfirm.orderId}
+              </span>{" "}
+              ({formatSek(destructiveConfirm.amount)})?
             </p>
-            <p className="mt-2 font-mono text-xs text-zinc-500">{refundOrderId}</p>
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setRefundOrderId(null)}
-                disabled={isRefunding}
-                className="rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-rose-50 disabled:opacity-60"
+                onClick={() => setDestructiveConfirm(null)}
+                disabled={isRefunding || deletingOrderId !== null}
+                className="rounded-full border border-zinc-200 bg-zinc-100 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:opacity-60"
               >
                 Avbryt
               </button>
               <button
                 type="button"
-                onClick={() => void handleRefundOrder(refundOrderId)}
-                disabled={isRefunding}
+                onClick={() =>
+                  void (destructiveConfirm.type === "refund"
+                    ? handleRefundOrder(destructiveConfirm.orderId)
+                    : handleDeleteOrder(destructiveConfirm.orderId))
+                }
+                disabled={isRefunding || deletingOrderId !== null}
                 className="rounded-full bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-60"
               >
-                {isRefunding ? "Återbetalar…" : "Refund order"}
+                {destructiveConfirm.type === "refund"
+                  ? isRefunding
+                    ? "Återbetalar…"
+                    : "Bekräfta"
+                  : deletingOrderId
+                    ? "Tar bort…"
+                    : "Bekräfta"}
               </button>
             </div>
           </div>
@@ -2093,9 +2125,20 @@ export default function AdminPage() {
                             </p>
                           )}
                           {order.shippingAddress && (
-                            <p className="mt-1 line-clamp-2 text-xs text-zinc-400">
-                              {order.shippingAddress}
-                            </p>
+                            <div className="mt-1 flex items-start gap-1.5">
+                              <p className="line-clamp-2 min-w-0 flex-1 text-xs text-zinc-400">
+                                {order.shippingAddress}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => void copyShippingAddress(order)}
+                                className="shrink-0 rounded-md border border-rose-100 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                                title="Kopiera namn och adress"
+                                aria-label={`Kopiera leveransadress för ${order.id}`}
+                              >
+                                📋
+                              </button>
+                            </div>
                           )}
                         </td>
                         <td className="hidden whitespace-nowrap px-4 py-4 text-zinc-500 md:table-cell">
@@ -2105,14 +2148,10 @@ export default function AdminPage() {
                           {formatSek(order.total)}
                         </td>
                         <td className="hidden whitespace-nowrap px-4 py-4 lg:table-cell">
-                          <span
-                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${paymentMethodBadgeClassName(order.paymentMethod)}`}
-                          >
-                            {formatPaymentMethodBadge(
-                              order.paymentMethod ?? PAYMENT_METHOD.BITCOIN,
-                              order.stripePaymentType,
-                            )}
-                          </span>
+                          <AdminPaymentMethodBadge
+                            paymentMethod={order.paymentMethod}
+                            stripePaymentType={order.stripePaymentType}
+                          />
                           {order.paymentMethod === PAYMENT_METHOD.STRIPE &&
                             order.stripeSessionId && (
                               <div className="mt-2 space-y-1">
@@ -2130,7 +2169,13 @@ export default function AdminPage() {
                                   order.status === ORDER_STATUS.PACKED) && (
                                   <button
                                     type="button"
-                                    onClick={() => setRefundOrderId(order.id)}
+                                    onClick={() =>
+                                      setDestructiveConfirm({
+                                        type: "refund",
+                                        orderId: order.id,
+                                        amount: order.total,
+                                      })
+                                    }
                                     disabled={isRefunding}
                                     className="block text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
                                   >
@@ -2241,7 +2286,13 @@ export default function AdminPage() {
 
                             <button
                               type="button"
-                              onClick={() => void handleDeleteOrder(order.id)}
+                              onClick={() =>
+                                setDestructiveConfirm({
+                                  type: "delete",
+                                  orderId: order.id,
+                                  amount: order.total,
+                                })
+                              }
                               disabled={deletingOrderId === order.id}
                               className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-red-600 transition hover:bg-red-100 disabled:opacity-60"
                             >
