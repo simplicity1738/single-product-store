@@ -315,3 +315,185 @@ export async function sendOrderConfirmationEmail(
 
   return { ok: true, mock: false };
 }
+
+export type OrderShippedEmailPayload = {
+  orderId: string;
+  customerEmail: string;
+  customerName: string;
+};
+
+export async function sendOrderShippedEmail(
+  payload: OrderShippedEmailPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeName = payload.customerName.trim() || "Kund";
+  const subject = `Din order ${payload.orderId} är på väg — SimpliCity`;
+  const text = [
+    `Hej ${safeName},`,
+    "",
+    `Goda nyheter — din order ${payload.orderId} har packats och skickats.`,
+    "Du får den inom kort. Tack för att du handlade hos SimpliCity!",
+    "",
+    "Med vänliga hälsningar,",
+    "SimpliCity",
+  ].join("\n");
+
+  const html = `<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(subject)}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#fff7f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#18181b;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fff7f8;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #fecdd3;border-radius:20px;overflow:hidden;">
+            <tr>
+              <td style="padding:28px 32px 20px;border-bottom:2px solid #fda4af;">
+                <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#e11d48;">SimpliCity</p>
+                <h1 style="margin:8px 0 0;font-size:24px;line-height:1.3;color:#18181b;">Din order är på väg</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;font-size:16px;line-height:1.7;color:#3f3f46;">
+                <p style="margin:0 0 16px;">Hej ${escapeHtml(safeName)},</p>
+                <p style="margin:0 0 16px;">Goda nyheter — din order <strong>${escapeHtml(payload.orderId)}</strong> har packats och skickats. Du får den inom kort.</p>
+                <p style="margin:0;">Tack för att du handlade hos SimpliCity!</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  if (!isSmtpConfigured()) {
+    if (process.env.NODE_ENV === "development") {
+      console.info("[email:order-shipped:mock]", {
+        to: redactEmail(payload.customerEmail),
+        subject,
+        mock: true,
+      });
+    }
+    return { ok: true, mock: true };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: env.smtpHost,
+    port: 587,
+    secure: false,
+    auth: {
+      user: env.smtpUser,
+      pass: env.smtpPass,
+    },
+  });
+
+  await transporter.sendMail({
+    from: env.smtpUser,
+    to: payload.customerEmail,
+    subject,
+    text,
+    html,
+  });
+
+  return { ok: true, mock: false };
+}
+
+export type ReviewReplyEmailPayload = {
+  customerEmail: string;
+  customerName: string;
+  reviewText: string;
+  adminReply: string;
+  productTag?: string;
+};
+
+export async function sendReviewReplyEmail(
+  payload: ReviewReplyEmailPayload,
+): Promise<{ ok: boolean; mock: boolean }> {
+  const safeName = payload.customerName.trim() || "Kund";
+  const productLine = payload.productTag?.trim()
+    ? ` angående ${payload.productTag.trim()}`
+    : "";
+  const subject = `Svar på din recension${productLine} — SimpliCity`;
+  const text = [
+    `Hej ${safeName},`,
+    "",
+    "Tack för din recension! Här är vårt svar:",
+    "",
+    payload.adminReply,
+    "",
+    "—",
+    "Din recension:",
+    `"${payload.reviewText}"`,
+    "",
+    "Med vänliga hälsningar,",
+    "SimpliCity",
+  ].join("\n");
+
+  const html = `<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(subject)}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#fff7f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#18181b;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fff7f8;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #fecdd3;border-radius:20px;overflow:hidden;">
+            <tr>
+              <td style="padding:28px 32px 20px;border-bottom:2px solid #fda4af;">
+                <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#e11d48;">SimpliCity</p>
+                <h1 style="margin:8px 0 0;font-size:24px;line-height:1.3;color:#18181b;">Svar på din recension</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px;font-size:16px;line-height:1.7;color:#3f3f46;">
+                <p style="margin:0 0 16px;">Hej ${escapeHtml(safeName)},</p>
+                <p style="margin:0 0 16px;">Tack för din recension! Här är vårt svar:</p>
+                <div style="margin:0 0 24px;padding:16px 18px;border-radius:14px;background:#fff1f2;border:1px solid #fecdd3;color:#18181b;white-space:pre-wrap;">${escapeHtml(payload.adminReply)}</div>
+                <p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#71717a;">Din recension</p>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:#52525b;font-style:italic;">&ldquo;${escapeHtml(payload.reviewText)}&rdquo;</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+  if (!isSmtpConfigured()) {
+    if (process.env.NODE_ENV === "development") {
+      console.info("[email:review-reply:mock]", {
+        to: redactEmail(payload.customerEmail),
+        subject,
+        mock: true,
+      });
+    }
+    return { ok: true, mock: true };
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: env.smtpHost,
+    port: 587,
+    secure: false,
+    auth: {
+      user: env.smtpUser,
+      pass: env.smtpPass,
+    },
+  });
+
+  await transporter.sendMail({
+    from: env.smtpUser,
+    to: payload.customerEmail,
+    subject,
+    text,
+    html,
+  });
+
+  return { ok: true, mock: false };
+}

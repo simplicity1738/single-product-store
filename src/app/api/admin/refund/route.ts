@@ -3,6 +3,7 @@ import { requireAdminSession } from "@/lib/admin-auth.server";
 import {
   findOrderById,
   getOrderAnalytics,
+  isWaitingForPackStatus,
   ORDER_STATUS,
   readOrders,
   refundOrder,
@@ -68,11 +69,14 @@ export async function POST(request: Request) {
       );
     }
 
-    if (order.status !== ORDER_STATUS.APPROVED) {
+    if (
+      !isWaitingForPackStatus(order.status) &&
+      order.status !== ORDER_STATUS.PACKED
+    ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Endast godkända Stripe-order kan återbetalas.",
+          message: "Endast betalda Stripe-order kan återbetalas.",
         },
         { status: 400 },
       );

@@ -25,8 +25,12 @@ export function getExplorerUrl(
   return EXPLORER_URLS[network](address);
 }
 
+type InlineKeyboardButton =
+  | { text: string; url: string }
+  | { text: string; callback_data: string };
+
 type InlineKeyboard = {
-  inline_keyboard: Array<Array<{ text: string; url: string }>>;
+  inline_keyboard: Array<Array<InlineKeyboardButton>>;
 };
 
 type SendMessageOptions = {
@@ -35,9 +39,40 @@ type SendMessageOptions = {
   chatId?: string;
 };
 
+export function formatShippingAddressBlock(parts: {
+  name: string;
+  address: string;
+  zip: string;
+  city: string;
+  state: string;
+}): string {
+  const lines = [
+    parts.name.trim(),
+    parts.address.trim(),
+    `${parts.zip.trim()} ${parts.city.trim()}`.trim(),
+    parts.state.trim() ? `${parts.state.trim()}, Sweden` : "Sweden",
+  ].filter(Boolean);
+
+  return `<pre>${escapeTelegramHtml(lines.join("\n"))}</pre>`;
+}
+
+export function buildFulfillmentKeyboard(orderId: string): InlineKeyboard {
+  return {
+    inline_keyboard: [
+      [
+        { text: "📦 Packad", callback_data: `pack_${orderId}` },
+        {
+          text: "🚚 Skickad / Levererad",
+          callback_data: `ship_${orderId}`,
+        },
+      ],
+    ],
+  };
+}
+
 export async function sendTelegramMessage(
   options: SendMessageOptions,
-): Promise<{ ok: boolean; mock: boolean }> {
+): Promise<{ ok: boolean; mock: boolean; messageId?: number; chatId?: string }> {
   const { text, replyMarkup, chatId: targetChatId } = options;
   const credentials = await getTelegramCredentials();
 
@@ -69,10 +104,175 @@ export async function sendTelegramMessage(
     return { ok: false, mock: false };
   }
 
+  try {
+    const payload = (await response.json()) as {
+      result?: { message_id?: number; chat?: { id?: number } };
+    };
+    return {
+      ok: true,
+      mock: false,
+      messageId: payload.result?.message_id,
+      chatId: payload.result?.chat?.id
+        ? String(payload.result.chat.id)
+        : chatId,
+    };
+  } catch {
+    return { ok: true, mock: false, chatId };
+  }
+}
+
+export async function editTelegramMessage(options: {
+  chatId: string;
+  messageId: number;
+  text: string;
+  replyMarkup?: InlineKeyboard | { inline_keyboard: [] };
+}): Promise<{ ok: boolean; mock: boolean }> {
+  const credentials = await getTelegramCredentials();
+
+  if (!isTelegramConfiguredFromCredentials(credentials)) {
+    if (process.env.NODE_ENV === "development") {
+      console.info("[telegram:mock] editMessageText", options.messageId);
+    }
+    return { ok: true, mock: true };
+  }
+
+  const response = await fetch(
+    `https://api.telegram.org/bot${credentials.botToken}/editMessageText`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: options.chatId,
+        message_id: options.messageId,
+        text: options.text,
+        parse_mode: "HTML",
+        reply_markup: options.replyMarkup,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    logServerError(
+      "telegram:editMessageText",
+      new Error("Telegram API request failed"),
+    );
+    return { ok: false, mock: false };
+  }
+
   return { ok: true, mock: false };
 }
 
+export async function answerTelegramCallbackQuery(options: {
+  callbackQueryId: string;
+  text?: string;
+  showAlert?: boolean;
+}): Promise<void> {
+  const credentials = await getTelegramCredentials();
+  if (!isTelegramConfiguredFromCredentials(credentials)) return;
+
+  try {
+    await fetch(
+      `https://api.telegram.org/bot${credentials.botToken}/answerCallbackQuery`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          callback_query_id: options.callbackQueryId,
+          text: options.text,
+          show_alert: options.showAlert ?? false,
+        }),
+      },
+    );
+  } catch (error) {
+    logServerError("telegram:answerCallbackQuery", error);
+  }
+}
+
+function appendStatusFooter(
+  originalText: string,
+  statusLine: string,
+): string {
+  const cleaned = originalText
+    .replace(/\n\n✅ STATUS:[\s\S]*$/u, "")
+    .replace(/\n\n📦 STATUS:[\s\S]*$/u, "")
+    .replace(/\n\n✅ <b>STATUS:[\s\S]*$/u, "")
+    .replace(/\n\n📦 <b>STATUS:[\s\S]*$/u, "")
+    .trimEnd();
+  return `${escapeTelegramHtml(cleaned)}\n\n${statusLine}`;
+}
+
+export function buildPackedStatusLine(timestamp: Date = new Date()): string {
+  const formatted = timestamp.toLocaleString("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `📦 <b>STATUS: PACKAD</b> (${escapeTelegramHtml(formatted)})`;
+}
+
+export function buildShippedStatusLine(timestamp: Date = new Date()): string {
+  const formatted = timestamp.toLocaleString("sv-SE", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `✅ <b>STATUS: SKICKAD / LEVERERAD</b> (${escapeTelegramHtml(formatted)})`;
+}
+
+export async function markTelegramOrderPacked(options: {
+  chatId: string;
+  messageId: number;
+  originalText: string;
+  orderId: string;
+}): Promise<{ ok: boolean; mock: boolean }> {
+  const text = appendStatusFooter(
+    options.originalText,
+    buildPackedStatusLine(),
+  );
+
+  return editTelegramMessage({
+    chatId: options.chatId,
+    messageId: options.messageId,
+    text,
+    replyMarkup: {
+      inline_keyboard: [
+        [
+          {
+            text: "🚚 Skickad / Levererad",
+            callback_data: `ship_${options.orderId}`,
+          },
+        ],
+      ],
+    },
+  });
+}
+
+export async function markTelegramOrderShipped(options: {
+  chatId: string;
+  messageId: number;
+  originalText: string;
+}): Promise<{ ok: boolean; mock: boolean }> {
+  const text = appendStatusFooter(
+    options.originalText,
+    buildShippedStatusLine(),
+  );
+
+  return editTelegramMessage({
+    chatId: options.chatId,
+    messageId: options.messageId,
+    text,
+    replyMarkup: { inline_keyboard: [] },
+  });
+}
+
 export type OrderNotificationPayload = {
+  orderId: string;
   name: string;
   email: string;
   address: string;
@@ -93,12 +293,9 @@ export type OrderNotificationPayload = {
 export async function sendOrderNotification(
   payload: OrderNotificationPayload,
 ): Promise<{ ok: boolean; mock: boolean }> {
+  const safeOrderId = escapeTelegramHtml(payload.orderId);
   const safeName = escapeTelegramHtml(payload.name);
   const safeEmail = escapeTelegramHtml(payload.email);
-  const safeAddress = escapeTelegramHtml(payload.address);
-  const safeZip = escapeTelegramHtml(payload.zip);
-  const safeCity = escapeTelegramHtml(payload.city);
-  const safeState = escapeTelegramHtml(payload.state);
   const safeCartSummary = escapeTelegramHtml(payload.cartSummary);
   const safeTotalSek = escapeTelegramHtml(payload.totalSek);
   const safeCryptoTotal = escapeTelegramHtml(payload.cryptoTotal);
@@ -107,17 +304,25 @@ export async function sendOrderNotification(
     ? escapeTelegramHtml(payload.affiliateHandle)
     : undefined;
 
-  const fullAddress = `${safeAddress}, ${safeZip} ${safeCity}, ${safeState}, Sweden`;
+  const addressBlock = formatShippingAddressBlock({
+    name: payload.name,
+    address: payload.address,
+    zip: payload.zip,
+    city: payload.city,
+    state: payload.state,
+  });
 
   const text = [
     "🔔 NY BESTÄLLNING - SIMPLICITY STORE",
     "",
+    `Order: ${safeOrderId}`,
     "⚠️ UTSTÅENDE BETALNING (Kontrollera plånboken innan leverans!)",
     `Belopp: ${safeTotalSek} / ${safeCryptoTotal}`,
     "",
     `👤 Kund: ${safeName}`,
     `📧 E-post: ${safeEmail}`,
-    `📦 Leveransadress: ${fullAddress}`,
+    "📦 Leveransadress (tryck för att kopiera):",
+    addressBlock,
     `🛒 Varukorg: ${safeCartSummary}`,
     `💰 Totalsumma: ${safeTotalSek} / ${safeCryptoTotal}`,
     `🔗 Betalnätverk: ${safeNetworkLabel}`,
@@ -134,12 +339,14 @@ export async function sendOrderNotification(
   ].join("\n");
 
   const explorerUrl = getExplorerUrl(payload.network, payload.walletAddress);
+  const fulfillment = buildFulfillmentKeyboard(payload.orderId);
 
   return sendTelegramMessage({
     text,
     replyMarkup: {
       inline_keyboard: [
         [{ text: "🔗 Verifiera Betalning", url: explorerUrl }],
+        ...fulfillment.inline_keyboard,
       ],
     },
   });
@@ -168,10 +375,6 @@ export async function sendStripeOrderPaidNotification(
   const safeOrderId = escapeTelegramHtml(payload.orderId);
   const safeName = escapeTelegramHtml(payload.name);
   const safeEmail = escapeTelegramHtml(payload.email);
-  const safeAddress = escapeTelegramHtml(payload.address);
-  const safeZip = escapeTelegramHtml(payload.zip);
-  const safeCity = escapeTelegramHtml(payload.city);
-  const safeState = escapeTelegramHtml(payload.state);
   const safeCartSummary = escapeTelegramHtml(payload.cartSummary);
   const safeTotalSek = escapeTelegramHtml(payload.totalSek);
   const paymentBadge = escapeTelegramHtml(
@@ -181,8 +384,15 @@ export async function sendStripeOrderPaidNotification(
     ? escapeTelegramHtml(payload.affiliateHandle)
     : undefined;
 
-  const fullAddress = `${safeAddress}, ${safeZip} ${safeCity}, ${safeState}, Sweden`;
+  const addressBlock = formatShippingAddressBlock({
+    name: payload.name,
+    address: payload.address,
+    zip: payload.zip,
+    city: payload.city,
+    state: payload.state,
+  });
   const dashboardUrl = getStripeDashboardSessionUrl(payload.stripeSessionId);
+  const fulfillment = buildFulfillmentKeyboard(payload.orderId);
 
   const text = [
     "✅ BETALNING BEKRÄFTAD - SIMPLICITY STORE",
@@ -193,7 +403,8 @@ export async function sendStripeOrderPaidNotification(
     "",
     `👤 Kund: ${safeName}`,
     `📧 E-post: ${safeEmail}`,
-    `📦 Leveransadress: ${fullAddress}`,
+    "📦 Leveransadress (tryck för att kopiera):",
+    addressBlock,
     `🛒 Varukorg: ${safeCartSummary}`,
     ...(safeAffiliateHandle &&
     payload.commissionSek !== undefined &&
@@ -210,7 +421,10 @@ export async function sendStripeOrderPaidNotification(
   return sendTelegramMessage({
     text,
     replyMarkup: {
-      inline_keyboard: [[{ text: "🔗 Visa i Stripe", url: dashboardUrl }]],
+      inline_keyboard: [
+        [{ text: "🔗 Visa i Stripe", url: dashboardUrl }],
+        ...fulfillment.inline_keyboard,
+      ],
     },
   });
 }

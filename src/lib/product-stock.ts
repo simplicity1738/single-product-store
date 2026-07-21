@@ -22,6 +22,27 @@ export function isProductPurchasable(status: ProductStockStatus): boolean {
   return status === "i_lager";
 }
 
+/**
+ * Prefer live variant counts over the product-level status badge so
+ * "Endast X kvar" never appears alongside an out-of-stock badge.
+ */
+export function resolveEffectiveProductStockStatus(
+  productStatus: ProductStockStatus,
+  stockDisplay: {
+    visible: boolean;
+    quantity: number;
+    isSoldOut: boolean;
+  },
+): ProductStockStatus {
+  if (productStatus === "kommer_snart") return "kommer_snart";
+  if (stockDisplay.visible) {
+    return stockDisplay.quantity > 0 && !stockDisplay.isSoldOut
+      ? "i_lager"
+      : "ej_i_lager";
+  }
+  return productStatus;
+}
+
 export function getStockStatusBadgeClassName(
   status: ProductStockStatus,
 ): string {

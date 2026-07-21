@@ -13,7 +13,7 @@ import {
 } from "@/lib/product-localization";
 import { formatCurrency, type Product } from "@/lib/product";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
-import { isProductPurchasable } from "@/lib/product-stock";
+import { isProductPurchasable, resolveEffectiveProductStockStatus } from "@/lib/product-stock";
 import type { ConfigProduct, StoreConfig } from "@/lib/store-config";
 import { getVariantBasePrice, getVariantPrice } from "@/lib/store-config";
 import ProductSalePrice, { ProductSaleBadge } from "@/components/ProductSalePrice";
@@ -118,12 +118,17 @@ export default function Hero({
         variantLabel,
       )
     : { visible: false, quantity: 0, isLow: false, isSoldOut: false };
-  const purchasable =
+  const effectiveStatus = featuredProduct
+    ? resolveEffectiveProductStockStatus(featuredProduct.status, stockDisplay)
+    : "ej_i_lager";
+  const purchasable = Boolean(
     featuredProduct &&
-    isVariantPurchasableWithStock(
-      isProductPurchasable(featuredProduct.status),
-      stockDisplay,
-    );
+      isVariantPurchasableWithStock(
+        isProductPurchasable(featuredProduct.status),
+        stockDisplay,
+        featuredProduct.status,
+      ),
+  );
 
   const variantSummary = featuredProduct
     ? featuredProduct.variantLabels && featuredProduct.variantLabels.length > 0
@@ -233,8 +238,8 @@ export default function Hero({
                   </div>
 
                   <StockStatusBadge
-                    status={featuredProduct.status}
-                    label={t.products.stockStatus[featuredProduct.status]}
+                    status={effectiveStatus}
+                    label={t.products.stockStatus[effectiveStatus]}
                   />
 
                   {includedItems ? (
@@ -300,7 +305,9 @@ export default function Hero({
                     </div>
                   ) : null}
 
-                  {purchasable || stockDisplay.isSoldOut ? (
+                  {purchasable ||
+                  (stockDisplay.visible && stockDisplay.quantity <= 0) ||
+                  effectiveStatus === "ej_i_lager" ? (
                     <>
                       <VariantStockLabel
                         display={stockDisplay}
@@ -320,9 +327,9 @@ export default function Hero({
                         disabled={!purchasable}
                         className="mt-1 w-full rounded-full bg-rose-400 py-3 text-sm font-semibold text-white shadow-md shadow-rose-400/20 transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:hover:bg-zinc-300"
                       >
-                        {stockDisplay.isSoldOut
-                          ? t.products.soldOut
-                          : t.products.addToCart}
+                        {purchasable
+                          ? t.products.addToCart
+                          : t.products.soldOut}
                       </button>
                     </>
                   ) : null}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
-import type { CustomerReview } from "@/lib/customer-reviews";
+import type { PublicCustomerReview } from "@/lib/customer-reviews";
 import { formatMgOption } from "@/lib/i18n/translations";
 import { getLocalizedProductName } from "@/lib/product-localization";
 
@@ -84,7 +84,7 @@ function formatReviewDate(isoDate: string, locale: string): string {
 export default function Reviews() {
   const { locale, t } = useLanguage();
   const { catalogProducts, products: configProducts } = useStoreConfig();
-  const [reviews, setReviews] = useState<CustomerReview[]>([]);
+  const [reviews, setReviews] = useState<PublicCustomerReview[]>([]);
   const [summary, setSummary] = useState<ReviewSummary>({
     averageRating: 0,
     totalApproved: 0,
@@ -100,6 +100,7 @@ export default function Reviews() {
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
   const [productTag, setProductTag] = useState("");
+  const [email, setEmail] = useState("");
 
   const productOptions = useMemo(() => {
     return catalogProducts.flatMap((product) => {
@@ -135,7 +136,7 @@ export default function Reviews() {
       const response = await fetch("/api/reviews");
       const data = (await response.json()) as {
         success?: boolean;
-        reviews?: CustomerReview[];
+        reviews?: PublicCustomerReview[];
         summary?: ReviewSummary;
       };
 
@@ -168,7 +169,7 @@ export default function Reviews() {
           "Content-Type": "application/json",
           "Accept-Language": locale,
         },
-        body: JSON.stringify({ name, rating, text, productTag }),
+        body: JSON.stringify({ name, rating, text, productTag, email }),
       });
 
       const data = (await response.json()) as {
@@ -192,6 +193,7 @@ export default function Reviews() {
       setRating(5);
       setText("");
       setProductTag("");
+      setEmail("");
       setShowForm(false);
     } catch {
       setFormMessage({
@@ -306,6 +308,25 @@ export default function Reviews() {
               </div>
 
               <div>
+                <label
+                  htmlFor="review-email"
+                  className="block text-sm font-semibold text-zinc-900"
+                >
+                  {t.reviews.form.emailLabel}
+                </label>
+                <input
+                  id="review-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder={t.reviews.form.emailPlaceholder}
+                  maxLength={254}
+                  autoComplete="email"
+                  className="mt-2 w-full rounded-xl border border-rose-100 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-rose-300 focus:ring-2 focus:ring-rose-100"
+                />
+              </div>
+
+              <div>
                 <p className="text-sm font-semibold text-zinc-900">
                   {t.reviews.form.ratingLabel}
                 </p>
@@ -404,6 +425,21 @@ export default function Reviews() {
                   <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-zinc-600">
                     &ldquo;{review.text}&rdquo;
                   </blockquote>
+                  {review.adminReply ? (
+                    <div className="mt-4 rounded-xl border border-rose-100 bg-rose-50/60 px-4 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                        {t.reviews.adminReplyLabel}
+                      </p>
+                      <p className="mt-1.5 text-sm leading-relaxed text-zinc-700">
+                        {review.adminReply}
+                      </p>
+                      {review.repliedAt ? (
+                        <p className="mt-2 text-[11px] font-medium text-zinc-400">
+                          {formatReviewDate(review.repliedAt, locale)}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </article>
               ))}
             </div>

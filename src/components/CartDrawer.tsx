@@ -8,6 +8,11 @@ import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { formatCurrency } from "@/lib/product";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import {
+  getMaxOrderableQuantity,
+  getVariantLabelForSelection,
+} from "@/lib/stock-management";
+import { CAMPAIGN_ADDON_PRODUCT_ID } from "@/lib/campaign-addons";
 
 export default function CartDrawer() {
   const { locale, t } = useLanguage();
@@ -18,7 +23,12 @@ export default function CartDrawer() {
     updateCartQuantity,
     cartItemCount,
   } = useProductSelection();
-  const { calculateOrderTotal, getLineLabel, catalogProducts } = useStoreConfig();
+  const {
+    calculateOrderTotal,
+    getLineLabel,
+    catalogProducts,
+    stockManagement,
+  } = useStoreConfig();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
   const summary = calculateOrderTotal(cart, null);
@@ -144,6 +154,22 @@ export default function CartDrawer() {
                   catalogProducts.find(
                     (product) => product.id === line.productId,
                   )?.image ?? "/logo.png";
+                const catalogProduct = catalogProducts.find(
+                  (product) => product.id === line.productId,
+                );
+                const maxQuantity =
+                  line.productId === CAMPAIGN_ADDON_PRODUCT_ID || !catalogProduct
+                    ? 99
+                    : getMaxOrderableQuantity(
+                        stockManagement,
+                        line.productId,
+                        getVariantLabelForSelection(
+                          catalogProduct,
+                          line.variantMg,
+                          line.selectedStrength,
+                        ),
+                      );
+                const atMaxStock = line.quantity >= maxQuantity;
 
                 return (
                   <li
@@ -204,12 +230,18 @@ export default function CartDrawer() {
                               line.campaignAddonId,
                             )
                           }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
+                          disabled={atMaxStock}
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                           aria-label={`${t.order.increaseQty}: ${label}`}
                         >
                           +
                         </button>
                       </div>
+                      {atMaxStock ? (
+                        <p className="mt-2 text-xs font-medium text-amber-700">
+                          {t.cart.maxStockReached}
+                        </p>
+                      ) : null}
                     </div>
 
                     <p className="shrink-0 text-sm font-bold text-zinc-900">

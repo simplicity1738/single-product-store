@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { formatCurrency } from "@/lib/product";
 import {
   findOrderById,
+  isRevenueCountedStatus,
   ORDER_STATUS,
   updateOrder,
 } from "@/lib/orders.server";
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
-  if (existingOrder.status === ORDER_STATUS.APPROVED) {
+  if (isRevenueCountedStatus(existingOrder.status)) {
     return NextResponse.json({ received: true });
   }
 
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
   const shippingAddress = customerDetails?.address;
 
   await updateOrder(orderId, {
-    status: ORDER_STATUS.APPROVED,
+    status: ORDER_STATUS.WAITING_PACK,
     paymentMethod: PAYMENT_METHOD.STRIPE,
     stripeSessionId: session.id,
     stripePaymentType,

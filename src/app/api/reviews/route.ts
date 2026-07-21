@@ -4,13 +4,14 @@ import {
   calculateReviewSummary,
   REVIEW_FIELD_LIMITS,
   REVIEW_STATUS,
+  toPublicReview,
 } from "@/lib/customer-reviews";
 import {
   appendReview,
   readApprovedReviews,
 } from "@/lib/customer-reviews.server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { sanitizePlainText } from "@/lib/sanitize";
+import { sanitizeEmail, sanitizePlainText } from "@/lib/sanitize";
 import { logServerError } from "@/lib/safe-log";
 import { sendReviewPendingNotification } from "@/lib/telegram";
 
@@ -21,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      reviews,
+      reviews: reviews.map(toPublicReview),
       summary,
     });
   } catch (error) {
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
       rating?: number;
       text?: string;
       productTag?: string;
+      email?: string;
     };
 
     const name = body.name
@@ -73,6 +75,8 @@ export async function POST(request: Request) {
       ? sanitizePlainText(body.productTag, REVIEW_FIELD_LIMITS.productTag)
       : "";
     const rating = Number(body.rating);
+    const rawEmail = typeof body.email === "string" ? body.email.trim() : "";
+    const email = rawEmail ? sanitizeEmail(rawEmail) : null;
 
     if (!name || name.length < 2) {
       return NextResponse.json(
@@ -102,6 +106,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (rawEmail && !email) {
+      return NextResponse.json(
+        { success: false, message: messages.emailInvalid },
+        { status: 400 },
+      );
+    }
+
     await appendReview({
       name,
       text,
@@ -109,6 +120,7 @@ export async function POST(request: Request) {
       productTag,
       isVerified: true,
       status: REVIEW_STATUS.PENDING,
+      ...(email ? { email } : {}),
     });
 
     try {

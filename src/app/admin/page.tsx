@@ -15,6 +15,9 @@ import type {
   StoreConfig,
 } from "@/lib/store-config";
 import {
+  getFulfillmentBadgeLabel,
+  isFulfillmentStatus,
+  isWaitingForPackStatus,
   ORDER_STATUS,
   type OrderStatus,
 } from "@/lib/order-status";
@@ -109,9 +112,21 @@ type AdminOrder = {
   shippingAddress?: string;
 };
 
-type OrderStatusFilter = "all" | "approved" | "pending" | "refunded";
+type OrderStatusFilter =
+  | "all"
+  | "approved"
+  | "pending"
+  | "packed"
+  | "delivered"
+  | "refunded";
 type OrderPaymentFilter = "all" | "stripe_card" | "crypto";
 type OrderSortOption = "newest" | "oldest" | "highest" | "lowest";
+type OrderFulfillmentAction =
+  | "approve"
+  | "revert"
+  | "pack"
+  | "ship"
+  | "waiting_pack";
 
 const orderFilterClassName =
   "rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
@@ -136,9 +151,13 @@ function matchesOrderStatusFilter(
 ): boolean {
   switch (filter) {
     case "approved":
-      return order.status === ORDER_STATUS.APPROVED;
+      return isWaitingForPackStatus(order.status);
     case "pending":
       return order.status === ORDER_STATUS.PENDING;
+    case "packed":
+      return order.status === ORDER_STATUS.PACKED;
+    case "delivered":
+      return order.status === ORDER_STATUS.DELIVERED;
     case "refunded":
       return order.status === ORDER_STATUS.REFUNDED;
     default:
@@ -306,14 +325,25 @@ function formatOrderDate(value: string): string {
 function orderStatusClassName(status: OrderStatus): string {
   switch (status) {
     case ORDER_STATUS.APPROVED:
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case ORDER_STATUS.WAITING_PACK:
     case ORDER_STATUS.COMPLETED:
+      return "border-amber-200 bg-amber-50 text-amber-800";
+    case ORDER_STATUS.PACKED:
       return "border-sky-200 bg-sky-50 text-sky-700";
+    case ORDER_STATUS.DELIVERED:
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case ORDER_STATUS.REFUNDED:
       return "border-red-200 bg-red-50 text-red-700";
     default:
-      return "border-amber-200 bg-amber-50 text-amber-700";
+      return "border-zinc-200 bg-zinc-50 text-zinc-600";
   }
+}
+
+function orderStatusBadgeLabel(status: OrderStatus): string {
+  if (isFulfillmentStatus(status)) {
+    return getFulfillmentBadgeLabel(status);
+  }
+  return status;
 }
 
 const BANNER_STYLE_OPTIONS: { value: BannerStyle; label: string }[] = [
@@ -414,6 +444,9 @@ export default function AdminPage() {
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [approvingReviewId, setApprovingReviewId] = useState<string | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+  const [replyingReviewId, setReplyingReviewId] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [savingReplyId, setSavingReplyId] = useState<string | null>(null);
 
   const showToast = useCallback((next: ToastState) => {
     setToast(next);
@@ -549,7 +582,7 @@ export default function AdminPage() {
 
   async function updateOrderStatus(
     orderId: string,
-    action: "approve" | "revert",
+    action: OrderFulfillmentAction,
   ) {
     setUpdatingOrderId(orderId);
     try {
@@ -564,12 +597,23 @@ export default function AdminPage() {
         throw new Error(data.message ?? "Status update failed");
       }
 
-      const nextStatus =
-        action === "approve" ? ORDER_STATUS.APPROVED : ORDER_STATUS.PENDING;
+      const nextStatus: OrderStatus =
+        action === "approve" || action === "waiting_pack"
+          ? ORDER_STATUS.WAITING_PACK
+          : action === "pack"
+            ? ORDER_STATUS.PACKED
+            : action === "ship"
+              ? ORDER_STATUS.DELIVERED
+              : ORDER_STATUS.PENDING;
 
       setOrders((current) =>
         current.map((order) =>
-          order.id === orderId ? { ...order, status: nextStatus } : order,
+          order.id === orderId
+            ? {
+                ...order,
+                status: (data.order?.status as OrderStatus | undefined) ?? nextStatus,
+              }
+            : order,
         ),
       );
       void loadAnalytics();
@@ -578,16 +622,19 @@ export default function AdminPage() {
         message:
           data.message ??
           (action === "approve"
-            ? "Order godkänd och markerad som betald."
-            : "Godkännande hävt. Ordern väntar på betalning."),
+            ? "Order godkänd och väntar på packning."
+            : action === "pack"
+              ? "Order markerad som Packad."
+              : action === "ship"
+                ? "Order markerad som Levererad."
+                : action === "waiting_pack"
+                  ? "Order återställd till Väntar på packning."
+                  : "Godkännande hävt. Ordern väntar på betalning."),
       });
     } catch {
       showToast({
         type: "error",
-        message:
-          action === "approve"
-            ? "Kunde inte godkänna ordern."
-            : "Kunde inte återställa ordern.",
+        message: "Kunde inte uppdatera orderstatus.",
       });
     } finally {
       setUpdatingOrderId(null);
@@ -733,6 +780,59 @@ export default function AdminPage() {
       });
     } finally {
       setDeletingReviewId(null);
+    }
+  }
+
+  async function handleReplyToReview(reviewId: string) {
+    const adminReply = (replyDrafts[reviewId] ?? "").trim();
+    if (adminReply.length < 2) {
+      showToast({
+        type: "error",
+        message: "Skriv ett svar (minst 2 tecken).",
+      });
+      return;
+    }
+
+    setSavingReplyId(reviewId);
+    try {
+      const response = await fetch("/api/admin/reviews/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewId, adminReply }),
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message ?? "Reply failed");
+      }
+
+      const updated = data.review as CustomerReview | undefined;
+      setCustomerReviews((current) =>
+        current.map((review) =>
+          review.id === reviewId
+            ? {
+                ...review,
+                adminReply: updated?.adminReply ?? adminReply,
+                repliedAt: updated?.repliedAt ?? new Date().toISOString(),
+              }
+            : review,
+        ),
+      );
+      setReplyingReviewId(null);
+      showToast({
+        type: "success",
+        message: data.message ?? "Svar sparat.",
+      });
+    } catch (error) {
+      showToast({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Kunde inte spara svaret.",
+      });
+    } finally {
+      setSavingReplyId(null);
     }
   }
 
@@ -1886,8 +1986,10 @@ export default function AdminPage() {
                   className={`${orderFilterClassName} w-full`}
                 >
                   <option value="all">Alla</option>
-                  <option value="approved">Godkänd</option>
-                  <option value="pending">Väntar på godkännande</option>
+                  <option value="pending">Väntar på betalning</option>
+                  <option value="approved">Väntar på packning</option>
+                  <option value="packed">Packad</option>
+                  <option value="delivered">Levererad</option>
                   <option value="refunded">Återbetald</option>
                 </select>
               </label>
@@ -2021,7 +2123,8 @@ export default function AdminPage() {
                                 >
                                   Visa i Stripe →
                                 </a>
-                                {order.status === ORDER_STATUS.APPROVED && (
+                                {(isWaitingForPackStatus(order.status) ||
+                                  order.status === ORDER_STATUS.PACKED) && (
                                   <button
                                     type="button"
                                     onClick={() => setRefundOrderId(order.id)}
@@ -2038,7 +2141,7 @@ export default function AdminPage() {
                           <span
                             className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${orderStatusClassName(order.status)}`}
                           >
-                            {order.status}
+                            {orderStatusBadgeLabel(order.status)}
                           </span>
                         </td>
                         <td className="px-4 py-4 text-right">
@@ -2058,31 +2161,81 @@ export default function AdminPage() {
                                   ? "Godkänner…"
                                   : "Godkänn BTC-betalning"}
                               </button>
-                            ) : order.status === ORDER_STATUS.APPROVED ||
-                              order.status === ORDER_STATUS.COMPLETED ? (
+                            ) : null}
+
+                            {isFulfillmentStatus(order.status) ? (
+                              <div className="flex flex-wrap justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void updateOrderStatus(
+                                      order.id,
+                                      "waiting_pack",
+                                    )
+                                  }
+                                  disabled={
+                                    updatingOrderId === order.id ||
+                                    isWaitingForPackStatus(order.status)
+                                  }
+                                  className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800 transition hover:bg-amber-100 disabled:cursor-default disabled:opacity-50"
+                                >
+                                  Väntar på packning
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void updateOrderStatus(order.id, "pack")
+                                  }
+                                  disabled={
+                                    updatingOrderId === order.id ||
+                                    order.status === ORDER_STATUS.PACKED
+                                  }
+                                  className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-default disabled:opacity-50"
+                                >
+                                  Packad
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void updateOrderStatus(order.id, "ship")
+                                  }
+                                  disabled={
+                                    updatingOrderId === order.id ||
+                                    order.status === ORDER_STATUS.DELIVERED
+                                  }
+                                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-default disabled:opacity-50"
+                                >
+                                  Levererad
+                                </button>
+                              </div>
+                            ) : null}
+
+                            {isWaitingForPackStatus(order.status) ||
+                            order.status === ORDER_STATUS.PACKED ? (
                               order.paymentMethod === PAYMENT_METHOD.STRIPE ? (
                                 <span className="text-xs text-zinc-400">
                                   Använd Refund
                                 </span>
                               ) : (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void updateOrderStatus(order.id, "revert")
-                                }
-                                disabled={updatingOrderId === order.id}
-                                className="rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
-                              >
-                                {updatingOrderId === order.id
-                                  ? "Återställer…"
-                                  : "Häv godkännande"}
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void updateOrderStatus(order.id, "revert")
+                                  }
+                                  disabled={updatingOrderId === order.id}
+                                  className="rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
+                                >
+                                  {updatingOrderId === order.id
+                                    ? "Återställer…"
+                                    : "Häv godkännande"}
+                                </button>
                               )
-                            ) : order.status === ORDER_STATUS.REFUNDED ? (
+                            ) : null}
+
+                            {order.status === ORDER_STATUS.REFUNDED ? (
                               <span className="text-xs text-zinc-400">—</span>
-                            ) : (
-                              <span className="text-xs text-zinc-400">—</span>
-                            )}
+                            ) : null}
+
                             <button
                               type="button"
                               onClick={() => void handleDeleteOrder(order.id)}
@@ -3378,6 +3531,8 @@ export default function AdminPage() {
                     const isPending = review.status === REVIEW_STATUS.PENDING;
                     const isApproving = approvingReviewId === review.id;
                     const isDeleting = deletingReviewId === review.id;
+                    const isReplying = replyingReviewId === review.id;
+                    const isSavingReply = savingReplyId === review.id;
 
                     return (
                       <tr key={review.id} className="align-top">
@@ -3386,6 +3541,15 @@ export default function AdminPage() {
                           {review.isVerified && (
                             <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-amber-700">
                               Verifierat köp
+                            </span>
+                          )}
+                          {review.email ? (
+                            <span className="mt-1 block text-xs font-medium text-zinc-500">
+                              {review.email}
+                            </span>
+                          ) : (
+                            <span className="mt-1 block text-[10px] font-medium text-zinc-400">
+                              Ingen e-post
                             </span>
                           )}
                         </td>
@@ -3408,6 +3572,57 @@ export default function AdminPage() {
                           <p className="line-clamp-4 whitespace-pre-wrap">
                             {review.text}
                           </p>
+                          {review.adminReply ? (
+                            <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/70 px-3 py-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                                Admin-svar
+                              </p>
+                              <p className="mt-1 text-xs leading-relaxed text-zinc-700 whitespace-pre-wrap">
+                                {review.adminReply}
+                              </p>
+                            </div>
+                          ) : null}
+                          {isReplying ? (
+                            <div className="mt-3 space-y-2">
+                              <textarea
+                                value={
+                                  replyDrafts[review.id] ??
+                                  review.adminReply ??
+                                  ""
+                                }
+                                onChange={(event) =>
+                                  setReplyDrafts((current) => ({
+                                    ...current,
+                                    [review.id]: event.target.value,
+                                  }))
+                                }
+                                rows={4}
+                                maxLength={2000}
+                                placeholder="Skriv ditt svar till kunden…"
+                                className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                              />
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    void handleReplyToReview(review.id)
+                                  }
+                                  disabled={isSavingReply}
+                                  className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60"
+                                >
+                                  {isSavingReply ? "Sparar…" : "Skicka svar"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setReplyingReviewId(null)}
+                                  disabled={isSavingReply}
+                                  className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-bold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-60"
+                                >
+                                  Avbryt
+                                </button>
+                              </div>
+                            </div>
+                          ) : null}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-zinc-500">
                           {new Date(review.createdAt).toLocaleDateString("sv-SE", {
@@ -3433,16 +3648,35 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => void handleApproveReview(review.id)}
-                                disabled={isApproving || isDeleting}
+                                disabled={isApproving || isDeleting || isSavingReply}
                                 className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
                               >
                                 {isApproving ? "Godkänner…" : "Godkänn"}
                               </button>
                             )}
+                            {!isReplying ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReplyingReviewId(review.id);
+                                  setReplyDrafts((current) => ({
+                                    ...current,
+                                    [review.id]:
+                                      current[review.id] ??
+                                      review.adminReply ??
+                                      "",
+                                  }));
+                                }}
+                                disabled={isApproving || isDeleting || isSavingReply}
+                                className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-60"
+                              >
+                                Svara
+                              </button>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => void handleDeleteReview(review.id)}
-                              disabled={isApproving || isDeleting}
+                              disabled={isApproving || isDeleting || isSavingReply}
                               className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
                             >
                               {isDeleting ? "Tar bort…" : "Ta bort"}

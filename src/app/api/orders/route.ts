@@ -247,6 +247,7 @@ export async function POST(request: Request) {
 
       try {
         const telegramResult = await sendOrderNotification({
+          orderId,
           name,
           email,
           address,

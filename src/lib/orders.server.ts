@@ -2,7 +2,8 @@ import type { InfluencerPartner } from "@/lib/store-config";
 import { findInfluencerByRef } from "@/lib/influencer-stats.server";
 import { KV_KEYS, readKvData, writeKvData } from "@/lib/kv-store";
 import {
-  isApprovedOrderStatus,
+  isRevenueCountedStatus,
+  isWaitingForPackStatus,
   normalizeOrderStatus,
   ORDER_STATUS,
   type OrderStatus,
@@ -13,7 +14,14 @@ import {
   type StripePaymentType,
 } from "@/lib/order-payment";
 
-export { ORDER_STATUS, type OrderStatus } from "@/lib/order-status";
+export {
+  ORDER_STATUS,
+  getFulfillmentBadgeLabel,
+  isFulfillmentStatus,
+  isRevenueCountedStatus,
+  isWaitingForPackStatus,
+  type OrderStatus,
+} from "@/lib/order-status";
 
 export type StoredOrder = {
   id: string;
@@ -142,7 +150,7 @@ export async function approveOrder(orderId: string): Promise<StoredOrder | null>
   if (order.status !== ORDER_STATUS.PENDING) return null;
   if (order.paymentMethod === PAYMENT_METHOD.STRIPE) return null;
 
-  return updateOrderStatus(orderId, ORDER_STATUS.APPROVED);
+  return updateOrderStatus(orderId, ORDER_STATUS.WAITING_PACK);
 }
 
 export async function revertOrderToPending(
@@ -153,8 +161,8 @@ export async function revertOrderToPending(
   if (!order) return null;
   if (order.status === ORDER_STATUS.REFUNDED) return null;
   if (
-    order.status !== ORDER_STATUS.APPROVED &&
-    order.status !== ORDER_STATUS.COMPLETED
+    !isWaitingForPackStatus(order.status) &&
+    order.status !== ORDER_STATUS.PACKED
   ) {
     return null;
   }
@@ -162,10 +170,49 @@ export async function revertOrderToPending(
   return updateOrderStatus(orderId, ORDER_STATUS.PENDING);
 }
 
+export async function markOrderPacked(
+  orderId: string,
+): Promise<StoredOrder | null> {
+  const order = await findOrderById(orderId);
+  if (!order) return null;
+  if (order.status === ORDER_STATUS.REFUNDED) return null;
+  if (order.status === ORDER_STATUS.PENDING) return null;
+  if (order.status === ORDER_STATUS.DELIVERED) return null;
+
+  return updateOrderStatus(orderId, ORDER_STATUS.PACKED);
+}
+
+export async function markOrderDelivered(
+  orderId: string,
+): Promise<StoredOrder | null> {
+  const order = await findOrderById(orderId);
+  if (!order) return null;
+  if (order.status === ORDER_STATUS.REFUNDED) return null;
+  if (order.status === ORDER_STATUS.PENDING) return null;
+
+  return updateOrderStatus(orderId, ORDER_STATUS.DELIVERED);
+}
+
+export async function markOrderWaitingPack(
+  orderId: string,
+): Promise<StoredOrder | null> {
+  const order = await findOrderById(orderId);
+  if (!order) return null;
+  if (order.status === ORDER_STATUS.REFUNDED) return null;
+  if (order.status === ORDER_STATUS.PENDING) return null;
+
+  return updateOrderStatus(orderId, ORDER_STATUS.WAITING_PACK);
+}
+
 export async function refundOrder(orderId: string): Promise<StoredOrder | null> {
   const order = await findOrderById(orderId);
   if (!order) return null;
-  if (order.status !== ORDER_STATUS.APPROVED) return null;
+  if (
+    !isWaitingForPackStatus(order.status) &&
+    order.status !== ORDER_STATUS.PACKED
+  ) {
+    return null;
+  }
   if (order.paymentMethod !== PAYMENT_METHOD.STRIPE) return null;
 
   return updateOrderStatus(orderId, ORDER_STATUS.REFUNDED);
@@ -211,7 +258,7 @@ export async function getOrderAnalytics(): Promise<{
 }> {
   const orders = await readOrders();
   const approvedOrders = orders.filter((order) =>
-    isApprovedOrderStatus(order.status),
+    isRevenueCountedStatus(order.status),
   );
 
   const now = new Date();

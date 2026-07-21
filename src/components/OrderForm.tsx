@@ -17,6 +17,11 @@ import {
 } from "@/lib/product";
 import type { OrderFormData } from "@/lib/order";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import { CAMPAIGN_ADDON_PRODUCT_ID } from "@/lib/campaign-addons";
+import {
+  getMaxOrderableQuantity,
+  getVariantLabelForSelection,
+} from "@/lib/stock-management";
 
 const inputClassName =
   "w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -26,7 +31,7 @@ type CheckoutStep = "details" | "method" | "payment";
 export default function OrderForm() {
   const { locale, t } = useLanguage();
   const { cart, updateCartQuantity } = useProductSelection();
-  const { calculateOrderTotal, getLineLabel, validateDiscount, catalogProducts, storeConfig, siteNavigation } =
+  const { calculateOrderTotal, getLineLabel, validateDiscount, catalogProducts, storeConfig, siteNavigation, stockManagement } =
     useStoreConfig();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
@@ -347,6 +352,23 @@ export default function OrderForm() {
                       catalogProducts.find(
                         (product) => product.id === line.productId,
                       )?.image ?? "/logo.png";
+                    const catalogProduct = catalogProducts.find(
+                      (product) => product.id === line.productId,
+                    );
+                    const maxQuantity =
+                      line.productId === CAMPAIGN_ADDON_PRODUCT_ID ||
+                      !catalogProduct
+                        ? 99
+                        : getMaxOrderableQuantity(
+                            stockManagement,
+                            line.productId,
+                            getVariantLabelForSelection(
+                              catalogProduct,
+                              line.variantMg,
+                              line.selectedStrength,
+                            ),
+                          );
+                    const atMaxStock = line.quantity >= maxQuantity;
 
                     return (
                       <li
@@ -400,12 +422,18 @@ export default function OrderForm() {
                                   line.campaignAddonId,
                                 )
                               }
-                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
+                              disabled={atMaxStock}
+                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                               aria-label={`${t.order.increaseQty}: ${label}`}
                             >
                               +
                             </button>
                           </div>
+                          {atMaxStock ? (
+                            <p className="mt-1.5 text-xs font-medium text-amber-700">
+                              {t.cart.maxStockReached}
+                            </p>
+                          ) : null}
                         </div>
                         <p className="shrink-0 font-semibold text-zinc-900">
                           {formatCurrency(line.lineSubtotal, localeCode)}

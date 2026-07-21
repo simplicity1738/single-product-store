@@ -8,6 +8,19 @@ import {
 } from "@/lib/customer-reviews";
 
 function normalizeReview(review: CustomerReview): CustomerReview {
+  const email =
+    typeof review.email === "string" && review.email.trim()
+      ? review.email.trim().toLowerCase()
+      : undefined;
+  const adminReply =
+    typeof review.adminReply === "string" && review.adminReply.trim()
+      ? review.adminReply.trim()
+      : undefined;
+  const repliedAt =
+    typeof review.repliedAt === "string" && review.repliedAt.trim()
+      ? review.repliedAt.trim()
+      : undefined;
+
   return {
     ...review,
     rating: normalizeReviewRating(review.rating),
@@ -15,6 +28,9 @@ function normalizeReview(review: CustomerReview): CustomerReview {
     isVerified: review.isVerified !== false,
     productTag:
       typeof review.productTag === "string" ? review.productTag.trim() : "",
+    ...(email ? { email } : {}),
+    ...(adminReply ? { adminReply } : {}),
+    ...(repliedAt ? { repliedAt } : {}),
   };
 }
 
@@ -67,6 +83,9 @@ export async function appendReview(
     createdAt: review.createdAt ?? new Date().toISOString(),
     isVerified: review.isVerified ?? true,
     status: review.status ?? REVIEW_STATUS.PENDING,
+    ...(review.email ? { email: review.email } : {}),
+    ...(review.adminReply ? { adminReply: review.adminReply } : {}),
+    ...(review.repliedAt ? { repliedAt: review.repliedAt } : {}),
   });
 
   await writeReviews([storedReview, ...reviews]);
@@ -84,6 +103,27 @@ export async function approveReview(
     ...reviews[index],
     status: REVIEW_STATUS.APPROVED,
   };
+  reviews[index] = updatedReview;
+  await writeReviews(reviews);
+  return updatedReview;
+}
+
+export async function replyToReview(
+  reviewId: string,
+  adminReply: string,
+): Promise<CustomerReview | null> {
+  const reviews = await readReviews();
+  const index = reviews.findIndex((review) => review.id === reviewId);
+  if (index === -1) return null;
+
+  const trimmed = adminReply.trim();
+  if (!trimmed) return null;
+
+  const updatedReview: CustomerReview = normalizeReview({
+    ...reviews[index],
+    adminReply: trimmed,
+    repliedAt: new Date().toISOString(),
+  });
   reviews[index] = updatedReview;
   await writeReviews(reviews);
   return updatedReview;

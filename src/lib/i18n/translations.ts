@@ -140,6 +140,7 @@ export const translations = {
       openCart: "Öppna varukorg",
       itemSingular: "artikel",
       itemPlural: "artiklar",
+      maxStockReached: "Maximalt tillgängligt antal i lager uppnått",
     },
     order: {
       eyebrow: "Beställ nu",
@@ -495,18 +496,23 @@ export const translations = {
       submit: "Skicka recension",
       noReviews: "Inga recensioner ännu — bli den första att dela din upplevelse.",
       loading: "Laddar recensioner…",
+      adminReplyLabel: "Svar från SimpliCity",
       form: {
         nameLabel: "Namn",
         namePlaceholder: "Ditt namn",
         ratingLabel: "Betyg",
         textLabel: "Din recension",
         textPlaceholder: "Berätta om din upplevelse…",
+        emailLabel:
+          "Din e-postadress (Valfritt - om du vill ha svar på din recension)",
+        emailPlaceholder: "namn@email.com",
         nameRequired: "Ange ditt namn (minst 2 tecken).",
         textRequired: "Skriv minst 10 tecken i din recension.",
         ratingRequired: "Välj ett betyg mellan 1 och 5 stjärnor.",
         productLabel: "Vilken produkt köpte du?",
         productPlaceholder: "Välj produkt",
         productRequired: "Välj vilken produkt du köpte.",
+        emailInvalid: "Ange en giltig e-postadress eller lämna fältet tomt.",
         success:
           "Tack! Din recension har skickats och kommer att visas efter granskning.",
         error: "Kunde inte skicka recensionen. Försök igen.",
@@ -774,6 +780,7 @@ export const translations = {
       openCart: "Open cart",
       itemSingular: "item",
       itemPlural: "items",
+      maxStockReached: "Maximum available stock quantity reached",
     },
     order: {
       eyebrow: "Order now",
@@ -1129,18 +1136,23 @@ export const translations = {
       submit: "Submit review",
       noReviews: "No reviews yet — be the first to share your experience.",
       loading: "Loading reviews…",
+      adminReplyLabel: "Reply from SimpliCity",
       form: {
         nameLabel: "Name",
         namePlaceholder: "Your name",
         ratingLabel: "Rating",
         textLabel: "Your review",
         textPlaceholder: "Tell us about your experience…",
+        emailLabel:
+          "Your email (Optional — if you want a reply to your review)",
+        emailPlaceholder: "name@email.com",
         nameRequired: "Enter your name (at least 2 characters).",
         textRequired: "Write at least 10 characters in your review.",
         ratingRequired: "Choose a rating between 1 and 5 stars.",
         productLabel: "Which product did you purchase?",
         productPlaceholder: "Select product",
         productRequired: "Select which product you purchased.",
+        emailInvalid: "Enter a valid email address or leave the field empty.",
         success:
           "Thank you! Your review has been submitted and will appear after approval.",
         error: "Could not submit your review. Please try again.",

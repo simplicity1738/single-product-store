@@ -14,12 +14,21 @@ export type CustomerReview = {
   createdAt: string;
   isVerified: boolean;
   status: ReviewStatus;
+  /** Optional — only set when the customer asked for a reply. Never expose on public storefront. */
+  email?: string;
+  adminReply?: string;
+  repliedAt?: string;
 };
+
+/** Public-facing review shape without private contact details. */
+export type PublicCustomerReview = Omit<CustomerReview, "email">;
 
 export const REVIEW_FIELD_LIMITS = {
   name: 80,
   text: 1200,
   productTag: 120,
+  email: 254,
+  adminReply: 2000,
 } as const;
 
 export function normalizeReviewRating(value: unknown): number {
@@ -32,6 +41,11 @@ export function normalizeReviewStatus(status: unknown): ReviewStatus {
   return status === REVIEW_STATUS.APPROVED
     ? REVIEW_STATUS.APPROVED
     : REVIEW_STATUS.PENDING;
+}
+
+export function toPublicReview(review: CustomerReview): PublicCustomerReview {
+  const { email: _email, ...publicReview } = review;
+  return publicReview;
 }
 
 export function calculateReviewSummary(reviews: CustomerReview[]): {

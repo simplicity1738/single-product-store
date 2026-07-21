@@ -26,6 +26,7 @@ import {
 } from "@/lib/product";
 import { isProductPurchasable } from "@/lib/product-stock";
 import {
+  getMaxOrderableQuantity,
   getVariantLabelForSelection,
   isVariantSoldOutByStock,
 } from "@/lib/stock-management";
@@ -136,6 +137,12 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       ) {
         return;
       }
+      const maxQuantity = getMaxOrderableQuantity(
+        stockManagement,
+        productId,
+        variantLabel,
+      );
+      if (maxQuantity <= 0) return;
       const unitPrice = getVariantPrice(product, mg, strength);
 
       setCart((current) => {
@@ -151,7 +158,11 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         if (existingIndex >= 0) {
           return current.map((item, index) =>
             index === existingIndex
-              ? { ...item, quantity: Math.min(99, item.quantity + 1), unitPrice }
+              ? {
+                  ...item,
+                  quantity: Math.min(maxQuantity, item.quantity + 1),
+                  unitPrice,
+                }
               : item,
           );
         }
@@ -242,14 +253,38 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
           return current.filter((item) => !cartItemMatchesKey(item, key));
         }
 
+        let maxQuantity = 99;
+        if (productId !== CAMPAIGN_ADDON_PRODUCT_ID) {
+          const product = catalogProducts.find(
+            (entry) => entry.id === productId,
+          );
+          if (product) {
+            const variantLabel = getVariantLabelForSelection(
+              product,
+              variantMg,
+              selectedStrength,
+            );
+            maxQuantity = getMaxOrderableQuantity(
+              stockManagement,
+              productId,
+              variantLabel,
+            );
+          }
+        }
+
+        const nextQuantity = Math.min(maxQuantity, quantity);
+        if (nextQuantity <= 0) {
+          return current.filter((item) => !cartItemMatchesKey(item, key));
+        }
+
         return current.map((item) =>
           cartItemMatchesKey(item, key)
-            ? { ...item, quantity: Math.min(99, quantity) }
+            ? { ...item, quantity: nextQuantity }
             : item,
         );
       });
     },
-    [],
+    [catalogProducts, stockManagement],
   );
 
   const cartItemCount = useMemo(

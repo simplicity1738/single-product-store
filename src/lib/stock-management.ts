@@ -68,9 +68,21 @@ export function isVariantSoldOutByStock(
   productId: string,
   variantLabel: string,
 ): boolean {
-  if (!stock.showStockToBuyers) return false;
   const quantity = getVariantStockQuantity(stock, productId, variantLabel);
-  return quantity !== undefined && quantity <= 0;
+  if (quantity === undefined) return false;
+  return quantity <= 0;
+}
+
+/** Hard cart/checkout max for a tracked variant; falls back to absoluteMax when untracked. */
+export function getMaxOrderableQuantity(
+  stock: StockManagementConfig,
+  productId: string,
+  variantLabel: string,
+  absoluteMax = 99,
+): number {
+  const quantity = getVariantStockQuantity(stock, productId, variantLabel);
+  if (quantity === undefined) return absoluteMax;
+  return Math.max(0, Math.min(absoluteMax, quantity));
 }
 
 export type VariantStockDisplay = {
@@ -94,11 +106,15 @@ export function resolveVariantStockDisplay(
     return { visible: false, quantity: 0, isLow: false, isSoldOut: false };
   }
 
+  // quantity > 0 is never sold out — low-stock and sold-out are mutually exclusive
+  const isSoldOut = quantity <= 0;
+  const isLow = !isSoldOut && quantity <= stock.lowStockThreshold;
+
   return {
     visible: true,
     quantity,
-    isLow: quantity > 0 && quantity <= stock.lowStockThreshold,
-    isSoldOut: quantity <= 0,
+    isLow,
+    isSoldOut,
   };
 }
 

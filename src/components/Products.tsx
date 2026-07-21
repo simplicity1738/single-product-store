@@ -20,7 +20,7 @@ import {
 import type { Product } from "@/lib/product";
 import { formatMgOption } from "@/lib/i18n/translations";
 import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
-import { isProductPurchasable } from "@/lib/product-stock";
+import { isProductPurchasable, resolveEffectiveProductStockStatus } from "@/lib/product-stock";
 import StockStatusBadge from "@/components/StockStatusBadge";
 import IncludedItemsBadge from "@/components/IncludedItemsBadge";
 import VariantStockLabel, {
@@ -116,16 +116,23 @@ export default function Products() {
               product.id,
               variantLabel,
             );
+            const effectiveStatus = resolveEffectiveProductStockStatus(
+              product.status,
+              stockDisplay,
+            );
             const purchasable = isVariantPurchasableWithStock(
               isProductPurchasable(product.status),
               stockDisplay,
+              product.status,
             );
             const buttonLabel =
-              product.status === "kommer_snart"
+              effectiveStatus === "kommer_snart"
                 ? t.products.comingSoonButton
-                : stockDisplay.isSoldOut
-                  ? t.products.soldOut
-                  : product.status === "ej_i_lager"
+                : stockDisplay.visible
+                  ? stockDisplay.quantity > 0
+                    ? t.products.addToCart
+                    : t.products.soldOut
+                  : effectiveStatus === "ej_i_lager"
                     ? t.products.soldOut
                     : t.products.addToCart;
 
@@ -147,8 +154,8 @@ export default function Products() {
 
                 <div className="mb-4 flex items-center justify-end gap-2">
                   <StockStatusBadge
-                    status={product.status}
-                    label={t.products.stockStatus[product.status]}
+                    status={effectiveStatus}
+                    label={t.products.stockStatus[effectiveStatus]}
                   />
                 </div>
 
