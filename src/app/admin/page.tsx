@@ -2042,7 +2042,8 @@ export default function AdminPage() {
               Inga beställningar matchar dina filter.
             </p>
           ) : (
-            <div className="mt-6 overflow-hidden rounded-2xl border border-rose-100">
+            <div className="mt-6 rounded-2xl border border-rose-100">
+              <div className="block w-full min-w-full overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-rose-50/80 text-left text-xs uppercase tracking-wide text-zinc-500">
                   <tr>
@@ -2050,14 +2051,16 @@ export default function AdminPage() {
                     <th className="hidden px-4 py-3 font-semibold lg:table-cell">
                       Kund
                     </th>
-                    <th className="hidden px-4 py-3 font-semibold md:table-cell">
+                    <th className="hidden whitespace-nowrap px-4 py-3 font-semibold md:table-cell">
                       Datum
                     </th>
                     <th className="px-4 py-3 font-semibold">Belopp</th>
-                    <th className="hidden px-4 py-3 font-semibold lg:table-cell">
+                    <th className="hidden whitespace-nowrap px-4 py-3 font-semibold lg:table-cell">
                       Betalmetod
                     </th>
-                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="whitespace-nowrap px-4 py-3 font-semibold">
+                      Status
+                    </th>
                     <th className="px-4 py-3 text-right font-semibold">
                       Åtgärd
                     </th>
@@ -2095,13 +2098,13 @@ export default function AdminPage() {
                             </p>
                           )}
                         </td>
-                        <td className="hidden px-4 py-4 text-zinc-500 md:table-cell">
+                        <td className="hidden whitespace-nowrap px-4 py-4 text-zinc-500 md:table-cell">
                           {formatOrderDate(order.placedAt)}
                         </td>
                         <td className="px-4 py-4 font-semibold text-zinc-900">
                           {formatSek(order.total)}
                         </td>
-                        <td className="hidden px-4 py-4 lg:table-cell">
+                        <td className="hidden whitespace-nowrap px-4 py-4 lg:table-cell">
                           <span
                             className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${paymentMethodBadgeClassName(order.paymentMethod)}`}
                           >
@@ -2137,7 +2140,7 @@ export default function AdminPage() {
                               </div>
                             )}
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="whitespace-nowrap px-4 py-4">
                           <span
                             className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${orderStatusClassName(order.status)}`}
                           >
@@ -2145,7 +2148,7 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-right">
-                          <div className="flex flex-col items-end gap-2">
+                          <div className="flex flex-col items-end gap-1.5">
                             {order.status === ORDER_STATUS.PENDING &&
                             (order.paymentMethod === PAYMENT_METHOD.BITCOIN ||
                               !order.paymentMethod) ? (
@@ -2155,7 +2158,7 @@ export default function AdminPage() {
                                   void updateOrderStatus(order.id, "approve")
                                 }
                                 disabled={updatingOrderId === order.id}
-                                className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
+                                className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
                               >
                                 {updatingOrderId === order.id
                                   ? "Godkänner…"
@@ -2164,7 +2167,7 @@ export default function AdminPage() {
                             ) : null}
 
                             {isFulfillmentStatus(order.status) ? (
-                              <div className="flex flex-wrap justify-end gap-1.5">
+                              <div className="flex flex-col items-end gap-1.5">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -2177,7 +2180,7 @@ export default function AdminPage() {
                                     updatingOrderId === order.id ||
                                     isWaitingForPackStatus(order.status)
                                   }
-                                  className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-800 transition hover:bg-amber-100 disabled:cursor-default disabled:opacity-50"
+                                  className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-800 transition hover:bg-amber-100 disabled:cursor-default disabled:opacity-50"
                                 >
                                   Väntar på packning
                                 </button>
@@ -2190,7 +2193,7 @@ export default function AdminPage() {
                                     updatingOrderId === order.id ||
                                     order.status === ORDER_STATUS.PACKED
                                   }
-                                  className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-[11px] font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-default disabled:opacity-50"
+                                  className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-sky-700 transition hover:bg-sky-100 disabled:cursor-default disabled:opacity-50"
                                 >
                                   Packad
                                 </button>
@@ -2203,7 +2206,7 @@ export default function AdminPage() {
                                     updatingOrderId === order.id ||
                                     order.status === ORDER_STATUS.DELIVERED
                                   }
-                                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-default disabled:opacity-50"
+                                  className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-default disabled:opacity-50"
                                 >
                                   Levererad
                                 </button>
@@ -2223,7 +2226,7 @@ export default function AdminPage() {
                                     void updateOrderStatus(order.id, "revert")
                                   }
                                   disabled={updatingOrderId === order.id}
-                                  className="rounded-full border border-amber-200 bg-white px-4 py-2 text-xs font-semibold text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
+                                  className="rounded-full border border-amber-200 bg-white px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
                                 >
                                   {updatingOrderId === order.id
                                     ? "Återställer…"
@@ -2240,7 +2243,7 @@ export default function AdminPage() {
                               type="button"
                               onClick={() => void handleDeleteOrder(order.id)}
                               disabled={deletingOrderId === order.id}
-                              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                              className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-red-600 transition hover:bg-red-100 disabled:opacity-60"
                             >
                               {deletingOrderId === order.id
                                 ? "Tar bort…"
@@ -2252,6 +2255,7 @@ export default function AdminPage() {
                     ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </section>
