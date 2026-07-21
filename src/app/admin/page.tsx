@@ -1770,7 +1770,7 @@ export default function AdminPage() {
       )}
 
       <header className="border-b border-rose-100 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
+        <div className="flex w-full max-w-none items-center justify-between px-4 py-4 md:px-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
               SimpliCity Admin
@@ -1791,11 +1791,11 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
-        <aside className="shrink-0 sm:w-56">
+      <div className="mx-0 flex w-full max-w-none flex-col gap-3 px-2 py-4 sm:flex-row sm:gap-3 md:px-3">
+        <aside className="mx-0 w-full shrink-0 px-0 sm:w-52">
           <nav
             aria-label="Admin-vyer"
-            className="sticky top-6 space-y-1 rounded-2xl border border-rose-100 bg-white p-2 shadow-sm"
+            className="sticky top-6 space-y-0.5 rounded-2xl border border-rose-100 bg-white p-3 shadow-sm"
           >
             {ADMIN_TABS.map((tab) => {
               const selected = activeTab === tab.id;
@@ -1805,7 +1805,7 @@ export default function AdminPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full rounded-xl px-4 py-3 text-left transition ${
+                  className={`w-full rounded-lg px-2.5 py-2 text-left transition ${
                     selected
                       ? "bg-rose-400 text-white shadow-sm shadow-rose-200"
                       : "text-zinc-700 hover:bg-rose-50"
@@ -1825,7 +1825,7 @@ export default function AdminPage() {
           </nav>
         </aside>
 
-        <div className="min-w-0 flex-1 space-y-8">
+        <div className="min-w-0 w-full flex-1 space-y-6 p-4 md:p-6">
           {activeTab === "oversikt" ? (
             <>
               <section className="rounded-3xl border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 p-6 shadow-sm sm:p-8">
