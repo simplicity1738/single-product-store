@@ -13,9 +13,13 @@ export default async function Home() {
 
   return (
     <div className="min-h-full bg-white text-zinc-900">
-      <Header />
-      <main>
+      {/* Full-bleed luxury dark pink canvas — header + hero share one backdrop */}
+      <div className="relative bg-gradient-to-b from-[#2D1720] via-[#24121A] to-[#1A0C13]">
+        <Header />
         <Hero siteSettings={config.siteSettings} />
+      </div>
+
+      <main>
         <QualitySection />
         <Products />
         <OrderForm />
