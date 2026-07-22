@@ -37,8 +37,8 @@ export default function LanguageSwitcher({
             className={`inline-flex items-center rounded-full px-2.5 py-1.5 text-[10px] font-semibold tracking-wide transition ${
               isDark
                 ? isActive
-                  ? "bg-[#F7F4EF] text-[#161114] shadow-sm"
-                  : "text-[#E0D2D7] hover:bg-white/10 hover:text-white"
+                  ? "bg-[#F5F1EA] text-[#1F1917] shadow-sm"
+                  : "text-neutral-200 hover:bg-white/10 hover:text-white"
                 : isActive
                   ? "bg-stone-800 text-white shadow-sm"
                   : "text-stone-600 hover:bg-stone-200/70 hover:text-stone-900"

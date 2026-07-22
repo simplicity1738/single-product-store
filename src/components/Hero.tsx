@@ -34,28 +34,28 @@ function HeroShowcase({ alt }: { alt: string }) {
   const rotateY = useTransform(
     scrollYProgress,
     [0, 0.5, 1],
-    prefersReducedMotion ? [0, 0, 0] : [10, 0, -7],
+    prefersReducedMotion ? [0, 0, 0] : [8, 0, -6],
   );
   const rotateX = useTransform(
     scrollYProgress,
     [0, 0.5, 1],
-    prefersReducedMotion ? [0, 0, 0] : [6, 0, -4],
+    prefersReducedMotion ? [0, 0, 0] : [5, 0, -3],
   );
   const motionScale = useTransform(
     scrollYProgress,
     [0, 0.5, 1],
-    prefersReducedMotion ? [1, 1, 1] : [0.97, 1.02, 0.98],
+    prefersReducedMotion ? [1, 1, 1] : [0.98, 1.015, 0.99],
   );
   const translateY = useTransform(
     scrollYProgress,
     [0, 0.5, 1],
-    prefersReducedMotion ? [0, 0, 0] : [24, -8, -20],
+    prefersReducedMotion ? [0, 0, 0] : [18, -6, -14],
   );
 
   return (
     <div
       ref={sectionRef}
-      className="relative flex w-full max-w-none items-center justify-center bg-transparent [perspective:1600px]"
+      className="relative flex w-full items-center justify-center bg-transparent [perspective:1400px]"
     >
       <motion.div
         style={{
@@ -65,16 +65,16 @@ function HeroShowcase({ alt }: { alt: string }) {
           y: translateY,
           transformStyle: "preserve-3d",
         }}
-        className="relative z-10 w-full max-w-none origin-center bg-transparent will-change-transform scale-105 lg:scale-110"
+        className="relative z-10 flex w-full items-center justify-center bg-transparent will-change-transform"
       >
         <Image
           src="/simplicity-hero-showcase.png"
           alt={alt}
-          width={2000}
-          height={1600}
+          width={1600}
+          height={1280}
           priority
-          sizes="(max-width: 1024px) 100vw, 68vw"
-          className="h-auto w-full max-w-none bg-transparent object-contain object-center drop-shadow-[0_40px_80px_rgba(0,0,0,0.5)]"
+          sizes="(max-width: 1024px) 100vw, 52vw"
+          className="h-auto max-h-[520px] w-auto bg-transparent object-contain object-center drop-shadow-[0_32px_64px_rgba(0,0,0,0.45)] lg:max-h-[600px]"
         />
       </motion.div>
     </div>
@@ -104,53 +104,53 @@ export default function Hero({ siteSettings }: HeroProps) {
   ];
 
   return (
-    <section className="relative overflow-x-clip overflow-y-visible bg-[#161114]">
-      {/* Moody studio lighting — soft glow behind massive showcase */}
+    <section className="relative overflow-hidden bg-[#1F1917]">
+      {/* ONDO warm taupe studio spotlight — no pink undertones */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background: `
-            radial-gradient(circle at 75% 35%, rgba(70, 48, 56, 0.45) 0%, rgba(22, 17, 20, 0.98) 75%),
-            linear-gradient(90deg, #120E10 0%, transparent 40%),
-            linear-gradient(180deg, transparent 50%, #0E0B0C 100%)
+            radial-gradient(ellipse at 65% 40%, rgba(75, 62, 56, 0.45) 0%, rgba(31, 25, 23, 0.98) 75%),
+            linear-gradient(90deg, #181412 0%, transparent 45%),
+            linear-gradient(180deg, transparent 55%, #161210 100%)
           `,
         }}
       />
 
       <HeroThemeDecorations theme={campaignTheme} />
 
-      <div className="relative z-10 flex min-h-[min(90vh,960px)] flex-col justify-center py-10 sm:py-14 lg:py-8">
-        {/* ONDO 38 / 62 proportions — showcase can overflow right edge */}
-        <div className="flex w-full flex-col items-center lg:flex-row lg:items-center lg:justify-between">
-          {/* Left ~38% — copy & CTA */}
-          <div className="relative z-20 w-full shrink-0 px-4 sm:px-6 lg:w-[38%] lg:max-w-[38%] lg:pl-8 lg:pr-6 xl:pl-12 xl:pr-8">
-            <div className="mx-auto max-w-xl lg:mx-0 lg:max-w-none">
+      <div className="relative z-10 mx-auto flex min-h-[min(88vh,900px)] max-w-7xl flex-col justify-center px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-10">
+        <div className="flex w-full flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          {/* Left — CMS-bound copy */}
+          <div className="relative z-20 w-full lg:w-[48%] lg:shrink-0">
+            <div className="max-w-xl">
               <h1
-                className={`${heroDisplay.className} text-5xl font-serif font-semibold tracking-tight text-white leading-[1.05] md:text-6xl lg:text-7xl`}
+                className={`${heroDisplay.className} text-5xl font-serif font-semibold tracking-tight text-white leading-[1.08] md:text-6xl lg:text-7xl`}
               >
                 {headline}
               </h1>
 
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-[#E0D2D7] md:text-base">
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-[#D4C8C2] md:text-base">
                 {bodyCopy}
               </p>
 
               <a
                 href="#products"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#F7F4EF] px-7 py-3 text-xs font-semibold uppercase tracking-wider text-[#161114] transition-all hover:bg-white"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#F5F1EA] px-7 py-3 text-xs font-medium uppercase tracking-wider text-[#1F1917] shadow-md transition-all hover:bg-white"
               >
                 {ctaLabel}
                 <span aria-hidden>→</span>
               </a>
 
-              <div className="mt-12 flex flex-wrap gap-8 border-t border-white/10 pt-6 text-xs uppercase tracking-widest text-[#C9B8BF]">
+              {/* Single-line trust badges */}
+              <div className="mt-10 flex flex-row flex-wrap items-center gap-8 whitespace-nowrap border-t border-white/10 pt-6 text-[11px] uppercase tracking-widest text-[#BDB0A8]">
                 {trustItems.map((item) => (
                   <div key={item.key} className="flex items-center gap-2.5">
-                    <span className="text-[#C9B8BF]" aria-hidden>
+                    <span className="text-[#BDB0A8]" aria-hidden>
                       {item.icon === "shield" ? (
                         <svg
-                          className="h-4 w-4"
+                          className="h-3.5 w-3.5"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -164,7 +164,7 @@ export default function Hero({ siteSettings }: HeroProps) {
                         </svg>
                       ) : item.icon === "trace" ? (
                         <svg
-                          className="h-4 w-4"
+                          className="h-3.5 w-3.5"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -178,7 +178,7 @@ export default function Hero({ siteSettings }: HeroProps) {
                         </svg>
                       ) : (
                         <svg
-                          className="h-4 w-4"
+                          className="h-3.5 w-3.5"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -199,8 +199,8 @@ export default function Hero({ siteSettings }: HeroProps) {
             </div>
           </div>
 
-          {/* Right ~62–68% — massive showcase, bleeds to right edge */}
-          <div className="relative z-10 mt-8 w-full max-w-none bg-transparent px-2 sm:px-4 lg:mt-0 lg:w-[62%] lg:max-w-none lg:shrink-0 lg:translate-x-4 lg:px-0 xl:w-[68%] xl:translate-x-8">
+          {/* Right — contained showcase, no crop */}
+          <div className="relative z-10 flex w-full items-center justify-center p-4 lg:w-[52%] lg:pr-8">
             <HeroShowcase alt={`${t.brand} product showcase`} />
           </div>
         </div>

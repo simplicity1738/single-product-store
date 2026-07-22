@@ -31,7 +31,7 @@ function NavLinkItem({
   label: string;
 }) {
   const className =
-    "text-[10px] font-medium uppercase tracking-[0.22em] text-[#E0D2D7]/80 transition-colors hover:text-white sm:text-[11px]";
+    "text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-200/80 transition-colors hover:text-white sm:text-[11px]";
 
   if (isStandalonePage(href)) {
     return (
@@ -55,7 +55,7 @@ function BrandMark({ name }: { name: string }) {
       className="group flex flex-col items-center justify-center text-center"
       aria-label={name}
     >
-      <span className="mb-0.5 text-[#C9B8BF]" aria-hidden>
+      <span className="mb-0.5 text-[#BDB0A8]" aria-hidden>
         <svg
           viewBox="0 0 28 14"
           className="h-3 w-6"
@@ -70,7 +70,7 @@ function BrandMark({ name }: { name: string }) {
         </svg>
       </span>
       <span
-        className={`${brandDisplay.className} text-[1.35rem] font-semibold leading-none tracking-[0.04em] text-white transition group-hover:text-[#FCE8EF] sm:text-[1.55rem]`}
+        className={`${brandDisplay.className} text-[1.35rem] font-semibold leading-none tracking-[0.04em] text-neutral-100 transition group-hover:text-white sm:text-[1.55rem]`}
       >
         {name}
       </span>
@@ -113,7 +113,7 @@ export default function Header() {
             <button
               type="button"
               onClick={openCart}
-              className="relative flex h-9 w-9 items-center justify-center rounded-full text-[#E0D2D7] transition hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-neutral-200 transition hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
               aria-label={t.cart.openCart}
             >
               <svg
@@ -131,7 +131,7 @@ export default function Header() {
                 />
               </svg>
               {cartItemCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#F7F4EF] px-1 text-[9px] font-bold text-[#161114]">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#F5F1EA] px-1 text-[9px] font-bold text-[#1F1917]">
                   {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               )}
