@@ -93,7 +93,7 @@ export const SITE_NAV_ADMIN_META: Record<
     title: "Kalkylator",
     hint: "Meny — sidan /kalkylator",
   },
-  kontakt: { title: "Kontakt", hint: "Meny — sektionen #contact på startsidan" },
+  kontakt: { title: "Kontakt", hint: "Header — öppnar kontaktdrawer (inte en sektion)" },
   faq: {
     title: "FAQ",
     hint: "Flytande supportwidget (ingen menylänk)",

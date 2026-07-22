@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import ProductImage from "@/components/ProductImage";
 import PaymentTrustBadges from "@/components/PaymentTrustBadges";
+import CheckoutTrustSignals from "@/components/CheckoutTrustSignals";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
@@ -299,6 +300,8 @@ export default function CartDrawer() {
           >
             {t.cart.checkout}
           </button>
+
+          <CheckoutTrustSignals className="mt-6" />
 
           <PaymentTrustBadges className="mt-5" hideLabel />
         </div>

@@ -481,11 +481,11 @@ export const translations = {
       },
       support: {
         title: "Support inom 24h",
-        description: "Snabb återkoppling via e-post",
+        description: "Snabb återkoppling via e-post/Telegram",
       },
       payment: {
         title: "Säker betalning",
-        description: "Kort, Klarna, Link eller Bitcoin",
+        description: "Kort, Klarna eller Bitcoin",
       },
       quality: {
         title: "Premium kvalitet",
@@ -549,16 +549,20 @@ export const translations = {
         "Har du frågor om din beställning eller våra produkter? Skicka ett meddelande eller nå oss direkt.",
       name: "Namn",
       email: "E-post",
+      orderId: "Order-ID",
       message: "Meddelande",
       send: "Skicka meddelande",
       sending: "Skickar...",
       success: "Tack! Vi återkommer inom 24 timmar.",
+      close: "Stäng kontakt",
+      responseNotice: "Vi svarar vanligtvis inom 24 timmar på vardagar.",
       directTitle: "Eller kontakta oss direkt",
       telegram: "Telegram",
       emailLink: "E-post",
       placeholders: {
         name: "Anna Andersson",
         email: "anna@exempel.se",
+        orderId: "Valfritt ordernummer",
         message: "Berätta hur vi kan hjälpa dig...",
       },
       errors: {
@@ -1130,11 +1134,11 @@ export const translations = {
       },
       support: {
         title: "24h Support",
-        description: "Fast email turnaround",
+        description: "Fast reply via email/Telegram",
       },
       payment: {
         title: "Secure Payment",
-        description: "Card, Klarna, Link, or Bitcoin",
+        description: "Card, Klarna, or Bitcoin",
       },
       quality: {
         title: "Premium Quality",
@@ -1198,16 +1202,20 @@ export const translations = {
         "Questions about your order or our products? Send a message or reach us directly.",
       name: "Name",
       email: "Email",
+      orderId: "Order ID",
       message: "Message",
       send: "Send message",
       sending: "Sending...",
       success: "Thank you! We'll get back to you within 24 hours.",
+      close: "Close contact",
+      responseNotice: "We usually reply within 24 hours on business days.",
       directTitle: "Or contact us directly",
       telegram: "Telegram",
       emailLink: "Email",
       placeholders: {
         name: "Jane Doe",
         email: "jane@example.com",
+        orderId: "Optional order number",
         message: "Tell us how we can help...",
       },
       errors: {

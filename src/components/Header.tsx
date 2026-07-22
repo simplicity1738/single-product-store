@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Cormorant_Garamond } from "next/font/google";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
+import ContactDrawer from "@/components/ContactDrawer";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
@@ -10,6 +12,7 @@ import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import {
   getSiteNavLabel,
   isSiteNavLinkVisible,
+  isSiteSectionVisible,
   SITE_NAV_ROUTES,
 } from "@/lib/site-navigation";
 
@@ -31,7 +34,7 @@ function NavLinkItem({
   label: string;
 }) {
   const className =
-    "font-medium text-xs md:text-sm tracking-wider text-[#1A1513] transition-colors hover:text-black";
+    "cursor-pointer text-xs font-medium uppercase tracking-wider text-[#1A1513] transition-colors hover:opacity-75 md:text-sm";
 
   if (isStandalonePage(href)) {
     return (
@@ -82,15 +85,31 @@ export default function Header() {
   const { locale, t } = useLanguage();
   const { siteSettings, banner, siteNavigation } = useStoreConfig();
   const { cartItemCount, openCart } = useProductSelection();
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
   const brandName = siteSettings.heroBrandText.trim() || t.brand;
+  const showContact = isSiteSectionVisible(siteNavigation, "kontakt");
 
-  const visibleNavLinks = SITE_NAV_ROUTES.filter((route) =>
-    isSiteNavLinkVisible(siteNavigation, route.key),
+  const visibleNavLinks = SITE_NAV_ROUTES.filter(
+    (route) =>
+      route.key !== "kontakt" &&
+      isSiteNavLinkVisible(siteNavigation, route.key),
   ).map((route) => ({
     ...route,
     label: getSiteNavLabel(siteNavigation, route.key, locale),
   }));
+
+  useEffect(() => {
+    function openFromHash() {
+      if (window.location.hash === "#contact" && showContact) {
+        setIsContactOpen(true);
+      }
+    }
+
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, [showContact]);
 
   return (
     <>
@@ -107,7 +126,16 @@ export default function Header() {
           <BrandMark name={brandName} />
         </div>
 
-        <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+        <div className="flex items-center justify-end gap-2 sm:gap-3">
+          {showContact ? (
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
+              className="hidden cursor-pointer text-xs font-medium uppercase tracking-wider text-[#1A1513] transition hover:opacity-75 sm:inline-flex md:text-sm"
+            >
+              {t.contact.eyebrow}
+            </button>
+          ) : null}
           <LanguageSwitcher variant="light" />
           <button
             type="button"
@@ -138,13 +166,27 @@ export default function Header() {
         </div>
       </header>
 
-      {visibleNavLinks.length > 0 && (
+      {(visibleNavLinks.length > 0 || showContact) && (
         <nav className="flex flex-wrap gap-x-4 gap-y-2 bg-[#ECE5D8] px-6 pb-3 lg:hidden md:px-12">
           {visibleNavLinks.map((link) => (
             <NavLinkItem key={link.key} href={link.href} label={link.label} />
           ))}
+          {showContact ? (
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
+              className="cursor-pointer text-xs font-medium uppercase tracking-wider text-[#1A1513] transition hover:opacity-75 md:text-sm"
+            >
+              {t.contact.eyebrow}
+            </button>
+          ) : null}
         </nav>
       )}
+
+      <ContactDrawer
+        open={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
     </>
   );
 }

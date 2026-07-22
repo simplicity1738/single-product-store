@@ -8,6 +8,7 @@ import { isSiteSectionVisible } from "@/lib/site-navigation";
 import ProductImage from "@/components/ProductImage";
 import PaymentStep from "@/components/PaymentStep";
 import PaymentTrustBadges from "@/components/PaymentTrustBadges";
+import CheckoutTrustSignals from "@/components/CheckoutTrustSignals";
 import CheckoutMethodSelector, {
   type CheckoutPaymentChoice,
 } from "@/components/CheckoutMethodSelector";
@@ -556,16 +557,7 @@ export default function OrderForm() {
                 </span>
               </div>
 
-              <ul className="mt-6 space-y-2 text-xs text-zinc-500">
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-                  {t.order.secureNote}
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-                  {t.order.shipsNote}
-                </li>
-              </ul>
+              <CheckoutTrustSignals className="mt-6" />
             </div>
           </aside>
         </div>
