@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Cormorant_Garamond } from "next/font/google";
 import ProductImage from "@/components/ProductImage";
+import ProductDetailsDrawer from "@/components/ProductDetailsDrawer";
 import StrengthSelector from "@/components/StrengthSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
@@ -54,6 +55,7 @@ export default function Products() {
     useStoreConfig();
   const { cardVariants, setCardVariantMg, addToCart } = useProductSelection();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
+  const [detailsProductId, setDetailsProductId] = useState<string | null>(null);
 
   const displayProducts = useMemo<DisplayProduct[]>(() => {
     return catalogProducts.map((product) => {
@@ -71,6 +73,11 @@ export default function Products() {
     });
   }, [catalogProducts, configProducts, locale]);
 
+  const detailsProduct = useMemo(
+    () => displayProducts.find((product) => product.id === detailsProductId) ?? null,
+    [displayProducts, detailsProductId],
+  );
+
   if (!isSiteSectionVisible(siteNavigation, "produkter")) {
     return null;
   }
@@ -78,6 +85,70 @@ export default function Products() {
   if (displayProducts.length === 0) {
     return null;
   }
+
+  const detailsVariantLabels = detailsProduct?.variantLabels ?? [];
+  const detailsHasNamedVariants = detailsVariantLabels.length > 0;
+  const detailsVariantMg = detailsProduct
+    ? detailsHasNamedVariants
+      ? (cardVariants[detailsProduct.id] ?? detailsProduct.variants[0]?.mg ?? 0)
+      : (cardVariants[detailsProduct.id] ?? detailsProduct.variants[0].mg)
+    : 0;
+  const detailsActiveStrength =
+    detailsProduct && detailsHasNamedVariants
+      ? (detailsVariantLabels[detailsVariantMg] ?? detailsVariantLabels[0] ?? "")
+      : undefined;
+  const detailsDosePill = detailsProduct
+    ? detailsHasNamedVariants
+      ? (detailsActiveStrength ?? detailsVariantLabels[0] ?? "")
+      : shouldShowSizeLabel(detailsProduct.sizeLabel)
+        ? detailsProduct.sizeLabel!.trim()
+        : formatMgOption(detailsVariantMg)
+    : "";
+  const detailsBasePrice = detailsProduct
+    ? getVariantBasePrice(
+        detailsProduct,
+        detailsVariantMg,
+        detailsActiveStrength,
+      )
+    : 0;
+  const detailsVariantLabel = detailsProduct
+    ? getVariantLabelForSelection(
+        detailsProduct,
+        detailsVariantMg,
+        detailsActiveStrength,
+      )
+    : "";
+  const detailsStockDisplay = detailsProduct
+    ? resolveVariantStockDisplay(
+        stockManagement,
+        detailsProduct.id,
+        detailsVariantLabel,
+      )
+    : { visible: false, quantity: 0, isSoldOut: false, isLow: false };
+  const detailsEffectiveStatus = detailsProduct
+    ? resolveEffectiveProductStockStatus(
+        detailsProduct.status,
+        detailsStockDisplay,
+      )
+    : "i_lager";
+  const detailsPurchasable = detailsProduct
+    ? isVariantPurchasableWithStock(
+        isProductPurchasable(detailsProduct.status),
+        detailsStockDisplay,
+        detailsProduct.status,
+      )
+    : false;
+  const detailsButtonLabel = detailsProduct
+    ? detailsEffectiveStatus === "kommer_snart"
+      ? t.products.comingSoonButton
+      : detailsStockDisplay.visible
+        ? detailsStockDisplay.quantity > 0
+          ? t.products.addToCart
+          : t.products.soldOut
+        : detailsEffectiveStatus === "ej_i_lager"
+          ? t.products.soldOut
+          : t.products.addToCart
+    : t.products.addToCart;
 
   return (
     <section id="products" className="scroll-mt-24 bg-[#0F0C0B] py-16 md:py-24">
@@ -160,7 +231,6 @@ export default function Products() {
                 key={product.id}
                 className="group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/25"
               >
-                {/* Image stage with muted badges */}
                 <div className="relative mb-4 flex h-[240px] items-center justify-center overflow-hidden rounded-xl bg-[#181312] p-6">
                   <ProductSaleBadge
                     basePrice={basePrice}
@@ -196,11 +266,17 @@ export default function Products() {
                   >
                     {product.displayName}
                   </h3>
-                  <p className="mt-1 line-clamp-1 text-xs text-[#CFC4BD]">
+                  <p className="mt-1 line-clamp-2 text-xs text-[#CFC4BD]">
                     {product.displayDescription}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => setDetailsProductId(product.id)}
+                    className="mt-1 inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-[#ECE5D8] underline underline-offset-4 hover:text-white"
+                  >
+                    {t.products.readMore}
+                  </button>
 
-                  {/* Compact dose / inclusions glass pills */}
                   <div className="my-3 flex flex-wrap gap-2">
                     {dosePill ? (
                       <span className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-[#D4C8C2]">
@@ -209,7 +285,7 @@ export default function Products() {
                     ) : null}
                     {product.displayIncludedItems ? (
                       <span className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-[#D4C8C2]">
-                        Medföljer: {product.displayIncludedItems}
+                        {t.products.includedLabel}: {product.displayIncludedItems}
                       </span>
                     ) : null}
                   </div>
@@ -297,6 +373,31 @@ export default function Products() {
           })}
         </div>
       </div>
+
+      <ProductDetailsDrawer
+        open={Boolean(detailsProduct)}
+        onClose={() => setDetailsProductId(null)}
+        productName={detailsProduct?.displayName ?? ""}
+        description={detailsProduct?.displayDescription ?? ""}
+        doseLabel={detailsDosePill}
+        includedItems={detailsProduct?.displayIncludedItems ?? ""}
+        stockStatus={detailsEffectiveStatus}
+        stockLabel={t.products.stockStatus[detailsEffectiveStatus]}
+        stockDisplay={detailsStockDisplay}
+        basePrice={detailsBasePrice}
+        saleSettings={detailsProduct ?? {}}
+        localeCode={localeCode}
+        buttonLabel={detailsButtonLabel}
+        purchasable={detailsPurchasable}
+        onAddToCart={() => {
+          if (!detailsProduct) return;
+          addToCart(
+            detailsProduct.id,
+            detailsVariantMg,
+            detailsHasNamedVariants ? detailsActiveStrength : undefined,
+          );
+        }}
+      />
     </section>
   );
 }

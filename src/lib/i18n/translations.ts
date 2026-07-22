@@ -51,6 +51,10 @@ export const translations = {
       comingSoon: "Kommer snart",
       soldOut: "Slutsåld",
       comingSoonButton: "Kommer snart",
+      readMore: "Läs mer →",
+      closeDetails: "Stäng produktinformation",
+      includedLabel: "Medföljer",
+      stockStatusLabel: "Lagerstatus",
       stockLow: "🔥 Endast {{count}} kvar i lager!",
       stockAvailable: "📦 {{count}} kvar i lager — Skickas idag!",
       stockStatus: {
@@ -696,6 +700,10 @@ export const translations = {
       comingSoon: "Coming Soon",
       soldOut: "Sold Out",
       comingSoonButton: "Coming Soon",
+      readMore: "Read more →",
+      closeDetails: "Close product details",
+      includedLabel: "Includes",
+      stockStatusLabel: "Stock status",
       stockLow: "🔥 Only {{count}} left in stock!",
       stockAvailable: "📦 {{count}} in stock — Ships today!",
       stockStatus: {
