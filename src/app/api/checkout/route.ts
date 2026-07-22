@@ -21,7 +21,6 @@ import {
   ORDER_STATUS,
   resolveAffiliateAttribution,
 } from "@/lib/orders.server";
-import { sendOrderConfirmationEmail } from "@/lib/email";
 import { appendSystemLog } from "@/lib/system-logs.server";
 import {
   CHECKOUT_FIELD_LIMITS,
@@ -195,6 +194,22 @@ export async function POST(request: Request) {
     const origin = getRequestOrigin(request);
     const localeCode = locale === "en" ? "en-US" : "sv-SE";
 
+    const emailLines = lineItems.map((line) => ({
+      label: getProductLineLabelFromConfig(
+        storeConfig,
+        line.productId,
+        line.variantMg,
+        line.selectedStrength,
+        undefined,
+        line.campaignAddonId,
+      ),
+      quantity: line.quantity,
+      lineSubtotal: line.lineSubtotal,
+    }));
+    const cartSummary = emailLines
+      .map((line) => `${line.label} × ${line.quantity}`)
+      .join(", ");
+
     const stripeLineItems = lineItems.map((line) => ({
       price_data: {
         currency: "sek",
@@ -254,20 +269,7 @@ export async function POST(request: Request) {
         customerName: name,
         customerEmail: email,
         customerAddress: `${address}, ${zip} ${city}, ${state}, SE`.slice(0, 450),
-        cartSummary: lineItems
-          .map((line) => {
-            const label = getProductLineLabelFromConfig(
-              storeConfig,
-              line.productId,
-              line.variantMg,
-              line.selectedStrength,
-              undefined,
-              line.campaignAddonId,
-            );
-            return `${label} × ${line.quantity}`;
-          })
-          .join(", ")
-          .slice(0, 450),
+        cartSummary: cartSummary.slice(0, 450),
       },
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}&paid=stripe`,
       cancel_url: `${origin}/#checkout-form`,
@@ -283,6 +285,13 @@ export async function POST(request: Request) {
       customerName: name,
       customerEmail: email,
       shippingAddress: `${address}, ${zip} ${city}, ${state}, SE`,
+      emailSnapshot: {
+        cartSummary,
+        subtotal,
+        shipping,
+        discount,
+        lines: emailLines,
+      },
       ...(affiliate
         ? {
             affiliateHandle: affiliate.handle,
@@ -292,35 +301,7 @@ export async function POST(request: Request) {
         : {}),
     });
 
-    try {
-      await sendOrderConfirmationEmail({
-        orderId,
-        customerEmail: email,
-        customerName: name,
-        lines: lineItems.map((line) => ({
-          label: getProductLineLabelFromConfig(
-            storeConfig,
-            line.productId,
-            line.variantMg,
-            line.selectedStrength,
-            undefined,
-            line.campaignAddonId,
-          ),
-          quantity: line.quantity,
-          lineSubtotal: line.lineSubtotal,
-        })),
-        subtotal,
-        shipping,
-        discount,
-        total,
-        templates: storeConfig.orderEmail,
-      });
-    } catch {
-      await appendSystemLog(
-        `Orderbekräftelse via e-post misslyckades för ${orderId}.`,
-        "email",
-      );
-    }
+    // Confirmation email is sent from the Stripe webhook after successful payment.
 
     if (!session.url) {
       return NextResponse.json(

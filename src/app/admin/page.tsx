@@ -8,6 +8,8 @@ import type {
   BannerAnimation,
   BannerStyle,
   BannerTimeDisplayMode,
+  CampaignOfferType,
+  CampaignRule,
   ConfigDiscount,
   ConfigFaq,
   ConfigProduct,
@@ -30,6 +32,7 @@ import {
 } from "@/lib/order-payment";
 import AdminPaymentMethodBadge from "@/components/admin/AdminPaymentMethodBadge";
 import {
+  formatCampaignRuleName,
   formatVariantsInput,
   parseVariantsInput,
 } from "@/lib/store-config";
@@ -223,6 +226,18 @@ const emptyDiscount = (): ConfigDiscount => ({
   usageCount: 0,
 });
 
+const emptyCampaignRule = (): CampaignRule => ({
+  id: "",
+  name: "",
+  type: "quantity_flat",
+  active: true,
+  productScope: "all",
+  buyQuantity: 2,
+  discountAmount: 100,
+  bundleBuy: 3,
+  bundlePay: 2,
+});
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -396,6 +411,9 @@ export default function AdminPage() {
   const [config, setConfig] = useState<StoreConfig | null>(null);
   const [newProduct, setNewProduct] = useState<ProductDraft>(emptyProduct());
   const [newDiscount, setNewDiscount] = useState<ConfigDiscount>(emptyDiscount());
+  const [newCampaignRule, setNewCampaignRule] = useState<CampaignRule>(
+    emptyCampaignRule(),
+  );
   const [toast, setToast] = useState<ToastState>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingShipping, setIsSavingShipping] = useState(false);
@@ -489,6 +507,9 @@ export default function AdminPage() {
       setConfig({
         ...data,
         siteSettings: normalizeSiteSettings(data.siteSettings),
+        campaignRules: Array.isArray(data.campaignRules)
+          ? data.campaignRules
+          : [],
       });
     } catch {
       showToast({
@@ -1361,6 +1382,96 @@ export default function AdminPage() {
             ...current,
             discounts: current.discounts.filter(
               (discount) => discount.id !== id,
+            ),
+          }
+        : current,
+    );
+  }
+
+  function addCampaignRule() {
+    const type: CampaignOfferType =
+      newCampaignRule.type === "bundle" ? "bundle" : "quantity_flat";
+    const buyQuantity = Math.max(1, Number(newCampaignRule.buyQuantity) || 1);
+    const discountAmount = Math.max(
+      0,
+      Math.round(Number(newCampaignRule.discountAmount) || 0),
+    );
+    const bundleBuy = Math.max(2, Number(newCampaignRule.bundleBuy) || 2);
+    const bundlePay = Math.min(
+      bundleBuy - 1,
+      Math.max(1, Number(newCampaignRule.bundlePay) || bundleBuy - 1),
+    );
+
+    if (type === "quantity_flat" && discountAmount <= 0) {
+      showToast({
+        type: "info",
+        message: "Ange ett rabattbelopp i kronor.",
+      });
+      return;
+    }
+
+    if (type === "bundle" && bundlePay >= bundleBuy) {
+      showToast({
+        type: "info",
+        message: "För bundle måste antal att betala vara lägre än antal att köpa.",
+      });
+      return;
+    }
+
+    const entry: CampaignRule = {
+      id: `campaign-${Date.now()}`,
+      name: formatCampaignRuleName({
+        type,
+        buyQuantity,
+        discountAmount,
+        bundleBuy,
+        bundlePay,
+        name: newCampaignRule.name,
+      }),
+      type,
+      active: newCampaignRule.active,
+      productScope: newCampaignRule.productScope || "all",
+      buyQuantity,
+      discountAmount,
+      bundleBuy,
+      bundlePay,
+    };
+
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            campaignRules: [...(current.campaignRules ?? []), entry],
+          }
+        : current,
+    );
+    setNewCampaignRule(emptyCampaignRule());
+    showToast({
+      type: "info",
+      message: "Kampanjregel tillagd — spara för att publicera.",
+    });
+  }
+
+  function toggleCampaignRule(id: string) {
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            campaignRules: (current.campaignRules ?? []).map((rule) =>
+              rule.id === id ? { ...rule, active: !rule.active } : rule,
+            ),
+          }
+        : current,
+    );
+  }
+
+  function removeCampaignRule(id: string) {
+    setConfig((current) =>
+      current
+        ? {
+            ...current,
+            campaignRules: (current.campaignRules ?? []).filter(
+              (rule) => rule.id !== id,
             ),
           }
         : current,
@@ -3002,6 +3113,269 @@ export default function AdminPage() {
               className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
             >
               + Lägg till produkt
+            </button>
+          </div>
+        </section>
+          )}
+
+        {activeTab === "kampanj" && (
+        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+          <h2 className="text-lg font-bold text-zinc-900">
+            Erbjudanden &amp; Kampanjregler
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Automatiska erbjudanden som &quot;3 för 2&quot; och &quot;Köp 2 få
+            100 kr rabatt&quot;. Aktiveras direkt i varukorgen när kriterierna
+            uppfylls.
+          </p>
+
+          <div className="mt-6 space-y-4">
+            {(config.campaignRules ?? []).length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+                Inga kampanjregler ännu.
+              </p>
+            ) : (
+              (config.campaignRules ?? []).map((rule) => {
+                const scopeLabel =
+                  rule.productScope === "all"
+                    ? "Alla produkter"
+                    : (config.products.find(
+                        (product) => product.id === rule.productScope,
+                      )?.name_sv ||
+                      config.products.find(
+                        (product) => product.id === rule.productScope,
+                      )?.title ||
+                      rule.productScope);
+                const detail =
+                  rule.type === "bundle"
+                    ? `${rule.bundleBuy} för ${rule.bundlePay} (billigaste gratis)`
+                    : `Köp ${rule.buyQuantity} st → ${rule.discountAmount} kr rabatt`;
+
+                return (
+                  <div
+                    key={rule.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-zinc-900">{rule.name}</p>
+                      <p className="text-sm text-zinc-600">
+                        {detail} · {scopeLabel}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {rule.active ? "Aktiv" : "Inaktiv"}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleCampaignRule(rule.id)}
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                          rule.active
+                            ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                            : "border border-rose-200 bg-white text-zinc-700 hover:bg-rose-50"
+                        }`}
+                      >
+                        {rule.active ? "På" : "Av"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeCampaignRule(rule.id)}
+                        className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Ta bort
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
+            <h3 className="text-sm font-semibold text-zinc-900">
+              Lägg till ny kampanjregel
+            </h3>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="block sm:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Erbjudandetyp
+                </span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(
+                    [
+                      ["quantity_flat", "Kvantitetsrabatt i kronor"],
+                      ["bundle", "Bundle Deals (t.ex. 3 för 2)"],
+                    ] as const
+                  ).map(([type, label]) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() =>
+                        setNewCampaignRule((current) => ({
+                          ...current,
+                          type,
+                          name: "",
+                        }))
+                      }
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        newCampaignRule.type === type
+                          ? "bg-rose-400 text-white"
+                          : "border border-rose-200 bg-white text-zinc-700 hover:bg-rose-50"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Visningsnamn (valfritt)
+                </span>
+                <input
+                  value={newCampaignRule.name}
+                  onChange={(event) =>
+                    setNewCampaignRule((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder={
+                    newCampaignRule.type === "bundle"
+                      ? "3 för 2"
+                      : "Köp 2 få 100 kr rabatt"
+                  }
+                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                />
+              </label>
+
+              {newCampaignRule.type === "quantity_flat" ? (
+                <>
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Köp antal (X)
+                    </span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={newCampaignRule.buyQuantity || ""}
+                      onChange={(event) =>
+                        setNewCampaignRule((current) => ({
+                          ...current,
+                          buyQuantity: Number(event.target.value),
+                        }))
+                      }
+                      placeholder="2"
+                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Rabatt i kronor (Y)
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={newCampaignRule.discountAmount || ""}
+                      onChange={(event) =>
+                        setNewCampaignRule((current) => ({
+                          ...current,
+                          discountAmount: Number(event.target.value),
+                        }))
+                      }
+                      placeholder="100"
+                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                    />
+                  </label>
+                </>
+              ) : (
+                <>
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Köp antal (t.ex. 3)
+                    </span>
+                    <input
+                      type="number"
+                      min={2}
+                      value={newCampaignRule.bundleBuy || ""}
+                      onChange={(event) =>
+                        setNewCampaignRule((current) => ({
+                          ...current,
+                          bundleBuy: Number(event.target.value),
+                        }))
+                      }
+                      placeholder="3"
+                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      Betala för (t.ex. 2)
+                    </span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={newCampaignRule.bundlePay || ""}
+                      onChange={(event) =>
+                        setNewCampaignRule((current) => ({
+                          ...current,
+                          bundlePay: Number(event.target.value),
+                        }))
+                      }
+                      placeholder="2"
+                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                    />
+                  </label>
+                </>
+              )}
+
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  Målprodukt
+                </span>
+                <select
+                  value={newCampaignRule.productScope}
+                  onChange={(event) =>
+                    setNewCampaignRule((current) => ({
+                      ...current,
+                      productScope: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                >
+                  <option value="all">Alla produkter</option>
+                  {config.products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name_sv || product.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex items-center gap-3 sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={newCampaignRule.active}
+                  onChange={(event) =>
+                    setNewCampaignRule((current) => ({
+                      ...current,
+                      active: event.target.checked,
+                    }))
+                  }
+                  className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                />
+                <span className="text-sm font-medium text-zinc-700">
+                  Aktivera direkt när sparad
+                </span>
+              </label>
+            </div>
+            <button
+              type="button"
+              onClick={addCampaignRule}
+              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+            >
+              + Lägg till kampanjregel
             </button>
           </div>
         </section>

@@ -233,9 +233,11 @@ export async function POST(request: Request) {
         shipping,
         discount,
         total,
+        cartSummary,
         templates: storeConfig.orderEmail,
       });
-    } catch {
+    } catch (error) {
+      console.error("Order email failed:", error);
       await appendSystemLog(
         `Orderbekräftelse via e-post misslyckades för ${orderId}.`,
         "email",

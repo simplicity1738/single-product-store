@@ -33,6 +33,11 @@ export default function CartDrawer() {
 
   const summary = calculateOrderTotal(cart, null);
   const subtotal = summary.subtotal;
+  const campaignDiscount = summary.campaignDiscount;
+  const cartNet = Math.max(0, subtotal - campaignDiscount);
+  const appliedCampaignLabel = summary.appliedCampaigns
+    .map((campaign) => campaign.name)
+    .join(" · ");
 
   useEffect(() => {
     if (!isCartOpen) return;
@@ -255,12 +260,36 @@ export default function CartDrawer() {
         </div>
 
         <div className="border-t border-rose-100 bg-white px-5 py-5 sm:px-6">
+          {summary.appliedCampaigns.length > 0 && (
+            <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+              🎉 Kampanj tillämpad: {appliedCampaignLabel}!
+            </div>
+          )}
+
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-zinc-600">{t.cart.subtotal}</span>
             <span className="text-lg font-bold text-zinc-900">
               {formatCurrency(subtotal, localeCode)}
             </span>
           </div>
+
+          {campaignDiscount > 0 && (
+            <div className="mt-2 flex items-center justify-between text-sm text-emerald-700">
+              <span className="font-medium">Kampanjrabatt</span>
+              <span className="font-bold">
+                {formatCurrency(-campaignDiscount, localeCode)}
+              </span>
+            </div>
+          )}
+
+          {campaignDiscount > 0 && (
+            <div className="mt-3 flex items-center justify-between border-t border-rose-100 pt-3 text-sm">
+              <span className="font-semibold text-zinc-900">Att betala</span>
+              <span className="text-lg font-bold text-zinc-900">
+                {formatCurrency(cartNet, localeCode)}
+              </span>
+            </div>
+          )}
 
           <button
             type="button"

@@ -170,26 +170,35 @@ export async function POST(request: Request) {
   }
 
   const customerEmail =
-    customerDetails?.email ?? session.metadata?.customerEmail ?? "";
+    customerDetails?.email ??
+    session.metadata?.customerEmail ??
+    existingOrder.customerEmail ??
+    "";
   const customerName =
-    customerDetails?.name ?? session.metadata?.customerName ?? "Kund";
+    customerDetails?.name ??
+    session.metadata?.customerName ??
+    existingOrder.customerName ??
+    "Kund";
 
   if (customerEmail) {
     try {
       const storeConfig = await readStoreConfig();
+      const snapshot = existingOrder.emailSnapshot;
       await sendOrderConfirmationEmail({
         orderId,
         customerEmail,
         customerName,
-        lines: [],
-        subtotal: existingOrder.total,
-        shipping: 0,
-        discount: 0,
+        lines: snapshot?.lines ?? [],
+        subtotal: snapshot?.subtotal ?? existingOrder.total,
+        shipping: snapshot?.shipping ?? 0,
+        discount: snapshot?.discount ?? 0,
         total: existingOrder.total,
-        cartSummary: session.metadata?.cartSummary ?? "",
+        cartSummary:
+          snapshot?.cartSummary || session.metadata?.cartSummary || "",
         templates: storeConfig.orderEmail,
       });
-    } catch {
+    } catch (error) {
+      console.error("Order email failed:", error);
       await appendSystemLog(
         `Orderbekräftelse via e-post misslyckades för betald Stripe-order ${orderId}.`,
         "email",

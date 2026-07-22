@@ -514,8 +514,27 @@ export default function OrderForm() {
                 )}
               </div>
 
-              {summary.discount > 0 && (
-                <div className="mt-4 flex items-center justify-between text-sm text-emerald-700">
+              {summary.appliedCampaigns.length > 0 && (
+                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
+                  🎉 Kampanj tillämpad:{" "}
+                  {summary.appliedCampaigns
+                    .map((campaign) => campaign.name)
+                    .join(" · ")}
+                  !
+                </div>
+              )}
+
+              {summary.campaignDiscount > 0 && (
+                <div className="mt-3 flex items-center justify-between text-sm text-emerald-700">
+                  <span>Kampanjrabatt</span>
+                  <span className="font-medium">
+                    {formatCurrency(-summary.campaignDiscount, localeCode)}
+                  </span>
+                </div>
+              )}
+
+              {summary.promoDiscount > 0 && (
+                <div className="mt-2 flex items-center justify-between text-sm text-emerald-700">
                   <span>
                     {t.order.discount.lineLabel}
                     {summary.appliedDiscountCode
@@ -523,7 +542,7 @@ export default function OrderForm() {
                       : ""}
                   </span>
                   <span className="font-medium">
-                    {formatCurrency(-summary.discount, localeCode)}
+                    {formatCurrency(-summary.promoDiscount, localeCode)}
                   </span>
                 </div>
               )}

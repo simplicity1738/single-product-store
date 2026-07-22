@@ -23,6 +23,18 @@ export {
   type OrderStatus,
 } from "@/lib/order-status";
 
+export type StoredOrderEmailSnapshot = {
+  cartSummary: string;
+  subtotal: number;
+  shipping: number;
+  discount: number;
+  lines: Array<{
+    label: string;
+    quantity: number;
+    lineSubtotal: number;
+  }>;
+};
+
 export type StoredOrder = {
   id: string;
   total: number;
@@ -37,6 +49,8 @@ export type StoredOrder = {
   customerName?: string;
   customerEmail?: string;
   shippingAddress?: string;
+  /** Snapshot used to render confirmation email after payment. */
+  emailSnapshot?: StoredOrderEmailSnapshot;
 };
 
 export function generateOrderId(): string {

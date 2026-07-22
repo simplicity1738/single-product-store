@@ -305,13 +305,18 @@ export async function sendOrderConfirmationEmail(
     },
   });
 
-  await transporter.sendMail({
-    from: env.smtpUser,
-    to: payload.customerEmail,
-    subject,
-    text,
-    html: formatOrderConfirmationHtml(payload, templates.emailBody),
-  });
+  try {
+    await transporter.sendMail({
+      from: env.smtpUser,
+      to: payload.customerEmail,
+      subject,
+      text,
+      html: formatOrderConfirmationHtml(payload, templates.emailBody),
+    });
+  } catch (error) {
+    console.error("Order email failed:", error);
+    throw error;
+  }
 
   return { ok: true, mock: false };
 }

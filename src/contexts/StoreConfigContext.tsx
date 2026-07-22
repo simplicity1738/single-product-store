@@ -30,6 +30,7 @@ import {
   type ConfigFaq,
   type ConfigProduct,
   type ConfigReview,
+  type CampaignRule,
   type CryptoWallets,
   type DiscountValidationResult,
   type InfluencerPartner,
@@ -68,6 +69,7 @@ type PublicStoreConfig = {
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
+  campaignRules: CampaignRule[];
   faqs: ConfigFaq[];
   bestSellerProductIds: string[];
   premiumProductIds: string[];
@@ -133,6 +135,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<ConfigProduct[]>([]);
   const [reviews, setReviews] = useState<ConfigReview[]>([]);
   const [discounts, setDiscounts] = useState<ConfigDiscount[]>([]);
+  const [campaignRules, setCampaignRules] = useState<CampaignRule[]>([]);
   const [faqs, setFaqs] = useState<ConfigFaq[]>([]);
   const [bestSellerProductIds, setBestSellerProductIds] = useState<string[]>([]);
   const [premiumProductIds, setPremiumProductIds] = useState<string[]>([]);
@@ -170,6 +173,9 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       setProducts(Array.isArray(data.products) ? data.products : []);
       setReviews(Array.isArray(data.reviews) ? data.reviews : []);
       setDiscounts(Array.isArray(data.discounts) ? data.discounts : []);
+      setCampaignRules(
+        Array.isArray(data.campaignRules) ? data.campaignRules : [],
+      );
       setFaqs(Array.isArray(data.faqs) ? data.faqs : []);
       setBestSellerProductIds(
         Array.isArray(data.bestSellerProductIds)
@@ -231,6 +237,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       products,
       reviews,
       discounts,
+      campaignRules,
       bestSellerProductIds,
       premiumProductIds,
       faqs,
@@ -249,6 +256,7 @@ export function StoreConfigProvider({ children }: { children: ReactNode }) {
       products,
       reviews,
       discounts,
+      campaignRules,
       bestSellerProductIds,
       premiumProductIds,
       faqs,

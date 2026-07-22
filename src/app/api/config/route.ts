@@ -18,6 +18,7 @@ export async function GET() {
       products: config.products,
       reviews: config.reviews,
       discounts: config.discounts,
+      campaignRules: config.campaignRules,
       faqs: config.faqs,
       bestSellerProductIds: config.bestSellerProductIds,
       premiumProductIds: config.premiumProductIds,

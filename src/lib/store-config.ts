@@ -188,6 +188,45 @@ export type ConfigDiscount = {
   usageCount: number;
 };
 
+/** Automatic cart offers: quantity flat discount or N-för-(N-1) bundle deals. */
+export type CampaignOfferType = "quantity_flat" | "bundle";
+
+export type CampaignRule = {
+  id: string;
+  /** Display label shown in cart, e.g. "Köp 2 få 100 kr rabatt" */
+  name: string;
+  type: CampaignOfferType;
+  active: boolean;
+  /** "all" or a specific product id */
+  productScope: "all" | string;
+  /** quantity_flat: buy this many to unlock discountAmount (stacks per set) */
+  buyQuantity: number;
+  /** quantity_flat: kronor off per completed set */
+  discountAmount: number;
+  /** bundle: e.g. 3 för 2 → bundleBuy=3 */
+  bundleBuy: number;
+  /** bundle: e.g. 3 för 2 → bundlePay=2 (cheapest items free) */
+  bundlePay: number;
+};
+
+export type AppliedCampaign = {
+  id: string;
+  name: string;
+  amount: number;
+};
+
+export function formatCampaignRuleName(rule: Pick<
+  CampaignRule,
+  "type" | "buyQuantity" | "discountAmount" | "bundleBuy" | "bundlePay" | "name"
+>): string {
+  const custom = rule.name?.trim();
+  if (custom) return custom;
+  if (rule.type === "bundle") {
+    return `${rule.bundleBuy} för ${rule.bundlePay}`;
+  }
+  return `Köp ${rule.buyQuantity} få ${rule.discountAmount} kr rabatt`;
+}
+
 export type CryptoWallets = {
   tron: string;
   bsc: string;
@@ -256,7 +295,7 @@ export type OrderEmailTemplates = {
 export const DEFAULT_ORDER_EMAIL_TEMPLATES: OrderEmailTemplates = {
   emailSubject: "SimpliCity — Orderbekräftelse {{orderId}}",
   emailBody:
-    "Hej {{customerName}},\n\nTack för din beställning hos SimpliCity! Din betalning är bekräftad.\n\nOrdernummer: {{orderId}}\nTotalsumma: {{total}}\n\nVi förbereder din leverans och återkommer vid behov.",
+    "Hej {{customerName}},\n\nTack för din beställning hos SimpliCity! Din betalning är bekräftad.\n\nOrdernummer: {{orderId}}\nTotalsumma: {{total}}\nProdukter: {{cartSummary}}\n\nVi förbereder din leverans och återkommer vid behov.",
 };
 
 export type StoreConfig = {
@@ -305,6 +344,8 @@ export type StoreConfig = {
   products: ConfigProduct[];
   reviews: ConfigReview[];
   discounts: ConfigDiscount[];
+  /** Automatic campaign offers ("3 för 2", "Köp 2 få 100 kr", etc.). */
+  campaignRules: CampaignRule[];
   /** Product IDs manually marked as bestsellers (Bästsäljare). */
   bestSellerProductIds: string[];
   /** Product IDs manually marked as premium. */
@@ -440,6 +481,7 @@ export const DEFAULT_STORE_CONFIG: StoreConfig = {
   products: [],
   reviews: DEFAULT_REVIEWS,
   discounts: [],
+  campaignRules: [],
   bestSellerProductIds: [],
   premiumProductIds: [],
   faqs: [],
@@ -785,6 +827,98 @@ export function calculateStoreShipping(
   return resolveShippingFee(config);
 }
 
+function isCampaignEligibleLine(
+  item: OrderLineItem,
+  productScope: string,
+): boolean {
+  if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID) return false;
+  if (productScope === "all") return true;
+  return item.productId === productScope;
+}
+
+/** Expand line items into individual unit prices for bundle math. */
+function expandEligibleUnitPrices(
+  lineItems: OrderLineItem[],
+  productScope: string,
+): number[] {
+  const prices: number[] = [];
+  for (const item of lineItems) {
+    if (!isCampaignEligibleLine(item, productScope)) continue;
+    for (let i = 0; i < item.quantity; i += 1) {
+      prices.push(item.unitPrice);
+    }
+  }
+  return prices;
+}
+
+export function calculateCampaignRuleAmount(
+  rule: CampaignRule,
+  lineItems: OrderLineItem[],
+): number {
+  if (!rule.active) return 0;
+
+  if (rule.type === "quantity_flat") {
+    const buyQuantity = Math.max(1, Math.floor(rule.buyQuantity) || 1);
+    const discountAmount = Math.max(0, Math.round(rule.discountAmount) || 0);
+    if (discountAmount <= 0) return 0;
+
+    const eligibleQty = lineItems.reduce((sum, item) => {
+      if (!isCampaignEligibleLine(item, rule.productScope)) return sum;
+      return sum + item.quantity;
+    }, 0);
+
+    if (eligibleQty < buyQuantity) return 0;
+    return Math.floor(eligibleQty / buyQuantity) * discountAmount;
+  }
+
+  // Bundle: "3 för 2" — cheapest (bundleBuy - bundlePay) items free per set
+  const bundleBuy = Math.max(2, Math.floor(rule.bundleBuy) || 2);
+  const bundlePay = Math.max(1, Math.floor(rule.bundlePay) || bundleBuy - 1);
+  const freePerSet = bundleBuy - bundlePay;
+  if (freePerSet <= 0) return 0;
+
+  const unitPrices = expandEligibleUnitPrices(lineItems, rule.productScope).sort(
+    (a, b) => a - b,
+  );
+  const freeCount = Math.floor(unitPrices.length / bundleBuy) * freePerSet;
+  if (freeCount <= 0) return 0;
+
+  return unitPrices.slice(0, freeCount).reduce((sum, price) => sum + price, 0);
+}
+
+export function calculateStoreCampaignDiscounts(
+  config: StoreConfig,
+  lineItems: OrderLineItem[],
+): { campaignDiscount: number; appliedCampaigns: AppliedCampaign[] } {
+  const rules = Array.isArray(config.campaignRules) ? config.campaignRules : [];
+  const appliedCampaigns: AppliedCampaign[] = [];
+  let campaignDiscount = 0;
+
+  for (const rule of rules) {
+    if (!rule.active) continue;
+    const amount = calculateCampaignRuleAmount(rule, lineItems);
+    if (amount <= 0) continue;
+    appliedCampaigns.push({
+      id: rule.id,
+      name: formatCampaignRuleName(rule),
+      amount,
+    });
+    campaignDiscount += amount;
+  }
+
+  const subtotal = lineItems.reduce((sum, item) => sum + item.lineSubtotal, 0);
+  if (campaignDiscount > subtotal) {
+    // Scale down proportionally if over-discounted (edge case with stacked rules)
+    const scale = subtotal / campaignDiscount;
+    for (const entry of appliedCampaigns) {
+      entry.amount = Math.round(entry.amount * scale);
+    }
+    campaignDiscount = appliedCampaigns.reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  return { campaignDiscount, appliedCampaigns };
+}
+
 export function calculateStoreOrderTotal(
   config: StoreConfig,
   cart: CartItem[],
@@ -795,6 +929,9 @@ export function calculateStoreOrderTotal(
       subtotal: 0,
       shipping: 0,
       discount: 0,
+      campaignDiscount: 0,
+      promoDiscount: 0,
+      appliedCampaigns: [] as AppliedCampaign[],
       appliedDiscountCode: null,
       total: 0,
       totalQuantity: 0,
@@ -834,7 +971,13 @@ export function calculateStoreOrderTotal(
   const subtotal = lineItems.reduce((sum, item) => sum + item.lineSubtotal, 0);
   const totalQuantity = lineItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  const preliminaryShipping = calculateStoreShipping(config, subtotal);
+  const { campaignDiscount, appliedCampaigns } = calculateStoreCampaignDiscounts(
+    config,
+    lineItems,
+  );
+
+  const afterCampaign = Math.max(0, subtotal - campaignDiscount);
+  const preliminaryShipping = calculateStoreShipping(config, afterCampaign);
 
   const validation = discountCodeInput
     ? validateStoreDiscount(config, discountCodeInput, cart)
@@ -843,10 +986,28 @@ export function calculateStoreOrderTotal(
   const discountEntry =
     validation?.valid === true ? validation.discount : undefined;
 
-  const discount = discountEntry
-    ? calculateStoreDiscountAmount(discountEntry, lineItems, preliminaryShipping)
+  // Promo codes apply to remaining basket after automatic campaigns
+  const promoLineItems =
+    campaignDiscount > 0
+      ? lineItems.map((item) => ({
+          ...item,
+          // Scale line subtotals so percent/flat promo sees post-campaign basket
+          lineSubtotal:
+            subtotal > 0
+              ? Math.round(item.lineSubtotal * (afterCampaign / subtotal))
+              : 0,
+        }))
+      : lineItems;
+
+  const promoDiscount = discountEntry
+    ? calculateStoreDiscountAmount(
+        discountEntry,
+        promoLineItems,
+        preliminaryShipping,
+      )
     : 0;
 
+  const discount = campaignDiscount + promoDiscount;
   const basketSubtotal = Math.max(0, subtotal - discount);
   const shipping = calculateStoreShipping(config, basketSubtotal);
   const appliedDiscountCode = discountEntry?.code ?? null;
@@ -856,6 +1017,9 @@ export function calculateStoreOrderTotal(
     subtotal,
     shipping,
     discount,
+    campaignDiscount,
+    promoDiscount,
+    appliedCampaigns,
     appliedDiscountCode,
     total,
     totalQuantity,

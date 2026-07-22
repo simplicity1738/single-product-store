@@ -8,12 +8,15 @@ import {
   DEFAULT_SHIPPING_FEE,
   DEFAULT_STORE_CONFIG,
   DEFAULT_ORDER_EMAIL_TEMPLATES,
+  formatCampaignRuleName,
   normalizeBanner,
   normalizeDiscountCode,
   normalizeInfluencerHandle,
   normalizeTelegramHandle,
   parseVariantsInput,
   resolveConfigVariants,
+  type CampaignOfferType,
+  type CampaignRule,
   type ConfigDiscount,
   type ConfigFaq,
   type ConfigProduct,
@@ -52,6 +55,40 @@ function normalizeDiscount(entry: Partial<ConfigDiscount>): ConfigDiscount {
       ? Math.max(0, Math.floor(Number(entry.usageCount)))
       : 0,
   };
+}
+
+function normalizeCampaignRule(entry: Partial<CampaignRule>): CampaignRule {
+  const type: CampaignOfferType =
+    entry.type === "bundle" ? "bundle" : "quantity_flat";
+  const buyQuantity = Number.isFinite(entry.buyQuantity)
+    ? Math.max(1, Math.floor(Number(entry.buyQuantity)))
+    : 2;
+  const discountAmount = Number.isFinite(entry.discountAmount)
+    ? Math.max(0, Math.round(Number(entry.discountAmount)))
+    : 0;
+  const bundleBuy = Number.isFinite(entry.bundleBuy)
+    ? Math.max(2, Math.floor(Number(entry.bundleBuy)))
+    : 3;
+  const bundlePay = Number.isFinite(entry.bundlePay)
+    ? Math.max(1, Math.floor(Number(entry.bundlePay)))
+    : Math.max(1, bundleBuy - 1);
+
+  const rule: CampaignRule = {
+    id: entry.id?.trim() || `campaign-${Date.now()}`,
+    name: "",
+    type,
+    active: Boolean(entry.active),
+    productScope: entry.productScope?.trim() || "all",
+    buyQuantity,
+    discountAmount,
+    bundleBuy,
+    bundlePay: Math.min(bundlePay, bundleBuy - 1),
+  };
+  rule.name = formatCampaignRuleName({
+    ...rule,
+    name: typeof entry.name === "string" ? entry.name : "",
+  });
+  return rule;
 }
 
 function normalizeInfluencer(entry: Partial<InfluencerPartner>): InfluencerPartner {
@@ -235,6 +272,9 @@ function mergeStoreConfig(
     discounts: Array.isArray(parsed.discounts)
       ? parsed.discounts.map((entry) => normalizeDiscount(entry))
       : [],
+    campaignRules: Array.isArray(parsed.campaignRules)
+      ? parsed.campaignRules.map((entry) => normalizeCampaignRule(entry))
+      : [],
     bestSellerProductIds: normalizeProductIdList(parsed.bestSellerProductIds),
     premiumProductIds: normalizeProductIdList(parsed.premiumProductIds),
     faqs: Array.isArray(parsed.faqs)
@@ -286,6 +326,9 @@ export async function writeStoreConfig(config: StoreConfig): Promise<void> {
     reviews: Array.isArray(config.reviews) ? config.reviews : DEFAULT_REVIEWS,
     discounts: Array.isArray(config.discounts)
       ? config.discounts.map((entry) => normalizeDiscount(entry))
+      : [],
+    campaignRules: Array.isArray(config.campaignRules)
+      ? config.campaignRules.map((entry) => normalizeCampaignRule(entry))
       : [],
     bestSellerProductIds: normalizeProductIdList(config.bestSellerProductIds),
     premiumProductIds: normalizeProductIdList(config.premiumProductIds),
