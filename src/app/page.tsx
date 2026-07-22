@@ -13,12 +13,12 @@ export default async function Home() {
 
   return (
     <div className="min-h-full bg-white text-zinc-900">
-      {/* ONDO: light cream header bar sits above dark cinematic hero */}
+      {/* ONDO: cream header → cinematic hero → quality trust band */}
       <Header />
       <Hero siteSettings={config.siteSettings} />
+      <QualitySection />
 
       <main>
-        <QualitySection />
         <Products />
         <OrderForm />
         <ContactForm />

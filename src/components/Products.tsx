@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Cormorant_Garamond } from "next/font/google";
 import ProductImage from "@/components/ProductImage";
 import StrengthSelector from "@/components/StrengthSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -30,6 +31,12 @@ import {
   getVariantLabelForSelection,
   resolveVariantStockDisplay,
 } from "@/lib/stock-management";
+
+const qualityDisplay = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
 
 const selectClassName =
   "mt-2 w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-9 text-sm font-medium text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
@@ -288,46 +295,54 @@ export function QualitySection() {
   return (
     <section
       id="quality"
-      className="scroll-mt-24 border-y border-rose-900/20 bg-zinc-900 py-20 text-white sm:py-24"
+      className="scroll-mt-24 bg-[#0F0C0B] px-6 py-16 md:px-12 md:py-24"
     >
-      <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-rose-400">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
+        {/* Left — typography & branding */}
+        <div className="lg:col-span-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
             {t.quality.eyebrow}
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2
+            className={`${qualityDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white leading-[1.15] md:text-5xl`}
+          >
             {t.quality.title}
           </h2>
-          <p className="mt-6 text-lg leading-relaxed text-zinc-300">
+          <p className="mt-4 max-w-lg text-sm leading-relaxed text-[#CFC4BD] md:text-base">
             {t.quality.description}
           </p>
         </div>
-        <div className="rounded-2xl border border-zinc-700 bg-zinc-800/50 p-8">
-          <ul className="space-y-5">
-            {t.quality.checklist.map((item) => (
-              <li key={item} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-400/20 text-rose-400">
-                  <svg
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={3}
-                    aria-hidden
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12.75l6 6 9-13.5"
-                    />
-                  </svg>
-                </span>
-                <span className="text-sm leading-relaxed text-zinc-200">
-                  {item}
-                </span>
-              </li>
-            ))}
-          </ul>
+
+        {/* Right — frosted glass checklist card (cream checkmarks, no pink) */}
+        <div className="lg:col-span-6">
+          <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md md:p-8">
+            <ul className="space-y-4">
+              {t.quality.checklist.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-center gap-3 text-sm font-medium text-neutral-200 md:text-base"
+                >
+                  <span className="flex shrink-0 items-center justify-center rounded-full bg-[#ECE5D8]/15 p-1.5 text-[#ECE5D8]">
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      aria-hidden
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M4.5 12.75l6 6 9-13.5"
+                      />
+                    </svg>
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

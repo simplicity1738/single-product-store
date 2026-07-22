@@ -55,7 +55,7 @@ function HeroShowcase({ alt }: { alt: string }) {
   return (
     <div
       ref={sectionRef}
-      className="relative my-4 flex w-full items-center justify-center bg-transparent lg:my-0 lg:h-full lg:max-h-[70vh] lg:justify-end [perspective:1400px]"
+      className="relative mx-auto my-4 flex w-full max-w-[90%] items-center justify-center bg-transparent sm:max-w-[450px] lg:mx-0 lg:my-0 lg:h-full lg:max-h-[70vh] lg:max-w-none lg:justify-end [perspective:1400px]"
     >
       <motion.div
         style={{
@@ -73,8 +73,8 @@ function HeroShowcase({ alt }: { alt: string }) {
           width={1600}
           height={1280}
           priority
-          sizes="(max-width: 640px) 320px, (max-width: 1024px) 450px, 58vw"
-          className="h-auto w-full max-w-[320px] bg-transparent object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.45)] sm:max-w-[450px] lg:max-h-full lg:max-w-none lg:scale-105 lg:object-right"
+          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 450px, 58vw"
+          className="h-auto max-h-[320px] w-full object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.45)] sm:max-h-[420px] lg:max-h-full lg:scale-105 lg:object-right"
         />
       </motion.div>
     </div>
@@ -122,36 +122,41 @@ export default function Hero({ siteSettings }: HeroProps) {
       <HeroThemeDecorations theme={campaignTheme} />
 
       {/* Mobile: natural scroll height · Desktop: viewport-fit under sand navbar */}
-      <div className="relative z-10 flex min-h-[100dvh] h-auto w-full flex-col justify-between p-4 sm:p-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden lg:p-12">
-        <div className="mx-auto my-auto flex w-full max-w-7xl flex-col items-center gap-6 lg:grid lg:grid-cols-12 lg:gap-8">
-          {/* Copy & CTA — stacks above showcase on mobile */}
-          <div className="z-10 w-full max-w-lg lg:col-span-5">
+      <div className="relative z-10 flex h-auto min-h-[100dvh] w-full flex-col justify-between p-4 sm:p-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden lg:p-12">
+        {/*
+          Mobile order via flex + contents:
+          1 headline → 2 subtext → 3 showcase → 4 CTA
+          Desktop: lg:grid left copy col-span-5 / right showcase col-span-7
+        */}
+        <div className="mx-auto my-auto flex w-full max-w-7xl flex-col items-center gap-2 lg:grid lg:grid-cols-12 lg:items-center lg:gap-8">
+          {/* contents on mobile so children participate in parent flex order */}
+          <div className="contents w-full max-w-lg lg:col-span-5 lg:flex lg:flex-col lg:items-start">
             <h1
-              className={`${heroDisplay.className} text-3xl font-serif tracking-tight text-white leading-[1.1] sm:text-4xl md:text-6xl lg:text-7xl`}
+              className={`${heroDisplay.className} order-1 w-full text-3xl font-serif tracking-tight text-white leading-[1.1] sm:text-4xl md:text-6xl lg:text-7xl`}
             >
               {headline}
             </h1>
 
-            <p className="mt-3 max-w-md text-xs leading-relaxed text-[#D1C5BD] sm:text-sm md:text-base">
+            <p className="order-2 mt-3 w-full max-w-md text-xs leading-relaxed text-[#D1C5BD] sm:text-sm md:text-base">
               {bodyCopy}
             </p>
 
             <a
               href="#products"
-              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#ECE5D8] px-6 py-3 text-xs font-medium uppercase tracking-wider text-[#0F0C0B] transition-all hover:bg-white sm:w-auto"
+              className="order-4 my-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#ECE5D8] px-6 py-3.5 text-center text-xs font-medium uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white sm:w-auto"
             >
               {ctaLabel}
               <span aria-hidden>→</span>
             </a>
           </div>
 
-          {/* Showcase — below text on mobile, right column on desktop */}
-          <div className="relative flex w-full items-center justify-center lg:col-span-7 lg:h-full lg:max-h-[70vh] lg:justify-end">
+          {/* Showcase — order-3 on mobile (between subtext & CTA), right column on desktop */}
+          <div className="relative order-3 w-full lg:col-span-7 lg:h-full lg:max-h-[70vh] lg:justify-end">
             <HeroShowcase alt={`${t.brand} product showcase`} />
           </div>
         </div>
 
-        {/* Trust badges — compact scrollable row on mobile */}
+        {/* 5th — Trust badges */}
         <div className="mt-6 flex w-full flex-row items-center justify-between gap-4 overflow-x-auto whitespace-nowrap border-t border-white/10 pt-4 text-[10px] uppercase tracking-widest text-[#A89A92] sm:gap-8 sm:text-[11px] lg:mt-auto lg:justify-start">
           {trustItems.map((item) => (
             <div key={item.key} className="flex shrink-0 items-center gap-2">
