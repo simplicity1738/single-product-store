@@ -19,12 +19,12 @@ import {
 } from "@/lib/reconstitution-calculator";
 
 const pillBaseClass =
-  "rounded-xl border px-3 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-300";
+  "rounded-xl border px-3 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ECE5D8]/40";
 
 function pillClass(selected: boolean): string {
   return selected
-    ? `${pillBaseClass} border-rose-300 bg-rose-50 text-rose-700 shadow-sm shadow-rose-100`
-    : `${pillBaseClass} border-rose-100 bg-white text-zinc-700 hover:border-rose-200 hover:bg-rose-50/50`;
+    ? `${pillBaseClass} border-[#ECE5D8] bg-[#ECE5D8] text-[#0F0C0B]`
+    : `${pillBaseClass} border-white/10 bg-white/5 text-white hover:border-[#ECE5D8]`;
 }
 
 type CalculatorSectionProps = {
@@ -34,8 +34,8 @@ type CalculatorSectionProps = {
 
 function CalculatorSection({ title, children }: CalculatorSectionProps) {
   return (
-    <section className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60 sm:p-6">
-      <h2 className="text-base font-bold tracking-tight text-zinc-900 sm:text-lg">
+    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-white shadow-xl backdrop-blur-md sm:p-6 md:p-8">
+      <h2 className="text-base font-semibold tracking-tight text-white sm:text-lg">
         {title}
       </h2>
       <div className="mt-4">{children}</div>
@@ -60,7 +60,7 @@ function CustomNumberInput({
 }: CustomNumberInputProps) {
   return (
     <label htmlFor={id} className="mt-4 block">
-      <span className="text-sm font-medium text-zinc-600">{label}</span>
+      <span className="text-sm font-medium text-[#CFC4BD]">{label}</span>
       <div className="relative mt-2">
         <input
           id={id}
@@ -74,9 +74,9 @@ function CustomNumberInput({
               onChange(next);
             }
           }}
-          className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 pr-14 text-sm font-semibold tabular-nums text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-14 text-sm font-semibold tabular-nums text-white outline-none transition placeholder:text-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
         />
-        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold uppercase tracking-wide text-zinc-400">
+        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
           {unit}
         </span>
       </div>
@@ -95,13 +95,13 @@ function UnitToggle({
 }) {
   return (
     <div
-      className="relative mt-4 grid max-w-xs grid-cols-2 rounded-full border border-rose-100 bg-rose-50/70 p-1"
+      className="relative mt-4 grid max-w-xs grid-cols-2 rounded-full border border-white/10 bg-white/5 p-1"
       role="group"
       aria-label={ariaLabel}
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-white shadow-sm shadow-rose-100/80 transition-transform duration-300 ease-out"
+        className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-[#ECE5D8] shadow-sm transition-transform duration-300 ease-out"
         style={{
           transform: unit === "mg" ? "translateX(0)" : "translateX(100%)",
         }}
@@ -113,7 +113,7 @@ function UnitToggle({
           onClick={() => onChange(option)}
           aria-pressed={unit === option}
           className={`relative z-10 rounded-full py-2 text-xs font-semibold uppercase tracking-wide transition-colors sm:text-sm ${
-            unit === option ? "text-rose-700" : "text-zinc-500 hover:text-rose-600"
+            unit === option ? "text-[#0F0C0B]" : "text-[#A89A92] hover:text-white"
           }`}
         >
           {option}
@@ -245,8 +245,8 @@ export default function ReconstitutionCalculator() {
                 aria-pressed={selected}
                 className={`rounded-xl border px-4 py-3 text-left text-sm transition ${
                   selected
-                    ? "border-rose-300 bg-rose-50 text-rose-700 shadow-sm shadow-rose-100"
-                    : "border-rose-100 bg-white text-zinc-600 hover:border-rose-200 hover:bg-rose-50/40"
+                    ? "border-[#ECE5D8] bg-[#ECE5D8] font-semibold text-[#0F0C0B]"
+                    : "border-white/10 bg-white/5 text-[#CFC4BD] hover:border-[#ECE5D8] hover:text-white"
                 }`}
               >
                 <span className="block font-semibold">{label}</span>
@@ -256,44 +256,44 @@ export default function ReconstitutionCalculator() {
         </div>
       </CalculatorSection>
 
-      <section className="rounded-2xl border border-rose-200/80 bg-gradient-to-br from-white via-[#FDF3F3] to-rose-50/80 p-6 shadow-lg shadow-rose-200/40 sm:p-8">
-        <h2 className="text-lg font-bold text-zinc-900">{c.resultsTitle}</h2>
+      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-white shadow-xl backdrop-blur-md sm:p-8">
+        <h2 className="text-lg font-semibold text-white">{c.resultsTitle}</h2>
 
         <dl className="mt-5 space-y-4">
-          <div className="rounded-xl border border-rose-100 bg-white/80 px-4 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+            <dt className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
               {c.resultPeptideDose}
             </dt>
-            <dd className="mt-1 text-lg font-bold tabular-nums text-zinc-900">
+            <dd className="mt-1 text-lg font-bold tabular-nums text-white">
               {hasValidInputs ? doseDisplay : c.selectValues}
             </dd>
           </div>
 
-          <div className="rounded-xl border border-rose-100 bg-white/80 px-4 py-3">
-            <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+            <dt className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
               {c.resultDrawSyringe}
             </dt>
-            <dd className="mt-1 text-lg font-bold tabular-nums text-rose-600">
+            <dd className="mt-1 text-lg font-bold tabular-nums text-[#ECE5D8]">
               {hasValidInputs
                 ? `${formatCalculatorNumber(result.units, 1)} ${c.unitsLabel}`
                 : c.selectValues}
             </dd>
-            {hasValidInputs && (
-              <p className="mt-1 text-sm font-medium text-zinc-600">
+            {hasValidInputs ? (
+              <p className="mt-1 text-sm font-medium text-[#CFC4BD]">
                 {c.resultTicks.replace(
                   "{ticks}",
                   formatCalculatorNumber(result.ticks, 1),
                 )}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-rose-100 bg-white/80 px-4 py-3">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 {c.resultVialContains}
               </dt>
-              <dd className="mt-1 text-sm font-semibold tabular-nums text-zinc-800">
+              <dd className="mt-1 text-sm font-semibold tabular-nums text-white">
                 {hasValidInputs
                   ? c.vialContainsValue
                       .replace("{mg}", formatCalculatorNumber(peptideMg, 1))
@@ -302,11 +302,11 @@ export default function ReconstitutionCalculator() {
               </dd>
             </div>
 
-            <div className="rounded-xl border border-rose-100 bg-white/80 px-4 py-3">
-              <dt className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 {c.concentration}
               </dt>
-              <dd className="mt-1 text-sm font-semibold tabular-nums text-zinc-800">
+              <dd className="mt-1 text-sm font-semibold tabular-nums text-white">
                 {hasValidInputs
                   ? `${formatCalculatorNumber(result.concentrationMgPerMl, 2)} mg/mL`
                   : c.selectValues}
@@ -315,14 +315,14 @@ export default function ReconstitutionCalculator() {
           </div>
         </dl>
 
-        {result.exceedsSyringe && (
-          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        {result.exceedsSyringe ? (
+          <p className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[#CFC4BD]">
             {c.exceedsWarning.replace("{max}", String(result.maxUnits))}
           </p>
-        )}
+        ) : null}
       </section>
 
-      <section className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60 sm:p-8">
+      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl backdrop-blur-md sm:p-8">
         <SyringeVisual
           units={result.units}
           maxUnits={result.maxUnits}
@@ -332,7 +332,7 @@ export default function ReconstitutionCalculator() {
         />
       </section>
 
-      <p className="text-xs leading-relaxed text-zinc-500">{c.disclaimer}</p>
+      <p className="text-xs leading-relaxed text-[#A89A92]">{c.disclaimer}</p>
     </div>
   );
 }

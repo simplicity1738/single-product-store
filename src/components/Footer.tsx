@@ -2,10 +2,17 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
+import { Cormorant_Garamond } from "next/font/google";
 import PaymentTrustBadges from "@/components/PaymentTrustBadges";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
 import { getSiteNavLabel, isSiteNavLinkVisible } from "@/lib/site-navigation";
+
+const footerDisplay = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
 
 export default function Footer() {
   const { locale, t } = useLanguage();
@@ -68,16 +75,18 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t border-rose-100 bg-white py-10">
+    <footer className="border-t border-white/10 bg-[#0B0908] py-12">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-8 max-w-xl rounded-2xl border border-rose-100 bg-rose-50/40 p-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+        <div className="mx-auto mb-10 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center text-white">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8]">
             Nyhetsbrev
           </p>
-          <h3 className="mt-2 text-xl font-bold text-zinc-900">
+          <h3
+            className={`${footerDisplay.className} mt-2 text-2xl font-serif text-white`}
+          >
             Bli en del av SimpliCity
           </h3>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-[#CFC4BD]">
             Få exklusiva uppdateringar och erbjudanden direkt i inkorgen.
           </p>
           <form
@@ -90,36 +99,36 @@ export default function Footer() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="din@epost.se"
-              className="flex-1 rounded-full border border-rose-200 bg-white px-5 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+              className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
             />
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full bg-rose-400 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60"
+              className="rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:opacity-60"
             >
               {isSubmitting ? "Skickar…" : "Prenumerera"}
             </button>
           </form>
-          {newsletterStatus && (
-            <p className="mt-3 text-sm text-zinc-600">{newsletterStatus}</p>
-          )}
+          {newsletterStatus ? (
+            <p className="mt-3 text-sm text-[#CFC4BD]">{newsletterStatus}</p>
+          ) : null}
         </div>
 
-        <PaymentTrustBadges className="mb-8 border-t border-rose-100 pt-8" />
+        <PaymentTrustBadges className="mb-8 border-t border-white/10 pt-8" />
 
         <nav className="mb-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           {legalLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-zinc-500 transition hover:text-rose-600"
+              className="text-xs text-[#A89A92] transition hover:text-white"
             >
               {link.label}
             </Link>
           ))}
         </nav>
-        <div className="text-center sm:text-left">
-          <p className="text-sm text-zinc-500">
+        <div className="text-center">
+          <p className="text-xs text-[#A89A92]">
             © {new Date().getFullYear()} {t.brand}. {t.footer.rights}
           </p>
         </div>
