@@ -55,7 +55,7 @@ function HeroShowcase({ alt }: { alt: string }) {
   return (
     <div
       ref={sectionRef}
-      className="relative flex w-full items-center justify-center bg-transparent [perspective:1400px]"
+      className="relative flex h-full w-full items-end justify-end bg-transparent [perspective:1400px]"
     >
       <motion.div
         style={{
@@ -65,7 +65,7 @@ function HeroShowcase({ alt }: { alt: string }) {
           y: translateY,
           transformStyle: "preserve-3d",
         }}
-        className="relative z-10 flex w-full items-center justify-center bg-transparent will-change-transform"
+        className="relative z-10 flex h-full w-full items-end justify-end bg-transparent will-change-transform"
       >
         <Image
           src="/simplicity-hero-showcase.png"
@@ -73,8 +73,8 @@ function HeroShowcase({ alt }: { alt: string }) {
           width={1600}
           height={1280}
           priority
-          sizes="(max-width: 1024px) 100vw, 52vw"
-          className="h-auto max-h-[520px] w-auto bg-transparent object-contain object-center drop-shadow-[0_32px_64px_rgba(0,0,0,0.45)] lg:max-h-[600px]"
+          sizes="(max-width: 1024px) 100vw, 58vw"
+          className="h-full w-full scale-105 bg-transparent object-contain object-right-bottom drop-shadow-[0_32px_64px_rgba(0,0,0,0.45)] lg:scale-110"
         />
       </motion.div>
     </div>
@@ -104,16 +104,17 @@ export default function Hero({ siteSettings }: HeroProps) {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[#1F1917]">
-      {/* ONDO warm taupe studio spotlight — no pink undertones */}
+    <section className="relative overflow-hidden bg-[#120E0D]">
+      {/* ONDO cinematic studio lighting: dark left → warm top-right beam → dark floor */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse at 65% 40%, rgba(75, 62, 56, 0.45) 0%, rgba(31, 25, 23, 0.98) 75%),
-            linear-gradient(90deg, #181412 0%, transparent 45%),
-            linear-gradient(180deg, transparent 55%, #161210 100%)
+            radial-gradient(ellipse at 85% 15%, rgba(185, 162, 145, 0.45) 0%, rgba(120, 100, 88, 0.25) 45%, rgba(18, 14, 13, 0.98) 80%),
+            linear-gradient(90deg, #0F0C0B 0%, transparent 42%),
+            linear-gradient(180deg, transparent 55%, #0A0807 100%),
+            #120E0D
           `,
         }}
       />
@@ -121,33 +122,33 @@ export default function Hero({ siteSettings }: HeroProps) {
       <HeroThemeDecorations theme={campaignTheme} />
 
       <div className="relative z-10 mx-auto flex min-h-[min(88vh,900px)] max-w-7xl flex-col justify-center px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-10">
-        <div className="flex w-full flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-          {/* Left — CMS-bound copy */}
-          <div className="relative z-20 w-full lg:w-[48%] lg:shrink-0">
+        <div className="flex w-full flex-col items-center gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-4">
+          {/* Left — dark-aligned typography */}
+          <div className="relative z-20 w-full lg:w-[42%] lg:shrink-0 lg:pb-6">
             <div className="max-w-xl">
               <h1
-                className={`${heroDisplay.className} text-5xl font-serif font-semibold tracking-tight text-white leading-[1.08] md:text-6xl lg:text-7xl`}
+                className={`${heroDisplay.className} text-5xl font-serif tracking-tight text-white leading-[1.05] lg:text-7xl`}
               >
                 {headline}
               </h1>
 
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-[#D4C8C2] md:text-base">
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-[#CFC4BD] md:text-base">
                 {bodyCopy}
               </p>
 
               <a
                 href="#products"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#F5F1EA] px-7 py-3 text-xs font-medium uppercase tracking-wider text-[#1F1917] shadow-md transition-all hover:bg-white"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#EAE3D5] px-7 py-3 text-xs font-medium uppercase tracking-wider text-[#120E0D] shadow-md transition-all hover:bg-white"
               >
                 {ctaLabel}
                 <span aria-hidden>→</span>
               </a>
 
-              {/* Single-line trust badges */}
-              <div className="mt-10 flex flex-row flex-wrap items-center gap-8 whitespace-nowrap border-t border-white/10 pt-6 text-[11px] uppercase tracking-widest text-[#BDB0A8]">
+              {/* Single-line trust badges — bottom left */}
+              <div className="mt-10 flex flex-row items-center gap-8 whitespace-nowrap border-t border-white/10 pt-6 text-[11px] uppercase tracking-widest text-[#A89A92]">
                 {trustItems.map((item) => (
                   <div key={item.key} className="flex items-center gap-2.5">
-                    <span className="text-[#BDB0A8]" aria-hidden>
+                    <span className="text-[#A89A92]" aria-hidden>
                       {item.icon === "shield" ? (
                         <svg
                           className="h-3.5 w-3.5"
@@ -199,8 +200,8 @@ export default function Hero({ siteSettings }: HeroProps) {
             </div>
           </div>
 
-          {/* Right — contained showcase, no crop */}
-          <div className="relative z-10 flex w-full items-center justify-center p-4 lg:w-[52%] lg:pr-8">
+          {/* Right — cinematic tall showcase into warm light beam */}
+          <div className="relative z-10 flex h-[580px] w-full items-end justify-end lg:h-[680px] lg:w-[58%]">
             <HeroShowcase alt={`${t.brand} product showcase`} />
           </div>
         </div>

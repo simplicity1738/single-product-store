@@ -13,11 +13,9 @@ export default async function Home() {
 
   return (
     <div className="min-h-full bg-white text-zinc-900">
-      {/* Full-bleed ONDO taupe-espresso canvas — header + hero share lighting */}
-      <div className="relative bg-[#1F1917]">
-        <Header />
-        <Hero siteSettings={config.siteSettings} />
-      </div>
+      {/* ONDO: light cream header bar sits above dark cinematic hero */}
+      <Header />
+      <Hero siteSettings={config.siteSettings} />
 
       <main>
         <QualitySection />

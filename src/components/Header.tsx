@@ -31,7 +31,7 @@ function NavLinkItem({
   label: string;
 }) {
   const className =
-    "text-[10px] font-medium uppercase tracking-[0.22em] text-neutral-200/80 transition-colors hover:text-white sm:text-[11px]";
+    "text-[10px] font-medium uppercase tracking-[0.22em] text-[#1F1917]/75 transition-colors hover:text-[#1F1917] sm:text-[11px]";
 
   if (isStandalonePage(href)) {
     return (
@@ -55,7 +55,7 @@ function BrandMark({ name }: { name: string }) {
       className="group flex flex-col items-center justify-center text-center"
       aria-label={name}
     >
-      <span className="mb-0.5 text-[#BDB0A8]" aria-hidden>
+      <span className="mb-0.5 text-[#1F1917]/70" aria-hidden>
         <svg
           viewBox="0 0 28 14"
           className="h-3 w-6"
@@ -70,7 +70,7 @@ function BrandMark({ name }: { name: string }) {
         </svg>
       </span>
       <span
-        className={`${brandDisplay.className} text-[1.35rem] font-semibold leading-none tracking-[0.04em] text-neutral-100 transition group-hover:text-white sm:text-[1.55rem]`}
+        className={`${brandDisplay.className} text-[1.35rem] font-semibold leading-none tracking-[0.04em] text-[#1F1917] transition group-hover:text-black sm:text-[1.55rem]`}
       >
         {name}
       </span>
@@ -95,7 +95,7 @@ export default function Header() {
   return (
     <>
       <AnnouncementBanner banner={banner} />
-      <header className="relative z-50 border-0 bg-transparent">
+      <header className="relative z-50 w-full border-0 bg-[#EAE3D5]">
         <div className="relative mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
           <nav className="hidden min-w-0 items-center gap-4 overflow-x-auto lg:flex xl:gap-6">
             {visibleNavLinks.map((link) => (
@@ -109,11 +109,11 @@ export default function Header() {
           </div>
 
           <div className="flex items-center justify-end gap-1.5 sm:gap-2">
-            <LanguageSwitcher variant="dark" />
+            <LanguageSwitcher variant="light" />
             <button
               type="button"
               onClick={openCart}
-              className="relative flex h-9 w-9 items-center justify-center rounded-full text-neutral-200 transition hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-[#1F1917] transition hover:bg-black/5 hover:text-black sm:h-10 sm:w-10"
               aria-label={t.cart.openCart}
             >
               <svg
@@ -131,7 +131,7 @@ export default function Header() {
                 />
               </svg>
               {cartItemCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#F5F1EA] px-1 text-[9px] font-bold text-[#1F1917]">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#1F1917] px-1 text-[9px] font-bold text-[#EAE3D5]">
                   {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               )}
@@ -140,7 +140,7 @@ export default function Header() {
         </div>
 
         {visibleNavLinks.length > 0 && (
-          <nav className="flex flex-wrap gap-x-4 gap-y-2 border-0 px-4 py-2.5 lg:hidden sm:px-6">
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 border-0 border-t border-[#1F1917]/8 px-4 py-2.5 lg:hidden sm:px-6">
             {visibleNavLinks.map((link) => (
               <NavLinkItem key={link.key} href={link.href} label={link.label} />
             ))}
