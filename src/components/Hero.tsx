@@ -55,18 +55,8 @@ function HeroShowcase({ alt }: { alt: string }) {
   return (
     <div
       ref={sectionRef}
-      className="relative flex min-h-[320px] items-center justify-center [perspective:1400px] sm:min-h-[460px] lg:min-h-[620px]"
+      className="relative flex min-h-[320px] items-center justify-center bg-transparent [perspective:1400px] sm:min-h-[460px] lg:min-h-[620px]"
     >
-      {/* Soft pink radial glow behind product — no white card */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(232,162,184,0.15) 0%, rgba(26,12,19,0) 70%)",
-        }}
-      />
-
       <motion.div
         style={{
           rotateY,
@@ -75,8 +65,9 @@ function HeroShowcase({ alt }: { alt: string }) {
           y: translateY,
           transformStyle: "preserve-3d",
         }}
-        className="relative z-10 w-full will-change-transform"
+        className="relative z-10 w-full bg-transparent will-change-transform"
       >
+        {/* Transparent containment only — no card, pad, radius, or fill */}
         <div className="relative aspect-[5/4] w-full bg-transparent">
           <Image
             src="/simplicity-hero-showcase.png"
@@ -84,7 +75,7 @@ function HeroShowcase({ alt }: { alt: string }) {
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 54vw"
-            className="bg-transparent object-contain object-center drop-shadow-[0_40px_80px_rgba(0,0,0,0.45)]"
+            className="bg-transparent object-contain object-center drop-shadow-[0_36px_70px_rgba(0,0,0,0.55)]"
           />
         </div>
       </motion.div>
@@ -116,11 +107,25 @@ export default function Hero({ siteSettings }: HeroProps) {
 
   return (
     <section className="relative overflow-hidden bg-transparent">
+      {/* ONDO directional studio lighting — subtle espresso-rose undertone */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse at 70% 30%, rgba(68, 48, 55, 0.45) 0%, rgba(22, 17, 20, 0.95) 70%),
+            linear-gradient(90deg, #120E10 0%, transparent 42%),
+            linear-gradient(180deg, transparent 55%, #0E0B0C 100%),
+            linear-gradient(270deg, #0E0B0C 0%, transparent 28%)
+          `,
+        }}
+      />
+
       <HeroThemeDecorations theme={campaignTheme} />
 
       <div className="relative z-10 mx-auto flex min-h-[min(88vh,920px)] max-w-7xl flex-col px-4 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-8 lg:pb-24 lg:pt-6">
         <div className="grid flex-1 items-center gap-10 lg:grid-cols-2 lg:gap-8 xl:gap-10">
-          {/* Left — ONDO-scale copy */}
+          {/* Left — text sits in deep shadow zone */}
           <div className="relative z-10 flex max-w-xl flex-col justify-center lg:max-w-none">
             <h1
               className={`${heroDisplay.className} text-6xl font-serif font-semibold tracking-tight text-white leading-[1.05] md:text-7xl lg:text-8xl`}
@@ -128,23 +133,23 @@ export default function Hero({ siteSettings }: HeroProps) {
               {headline}
             </h1>
 
-            <p className="mt-6 max-w-md text-base leading-relaxed text-[#F0C2D1] md:text-lg">
+            <p className="mt-6 max-w-md text-sm leading-relaxed text-[#E0D2D7] md:text-base">
               {bodyCopy}
             </p>
 
             <a
               href="#products"
-              className="mt-8 inline-flex items-center gap-3 rounded-md bg-[#FFF8FA] px-8 py-4 text-xs font-semibold uppercase tracking-widest text-[#2D1720] transition-all hover:bg-[#FCE8EF]"
+              className="mt-8 inline-flex w-fit items-center gap-3 rounded-full bg-[#F7F4EF] px-7 py-3.5 text-xs font-medium uppercase tracking-wider text-[#161114] transition-all hover:bg-white"
             >
               {ctaLabel}
               <span aria-hidden>→</span>
             </a>
 
-            {/* Trust badges — ONDO bottom bar in pink */}
-            <div className="mt-12 flex flex-wrap gap-8 border-t border-white/10 pt-12 text-xs uppercase tracking-widest text-[#E8A2B8]">
+            {/* Trust badges — ONDO line bar */}
+            <div className="mt-12 flex flex-wrap gap-8 border-t border-white/10 pt-6 text-xs uppercase tracking-widest text-[#C9B8BF]">
               {trustItems.map((item) => (
                 <div key={item.key} className="flex items-center gap-2.5">
-                  <span className="text-[#E8A2B8]" aria-hidden>
+                  <span className="text-[#C9B8BF]" aria-hidden>
                     {item.icon === "shield" ? (
                       <svg
                         className="h-4 w-4"
@@ -195,8 +200,8 @@ export default function Hero({ siteSettings }: HeroProps) {
             </div>
           </div>
 
-          {/* Right — full-bleed showcase, no card */}
-          <div className="relative z-10 lg:-mr-2 xl:-mr-4">
+          {/* Right — showcase in ambient spotlight, no wrapper card */}
+          <div className="relative z-10 bg-transparent lg:-mr-2 xl:-mr-4">
             <HeroShowcase alt={`${t.brand} product showcase`} />
           </div>
         </div>
