@@ -33,7 +33,7 @@ import {
 } from "@/lib/stock-management";
 
 const carouselArrowClassName =
-  "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-white shadow-md transition-all hover:bg-[#ECE5D8] hover:text-[#0F0C0B]";
+  "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-white shadow-md transition-all hover:bg-[#ECE5D8] hover:text-[#0F0C0B]";
 
 const variantFieldLabelClassName =
   "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#A89A92]";
@@ -65,7 +65,7 @@ export default function Products() {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeSlide, setActiveSlide] = useState(0);
 
-  function scrollCarousel(direction: "left" | "right", distance = 1000) {
+  function scrollCarousel(direction: "left" | "right", distance = 800) {
     carouselRef.current?.scrollBy({
       left: direction === "right" ? distance : -distance,
       behavior: "smooth",
@@ -193,38 +193,18 @@ export default function Products() {
   return (
     <section id="products" className="scroll-mt-24 bg-[#0F0C0B] py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-4 md:px-12">
-        <div className="mx-auto mb-6 flex max-w-7xl items-center justify-between px-0">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
-              {t.products.eyebrow}
-            </p>
-            <h2
-              className={`${productDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white md:text-5xl`}
-            >
-              {t.products.title}
-            </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#CFC4BD] md:text-base">
-              {t.products.subtitle}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
-            <button
-              type="button"
-              onClick={() => scrollCarousel("left")}
-              className={carouselArrowClassName}
-              aria-label="Scroll products left"
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollCarousel("right")}
-              className={carouselArrowClassName}
-              aria-label="Scroll products right"
-            >
-              →
-            </button>
-          </div>
+        <div className="mx-auto mb-6 max-w-7xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
+            {t.products.eyebrow}
+          </p>
+          <h2
+            className={`${productDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white md:text-5xl`}
+          >
+            {t.products.title}
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#CFC4BD] md:text-base">
+            {t.products.subtitle}
+          </p>
         </div>
 
         <div
@@ -435,7 +415,7 @@ export default function Products() {
         </div>
 
         {displayProducts.length > 1 ? (
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mt-8 flex flex-col items-center gap-4">
             <div className="flex items-center gap-2" aria-hidden>
               {displayProducts.map((product, index) => (
                 <span
@@ -448,13 +428,23 @@ export default function Products() {
                 />
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => scrollCarousel("right", 800)}
-              className="flex cursor-pointer items-center gap-2 rounded-full bg-[#ECE5D8] px-8 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-lg transition-all hover:bg-white"
-            >
-              {t.products.viewMoreProducts}
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+              <button
+                type="button"
+                onClick={() => scrollCarousel("left")}
+                className={carouselArrowClassName}
+                aria-label="Scroll products left"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollCarousel("right")}
+                className="flex h-11 cursor-pointer items-center justify-center rounded-full bg-[#ECE5D8] px-8 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-lg transition-all hover:bg-white"
+              >
+                {t.products.viewMoreProducts}
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
