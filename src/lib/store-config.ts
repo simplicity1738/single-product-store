@@ -4,6 +4,7 @@ import {
   resolveAddonByCartId,
 } from "@/lib/campaign-addons";
 import { DEFAULT_HERO_SITE_SETTINGS, type HeroFontFamily } from "@/lib/hero-settings";
+import { PRESENTATION_BUNDLE_PRODUCT_ID } from "@/lib/presentation-bundle";
 import type { CampaignTheme } from "@/lib/campaign-theme";
 import type { SiteNavigation } from "@/lib/site-navigation";
 import { DEFAULT_SITE_NAVIGATION } from "@/lib/site-navigation";
@@ -326,6 +327,19 @@ export type StoreConfig = {
     campaignTickerText: string;
     campaignProgressPercent: number;
     campaignTheme: CampaignTheme;
+    presentationBundle: {
+      enabled: boolean;
+      eyebrow: string;
+      title: string;
+      subtitle: string;
+      price: number;
+      originalPrice: number;
+      productIds: string[];
+      imagePath: string;
+      ctaLabel: string;
+      disclaimer: string;
+      unitBreakdown: string;
+    };
   };
   /** Editable labels and visibility for storefront navigation and widgets. */
   siteNavigation: SiteNavigation;
@@ -688,6 +702,9 @@ export function getProductLineLabelFromConfig(
   locale: Locale = "sv",
   campaignAddonId?: string,
 ): string {
+  if (productId === PRESENTATION_BUNDLE_PRODUCT_ID) {
+    return config.siteSettings.presentationBundle.title;
+  }
   if (productId === CAMPAIGN_ADDON_PRODUCT_ID && campaignAddonId) {
     return getCampaignAddonLabel(config.siteSettings, campaignAddonId);
   }
@@ -753,6 +770,21 @@ export function isValidStoreCartItem(
   config: StoreConfig,
   item: CartItem,
 ): boolean {
+  if (item.productId === PRESENTATION_BUNDLE_PRODUCT_ID) {
+    const bundle = config.siteSettings.presentationBundle;
+    if (!bundle.enabled) return false;
+    if (
+      item.unitPrice !== undefined &&
+      Math.round(item.unitPrice) !== Math.round(bundle.price)
+    ) {
+      return false;
+    }
+    if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+      return false;
+    }
+    return true;
+  }
+
   if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID) {
     if (!item.campaignAddonId) return false;
     const addon = resolveAddonByCartId(config.siteSettings, item.campaignAddonId);
@@ -832,6 +864,7 @@ function isCampaignEligibleLine(
   productScope: string,
 ): boolean {
   if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID) return false;
+  if (item.productId === PRESENTATION_BUNDLE_PRODUCT_ID) return false;
   if (productScope === "all") return true;
   return item.productId === productScope;
 }
@@ -943,6 +976,15 @@ export function calculateStoreOrderTotal(
   const catalog = getCatalogProducts(config);
 
   const lineItems: OrderLineItem[] = cart.map((item) => {
+    if (item.productId === PRESENTATION_BUNDLE_PRODUCT_ID) {
+      const unitPrice = config.siteSettings.presentationBundle.price;
+      return {
+        ...item,
+        unitPrice,
+        lineSubtotal: unitPrice * item.quantity,
+      };
+    }
+
     if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID && item.campaignAddonId) {
       const addon = resolveAddonByCartId(config.siteSettings, item.campaignAddonId);
       const unitPrice = addon?.price ?? 0;

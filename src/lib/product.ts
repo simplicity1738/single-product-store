@@ -1,8 +1,12 @@
 import type { ProductStockStatus } from "@/lib/product-stock";
 import { CAMPAIGN_ADDON_PRODUCT_ID, getCampaignAddonPriceWithDefaults, isKnownCampaignAddonId } from "@/lib/campaign-addons";
 import { DEFAULT_HERO_SITE_SETTINGS } from "@/lib/hero-settings";
+import {
+  PRESENTATION_BUNDLE_PRODUCT_ID,
+  DEFAULT_PRESENTATION_BUNDLE,
+} from "@/lib/presentation-bundle";
 
-export { CAMPAIGN_ADDON_PRODUCT_ID };
+export { CAMPAIGN_ADDON_PRODUCT_ID, PRESENTATION_BUNDLE_PRODUCT_ID };
 export type { ProductSaleType, ProductSaleSettings } from "@/lib/product-sale";
 
 /** SimpliCity sells one-time purchases only — no subscriptions or recurring billing. */
@@ -49,7 +53,10 @@ export function shouldShowSizeLabel(sizeLabel?: string): boolean {
 }
 
 export type CartItem = {
-  productId: ProductId | typeof CAMPAIGN_ADDON_PRODUCT_ID;
+  productId:
+    | ProductId
+    | typeof CAMPAIGN_ADDON_PRODUCT_ID
+    | typeof PRESENTATION_BUNDLE_PRODUCT_ID;
   variantMg: number;
   quantity: number;
   /** Selected variant label when product has named options. */
@@ -125,6 +132,9 @@ export function getCartItemKey(
   selectedStrength?: string,
   campaignAddonId?: string,
 ): string {
+  if (productId === PRESENTATION_BUNDLE_PRODUCT_ID) {
+    return PRESENTATION_BUNDLE_PRODUCT_ID;
+  }
   if (productId === CAMPAIGN_ADDON_PRODUCT_ID && campaignAddonId) {
     return `${productId}:${campaignAddonId}`;
   }
@@ -162,6 +172,16 @@ export function calculateOrderTotal(
   discountCodeInput?: string | null,
 ) {
   const lineItems: OrderLineItem[] = cart.map((item) => {
+    if (item.productId === PRESENTATION_BUNDLE_PRODUCT_ID) {
+      const unitPrice =
+        item.unitPrice ?? DEFAULT_PRESENTATION_BUNDLE.price;
+      return {
+        ...item,
+        unitPrice,
+        lineSubtotal: unitPrice * item.quantity,
+      };
+    }
+
     if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID && item.campaignAddonId) {
       const unitPrice = getCampaignAddonPriceWithDefaults(item.campaignAddonId);
       return {
@@ -209,6 +229,13 @@ export function calculateOrderTotal(
 }
 
 export function isValidCartItem(item: CartItem): boolean {
+  if (item.productId === PRESENTATION_BUNDLE_PRODUCT_ID) {
+    if (!Number.isFinite(item.quantity) || item.quantity < 1 || item.quantity > 99) {
+      return false;
+    }
+    return true;
+  }
+
   if (item.productId === CAMPAIGN_ADDON_PRODUCT_ID) {
     if (
       !item.campaignAddonId ||

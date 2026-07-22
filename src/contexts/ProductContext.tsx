@@ -14,6 +14,7 @@ import {
   getCampaignAddonPrice,
   isKnownCampaignAddonId,
 } from "@/lib/campaign-addons";
+import { PRESENTATION_BUNDLE_PRODUCT_ID } from "@/lib/presentation-bundle";
 import {
   loadCartFromStorage,
   saveCartToStorage,
@@ -37,6 +38,7 @@ type ProductContextValue = {
   setCardVariantMg: (productId: string, mg: number) => void;
   getCardVariantMg: (productId: string) => number;
   addToCart: (productId: string, variantMg?: number, selectedStrength?: string) => void;
+  addPresentationBundle: () => void;
   setCampaignAddonSelected: (addonId: string, selected: boolean) => void;
   isCampaignAddonSelected: (addonId: string) => boolean;
   updateCartQuantity: (
@@ -184,6 +186,43 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     [catalogProducts, stockManagement],
   );
 
+  const addPresentationBundle = useCallback(() => {
+    const bundle = siteSettings.presentationBundle;
+    if (!bundle.enabled || bundle.price <= 0) return;
+
+    const key = getCartItemKey(PRESENTATION_BUNDLE_PRODUCT_ID, 0);
+
+    setCart((current) => {
+      const existingIndex = current.findIndex((item) =>
+        cartItemMatchesKey(item, key),
+      );
+
+      if (existingIndex >= 0) {
+        return current.map((item, index) =>
+          index === existingIndex
+            ? {
+                ...item,
+                quantity: Math.min(99, item.quantity + 1),
+                unitPrice: bundle.price,
+              }
+            : item,
+        );
+      }
+
+      return [
+        ...current,
+        {
+          productId: PRESENTATION_BUNDLE_PRODUCT_ID,
+          variantMg: 0,
+          quantity: 1,
+          unitPrice: bundle.price,
+        },
+      ];
+    });
+
+    setIsCartOpen(true);
+  }, [siteSettings.presentationBundle]);
+
   const setCampaignAddonSelected = useCallback(
     (addonId: string, selected: boolean) => {
       if (!isKnownCampaignAddonId(siteSettings, addonId)) return;
@@ -254,7 +293,10 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         }
 
         let maxQuantity = 99;
-        if (productId !== CAMPAIGN_ADDON_PRODUCT_ID) {
+        if (
+          productId !== CAMPAIGN_ADDON_PRODUCT_ID &&
+          productId !== PRESENTATION_BUNDLE_PRODUCT_ID
+        ) {
           const product = catalogProducts.find(
             (entry) => entry.id === productId,
           );
@@ -299,6 +341,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       setCardVariantMg,
       getCardVariantMg,
       addToCart,
+      addPresentationBundle,
       setCampaignAddonSelected,
       isCampaignAddonSelected,
       updateCartQuantity,
@@ -313,6 +356,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
       setCardVariantMg,
       getCardVariantMg,
       addToCart,
+      addPresentationBundle,
       setCampaignAddonSelected,
       isCampaignAddonSelected,
       updateCartQuantity,

@@ -4,6 +4,10 @@ import {
   type CampaignTheme,
 } from "@/lib/campaign-theme";
 import type { StoreConfig } from "@/lib/store-config";
+import {
+  DEFAULT_PRESENTATION_BUNDLE,
+  normalizePresentationBundle,
+} from "@/lib/presentation-bundle";
 
 export type HeroFontFamily = "sans" | "serif" | "mono";
 
@@ -84,6 +88,7 @@ export const DEFAULT_HERO_SITE_SETTINGS: SiteSettings = {
   campaignTickerText: "🔥 Kampanjen slutar snart — begränsat lager kvar!",
   campaignProgressPercent: 85,
   campaignTheme: "summer" as CampaignTheme,
+  presentationBundle: DEFAULT_PRESENTATION_BUNDLE,
 };
 
 function normalizeFontSize(
@@ -285,6 +290,9 @@ export function normalizeSiteSettings(
       input?.campaignProgressPercent ?? defaults.campaignProgressPercent,
     ),
     campaignTheme: normalizeCampaignTheme(input?.campaignTheme),
+    presentationBundle: normalizePresentationBundle(
+      input?.presentationBundle ?? defaults.presentationBundle,
+    ),
   };
 }
 

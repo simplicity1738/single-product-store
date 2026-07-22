@@ -6,6 +6,7 @@ import type { StoreConfig } from "@/lib/store-config";
 import { DEFAULT_ORDER_EMAIL_TEMPLATES } from "@/lib/store-config";
 import { normalizeSiteSettings } from "@/lib/hero-settings";
 import HeroCampaignForm from "@/components/admin/HeroCampaignForm";
+import BundleSettingsForm from "@/components/admin/BundleSettingsForm";
 import {
   normalizeSiteNavigation,
   SITE_NAV_ADMIN_META,
@@ -176,6 +177,33 @@ export default function AdminSiteSettingsPage() {
                 siteSettings={siteSettings}
                 products={config.products}
                 onChange={setSiteSettings}
+              />
+            </div>
+          )}
+        </section>
+
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
+            Bundle / Set Settings
+          </h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
+            Fast paket för lagerrensning — admin väljer innehållet, kunden
+            lägger till hela setet som en rad.
+          </p>
+
+          {isLoading || !config ? (
+            <p className="mt-6 text-sm text-[#A89A92]">Laddar paketinställningar…</p>
+          ) : (
+            <div className="mt-6">
+              <BundleSettingsForm
+                value={siteSettings.presentationBundle}
+                products={config.products}
+                onChange={(presentationBundle) =>
+                  setSiteSettings((current) => ({
+                    ...current,
+                    presentationBundle,
+                  }))
+                }
               />
             </div>
           )}

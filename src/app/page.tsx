@@ -11,13 +11,13 @@ export default async function Home() {
   const config = await readStoreConfig();
 
   return (
-    <div className="min-h-full bg-white text-zinc-900">
+    <div className="min-h-full bg-[#0F0C0B] text-white">
       {/* ONDO: cream header → cinematic hero → quality → products → bundle → checkout → reviews */}
       <Header />
       <Hero siteSettings={config.siteSettings} />
       <QualitySection />
 
-      <main>
+      <main className="bg-[#0F0C0B]">
         <Products />
         <BundleSection />
         <OrderForm />

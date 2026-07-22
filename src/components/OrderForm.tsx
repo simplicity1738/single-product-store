@@ -17,6 +17,7 @@ import StripeCheckoutStep from "@/components/StripeCheckoutStep";
 import { formatCurrency } from "@/lib/product";
 import type { OrderFormData } from "@/lib/order";
 import { CAMPAIGN_ADDON_PRODUCT_ID } from "@/lib/campaign-addons";
+import { PRESENTATION_BUNDLE_PRODUCT_ID } from "@/lib/presentation-bundle";
 import {
   getMaxOrderableQuantity,
   getVariantLabelForSelection,
@@ -365,14 +366,19 @@ export default function OrderForm() {
                       line.campaignAddonId,
                     );
                     const productImage =
-                      catalogProducts.find(
-                        (product) => product.id === line.productId,
-                      )?.image ?? "/logo.png";
+                      line.productId === PRESENTATION_BUNDLE_PRODUCT_ID
+                        ? (storeConfig.siteSettings.presentationBundle
+                            .imagePath ||
+                          "/simplicity-presentation-set.png")
+                        : (catalogProducts.find(
+                            (product) => product.id === line.productId,
+                          )?.image ?? "/logo.png");
                     const catalogProduct = catalogProducts.find(
                       (product) => product.id === line.productId,
                     );
                     const maxQuantity =
                       line.productId === CAMPAIGN_ADDON_PRODUCT_ID ||
+                      line.productId === PRESENTATION_BUNDLE_PRODUCT_ID ||
                       !catalogProduct
                         ? 99
                         : getMaxOrderableQuantity(
