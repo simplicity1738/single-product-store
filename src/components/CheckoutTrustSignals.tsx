@@ -57,7 +57,7 @@ type CheckoutTrustSignalsProps = {
   className?: string;
 };
 
-/** Compact ONDO 2×2 trust grid + PostNord shipping badge for checkout/cart. */
+/** Compact ONDO 2×2 trust grid + PostNord — for dark checkout summary only. */
 export default function CheckoutTrustSignals({
   className = "",
 }: CheckoutTrustSignalsProps) {
@@ -72,17 +72,14 @@ export default function CheckoutTrustSignals({
 
   return (
     <div
-      className={`rounded-2xl border border-white/10 bg-[#0F0C0B] p-4 ${className}`}
+      className={`mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 ${className}`}
     >
       <div className="grid grid-cols-2 gap-3">
         {signals.map((signal) => (
-          <div
-            key={signal.key}
-            className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3"
-          >
-            <span className="shrink-0 rounded-lg bg-[#ECE5D8]/10 p-2 text-[#ECE5D8]">
+          <div key={signal.key} className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-[#ECE5D8]/10 text-[#ECE5D8]">
               <svg
-                className="h-3.5 w-3.5"
+                className="h-4 w-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -93,10 +90,8 @@ export default function CheckoutTrustSignals({
               </svg>
             </span>
             <div className="min-w-0">
-              <p className="text-xs font-semibold tracking-wide text-white">
-                {signal.title}
-              </p>
-              <p className="mt-0.5 text-[10px] leading-tight text-[#CFC4BD]">
+              <p className="text-xs font-semibold text-white">{signal.title}</p>
+              <p className="mt-0.5 text-[11px] leading-snug text-[#CFC4BD]">
                 {signal.description}
               </p>
             </div>

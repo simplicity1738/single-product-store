@@ -2,7 +2,6 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Products, { QualitySection } from "@/components/Products";
 import OrderForm from "@/components/OrderForm";
-import TrustBar from "@/components/TrustBar";
 import Reviews from "@/components/Reviews";
 import Footer from "@/components/Footer";
 import { readStoreConfig } from "@/lib/store-config.server";
@@ -12,7 +11,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-full bg-white text-zinc-900">
-      {/* ONDO: cream header → cinematic hero → quality trust band */}
+      {/* ONDO: cream header → cinematic hero → quality → products → checkout → reviews */}
       <Header />
       <Hero siteSettings={config.siteSettings} />
       <QualitySection />
@@ -20,7 +19,6 @@ export default async function Home() {
       <main>
         <Products />
         <OrderForm />
-        <TrustBar />
         <Reviews />
       </main>
       <Footer />

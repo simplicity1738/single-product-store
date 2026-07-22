@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Cormorant_Garamond } from "next/font/google";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useProductSelection } from "@/contexts/ProductContext";
 import { useStoreConfig } from "@/contexts/StoreConfigContext";
@@ -13,27 +14,40 @@ import CheckoutMethodSelector, {
   type CheckoutPaymentChoice,
 } from "@/components/CheckoutMethodSelector";
 import StripeCheckoutStep from "@/components/StripeCheckoutStep";
-import {
-  formatCurrency,
-} from "@/lib/product";
+import { formatCurrency } from "@/lib/product";
 import type { OrderFormData } from "@/lib/order";
-import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
 import { CAMPAIGN_ADDON_PRODUCT_ID } from "@/lib/campaign-addons";
 import {
   getMaxOrderableQuantity,
   getVariantLabelForSelection,
 } from "@/lib/stock-management";
 
+const checkoutDisplay = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
 const inputClassName =
-  "w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
+  "w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-[#ECE5D8] focus:outline-none";
+
+const glassCardClassName =
+  "rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-white shadow-xl backdrop-blur-md sm:p-8";
 
 type CheckoutStep = "details" | "method" | "payment";
 
 export default function OrderForm() {
   const { locale, t } = useLanguage();
   const { cart, updateCartQuantity } = useProductSelection();
-  const { calculateOrderTotal, getLineLabel, validateDiscount, catalogProducts, storeConfig, siteNavigation, stockManagement } =
-    useStoreConfig();
+  const {
+    calculateOrderTotal,
+    getLineLabel,
+    validateDiscount,
+    catalogProducts,
+    storeConfig,
+    siteNavigation,
+    stockManagement,
+  } = useStoreConfig();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
 
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>("details");
@@ -141,19 +155,23 @@ export default function OrderForm() {
   }
 
   return (
-    <section id="checkout-form" className="scroll-mt-24 bg-rose-50 py-20 sm:py-24">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section id="checkout-form" className="scroll-mt-24 bg-[#0F0C0B] py-16 md:py-24">
+      <div className="mx-auto max-w-6xl px-6 md:px-12">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
             {t.order.eyebrow}
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+          <h2
+            className={`${checkoutDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white md:text-5xl`}
+          >
             {t.order.title}
           </h2>
-          <p className="mt-4 text-lg text-zinc-600">{t.order.subtitle}</p>
+          <p className="mt-4 text-sm leading-relaxed text-[#CFC4BD] md:text-base">
+            {t.order.subtitle}
+          </p>
         </div>
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+        <div className="mt-14 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-start lg:gap-10">
           {checkoutStep === "payment" && paymentChoice === "bitcoin" ? (
             <PaymentStep
               orderTotal={displayTotal}
@@ -176,172 +194,169 @@ export default function OrderForm() {
               onContinue={handleContinueFromMethod}
             />
           ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="rounded-2xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8"
-          >
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="name"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
-                >
-                  {t.order.name}
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  autoComplete="name"
-                  value={form.name}
-                  onChange={(event) => updateField("name", event.target.value)}
-                  className={inputClassName}
-                  placeholder={t.order.placeholders.name}
-                />
+            <form onSubmit={handleSubmit} className={glassCardClassName}>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
+                  >
+                    {t.order.name}
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    autoComplete="name"
+                    value={form.name}
+                    onChange={(event) => updateField("name", event.target.value)}
+                    className={inputClassName}
+                    placeholder={t.order.placeholders.name}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
+                  >
+                    {t.order.email}
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={form.email}
+                    onChange={(event) => updateField("email", event.target.value)}
+                    className={inputClassName}
+                    placeholder={t.order.placeholders.email}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="address"
+                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
+                  >
+                    {t.order.address}
+                  </label>
+                  <input
+                    id="address"
+                    name="address"
+                    type="text"
+                    required
+                    autoComplete="street-address"
+                    value={form.address}
+                    onChange={(event) =>
+                      updateField("address", event.target.value)
+                    }
+                    className={inputClassName}
+                    placeholder={t.order.placeholders.address}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="city"
+                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
+                  >
+                    {t.order.city}
+                  </label>
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    required
+                    autoComplete="address-level2"
+                    value={form.city}
+                    onChange={(event) => updateField("city", event.target.value)}
+                    className={inputClassName}
+                    placeholder={t.order.placeholders.city}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="state"
+                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
+                  >
+                    {t.order.state}
+                  </label>
+                  <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    required
+                    autoComplete="address-level1"
+                    value={form.state}
+                    onChange={(event) => updateField("state", event.target.value)}
+                    className={inputClassName}
+                    placeholder={t.order.placeholders.state}
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="zip"
+                    className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
+                  >
+                    {t.order.zip}
+                  </label>
+                  <input
+                    id="zip"
+                    name="zip"
+                    type="text"
+                    required
+                    autoComplete="postal-code"
+                    value={form.zip}
+                    onChange={(event) => updateField("zip", event.target.value)}
+                    className={inputClassName}
+                    placeholder={t.order.placeholders.zip}
+                  />
+                </div>
               </div>
 
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
-                >
-                  {t.order.email}
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={form.email}
-                  onChange={(event) => updateField("email", event.target.value)}
-                  className={inputClassName}
-                  placeholder={t.order.placeholders.email}
-                />
-              </div>
+              {error ? (
+                <p className="mt-5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-[#CFC4BD]">
+                  {error}
+                </p>
+              ) : null}
 
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="address"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
-                >
-                  {t.order.address}
-                </label>
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  required
-                  autoComplete="street-address"
-                  value={form.address}
-                  onChange={(event) =>
-                    updateField("address", event.target.value)
-                  }
-                  className={inputClassName}
-                  placeholder={t.order.placeholders.address}
-                />
-              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting || cart.length === 0}
+                className="mt-8 w-full rounded-xl bg-[#ECE5D8] py-4 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? t.order.processing : t.order.continueToPayment}
+              </button>
 
-              <div>
-                <label
-                  htmlFor="city"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
-                >
-                  {t.order.city}
-                </label>
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  required
-                  autoComplete="address-level2"
-                  value={form.city}
-                  onChange={(event) => updateField("city", event.target.value)}
-                  className={inputClassName}
-                  placeholder={t.order.placeholders.city}
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="state"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
-                >
-                  {t.order.state}
-                </label>
-                <input
-                  id="state"
-                  name="state"
-                  type="text"
-                  required
-                  autoComplete="address-level1"
-                  value={form.state}
-                  onChange={(event) => updateField("state", event.target.value)}
-                  className={inputClassName}
-                  placeholder={t.order.placeholders.state}
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="zip"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
-                >
-                  {t.order.zip}
-                </label>
-                <input
-                  id="zip"
-                  name="zip"
-                  type="text"
-                  required
-                  autoComplete="postal-code"
-                  value={form.zip}
-                  onChange={(event) => updateField("zip", event.target.value)}
-                  className={inputClassName}
-                  placeholder={t.order.placeholders.zip}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting || cart.length === 0}
-              className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-rose-400 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSubmitting ? t.order.processing : t.order.continueToPayment}
-            </button>
-
-            <PaymentTrustBadges className="mt-6" />
-          </form>
+              <PaymentTrustBadges className="mt-6" variant="monochrome" />
+            </form>
           )}
 
           <aside className="lg:sticky lg:top-24">
-            <div className="rounded-2xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+            <div className={glassCardClassName}>
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-lg font-semibold text-zinc-900">
+                <h3 className="text-lg font-semibold text-white">
                   {t.order.summary}
                 </h3>
                 <a
                   href="#products"
-                  className="text-xs font-semibold text-rose-600 hover:text-rose-700"
+                  className="text-xs font-semibold uppercase tracking-wider text-[#ECE5D8] hover:text-white"
                 >
                   {t.order.addMore}
                 </a>
               </div>
 
               {cart.length === 0 ? (
-                <p className="mt-6 rounded-xl border border-dashed border-rose-200 bg-rose-50/50 px-4 py-8 text-center text-sm text-zinc-500">
+                <p className="mt-6 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-8 text-center text-sm text-[#A89A92]">
                   {t.order.emptyCart}
                 </p>
               ) : (
-                <ul className="mt-6 space-y-4 border-b border-rose-100 pb-5">
+                <ul className="mt-6 space-y-4 border-b border-white/10 pb-5">
                   {summary.lineItems.map((line) => {
                     const label = getLineLabel(
                       line.productId,
@@ -376,20 +391,19 @@ export default function OrderForm() {
                         key={`${line.productId}-${line.variantMg}-${line.selectedStrength ?? ""}-${line.campaignAddonId ?? ""}`}
                         className="flex items-start justify-between gap-3"
                       >
-                        <div
-                          className={`relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
-                        >
+                        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[#181312]">
                           <ProductImage
                             src={productImage}
                             alt={label}
                             fill
+                            framed={false}
                             sizes="56px"
                             className="object-contain p-1.5"
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-zinc-900">{label}</p>
-                          <p className="mt-0.5 text-xs text-zinc-500">
+                          <p className="font-medium text-white">{label}</p>
+                          <p className="mt-0.5 text-xs text-[#A89A92]">
                             {formatCurrency(line.unitPrice, localeCode)}
                           </p>
                           <div className="mt-2 flex items-center gap-2">
@@ -404,12 +418,12 @@ export default function OrderForm() {
                                   line.campaignAddonId,
                                 )
                               }
-                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
+                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-[#ECE5D8] transition hover:bg-white/10"
                               aria-label={`${t.order.decreaseQty}: ${label}`}
                             >
                               −
                             </button>
-                            <span className="min-w-[2rem] text-center text-sm font-semibold text-zinc-900">
+                            <span className="min-w-[2rem] text-center text-sm font-semibold text-white">
                               {line.quantity}
                             </span>
                             <button
@@ -424,19 +438,19 @@ export default function OrderForm() {
                                 )
                               }
                               disabled={atMaxStock}
-                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+                              className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-[#ECE5D8] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                               aria-label={`${t.order.increaseQty}: ${label}`}
                             >
                               +
                             </button>
                           </div>
                           {atMaxStock ? (
-                            <p className="mt-1.5 text-xs font-medium text-amber-700">
+                            <p className="mt-1.5 text-xs font-medium text-[#CFC4BD]">
                               {t.cart.maxStockReached}
                             </p>
                           ) : null}
                         </div>
-                        <p className="shrink-0 font-semibold text-zinc-900">
+                        <p className="shrink-0 font-semibold text-[#ECE5D8]">
                           {formatCurrency(line.lineSubtotal, localeCode)}
                         </p>
                       </li>
@@ -446,38 +460,38 @@ export default function OrderForm() {
               )}
 
               <dl className="mt-5 space-y-3 text-sm">
-                <div className="flex items-center justify-between text-zinc-600">
+                <div className="flex items-center justify-between text-[#CFC4BD]">
                   <dt>{t.order.subtotal}</dt>
-                  <dd className="font-medium text-zinc-900">
+                  <dd className="font-medium text-white">
                     {formatCurrency(summary.subtotal, localeCode)}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between text-zinc-600">
+                <div className="flex items-center justify-between text-[#CFC4BD]">
                   <dt>{t.order.shipping}</dt>
-                  <dd className="font-medium text-zinc-900">
+                  <dd className="font-medium text-white">
                     {cart.length === 0 ? (
                       formatCurrency(0, localeCode)
                     ) : summary.shipping === 0 ? (
-                      <span className="text-rose-600">{t.order.free}</span>
+                      <span className="text-[#ECE5D8]">{t.order.free}</span>
                     ) : (
                       formatCurrency(summary.shipping, localeCode)
                     )}
                   </dd>
                 </div>
-                {cart.length > 0 && amountUntilFreeShipping > 0 && (
-                    <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
-                      {t.order.freeShippingHint.replace(
-                        "{amount}",
-                        String(amountUntilFreeShipping),
-                      )}
-                    </p>
-                  )}
+                {cart.length > 0 && amountUntilFreeShipping > 0 ? (
+                  <p className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-[#CFC4BD]">
+                    {t.order.freeShippingHint.replace(
+                      "{amount}",
+                      String(amountUntilFreeShipping),
+                    )}
+                  </p>
+                ) : null}
               </dl>
 
-              <div className="mt-5 border-t border-rose-100 pt-5">
+              <div className="mt-5 border-t border-white/10 pt-5">
                 <label
                   htmlFor="discount-code"
-                  className="mb-2 block text-sm font-medium text-zinc-700"
+                  className="mb-2 block text-xs font-medium uppercase tracking-wider text-[#A89A92]"
                 >
                   {t.order.discount.label}
                 </label>
@@ -497,45 +511,44 @@ export default function OrderForm() {
                     type="button"
                     onClick={handleApplyDiscount}
                     disabled={cart.length === 0 || !discountInput.trim()}
-                    className="shrink-0 rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-zinc-800 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="shrink-0 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[#ECE5D8] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {t.order.discount.apply}
                   </button>
                 </div>
-                {discountFeedback && (
+                {discountFeedback ? (
                   <p
                     className={`mt-2 text-xs font-medium ${
                       discountFeedback.type === "success"
-                        ? "text-emerald-600"
-                        : "text-red-600"
+                        ? "text-[#ECE5D8]"
+                        : "text-[#CFC4BD]"
                     }`}
                   >
                     {discountFeedback.message}
                   </p>
-                )}
+                ) : null}
               </div>
 
-              {summary.appliedCampaigns.length > 0 && (
-                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
-                  🎉 Kampanj tillämpad:{" "}
+              {summary.appliedCampaigns.length > 0 ? (
+                <div className="mt-4 rounded-xl border border-[#ECE5D8]/25 bg-[#ECE5D8]/10 px-3 py-2 text-xs font-semibold text-[#ECE5D8]">
+                  Kampanj:{" "}
                   {summary.appliedCampaigns
                     .map((campaign) => campaign.name)
                     .join(" · ")}
-                  !
                 </div>
-              )}
+              ) : null}
 
-              {summary.campaignDiscount > 0 && (
-                <div className="mt-3 flex items-center justify-between text-sm text-emerald-700">
+              {summary.campaignDiscount > 0 ? (
+                <div className="mt-3 flex items-center justify-between text-sm text-[#ECE5D8]">
                   <span>Kampanjrabatt</span>
                   <span className="font-medium">
                     {formatCurrency(-summary.campaignDiscount, localeCode)}
                   </span>
                 </div>
-              )}
+              ) : null}
 
-              {summary.promoDiscount > 0 && (
-                <div className="mt-2 flex items-center justify-between text-sm text-emerald-700">
+              {summary.promoDiscount > 0 ? (
+                <div className="mt-2 flex items-center justify-between text-sm text-[#ECE5D8]">
                   <span>
                     {t.order.discount.lineLabel}
                     {summary.appliedDiscountCode
@@ -546,18 +559,18 @@ export default function OrderForm() {
                     {formatCurrency(-summary.promoDiscount, localeCode)}
                   </span>
                 </div>
-              )}
+              ) : null}
 
-              <div className="mt-6 flex items-center justify-between border-t border-rose-100 pt-5">
-                <span className="text-base font-semibold text-zinc-900">
+              <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5">
+                <span className="text-base font-semibold text-white">
                   {t.order.total}
                 </span>
-                <span className="text-2xl font-bold text-zinc-900">
+                <span className="text-2xl font-bold text-[#ECE5D8]">
                   {formatCurrency(displayTotal, localeCode)}
                 </span>
               </div>
 
-              <CheckoutTrustSignals className="mt-6" />
+              <CheckoutTrustSignals />
             </div>
           </aside>
         </div>

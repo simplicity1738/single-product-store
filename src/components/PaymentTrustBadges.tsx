@@ -170,7 +170,7 @@ export default function PaymentTrustBadges({
   return (
     <div className={`text-center ${className}`}>
       {!hideLabel && (
-        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[#A89A92]">
           {t.trust.securePayments}
         </p>
       )}
