@@ -17,7 +17,6 @@ export default function VariantStockLabel({
 
   if (!display.visible) return null;
 
-  // Never treat remaining units as sold out — low stock wins when quantity > 0
   const message =
     display.quantity > 0
       ? display.isLow
@@ -28,15 +27,10 @@ export default function VariantStockLabel({
           )
       : t.products.soldOut;
 
-  const tone =
-    display.quantity > 0
-      ? display.isLow
-        ? "text-orange-600 motion-safe:animate-pulse"
-        : "text-emerald-700"
-      : "text-red-600";
-
   return (
-    <p className={`text-sm font-semibold ${tone} ${className}`}>{message}</p>
+    <p className={`text-[11px] font-medium text-[#A89A92] ${className}`}>
+      {message}
+    </p>
   );
 }
 

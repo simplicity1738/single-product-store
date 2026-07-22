@@ -48,10 +48,10 @@ export function getStockStatusBadgeClassName(
 ): string {
   switch (status) {
     case "ej_i_lager":
-      return "bg-red-50 text-red-700 ring-red-200";
+      return "bg-[#ECE5D8]/10 text-[#A89A92] ring-white/10";
     case "kommer_snart":
-      return "bg-rose-50 text-rose-700 ring-rose-200";
+      return "bg-[#ECE5D8]/10 text-[#D4C8C2] ring-white/10";
     default:
-      return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+      return "bg-[#ECE5D8]/10 text-[#ECE5D8] ring-white/10";
   }
 }

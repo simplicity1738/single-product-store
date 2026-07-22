@@ -20,10 +20,9 @@ import {
 } from "@/lib/product";
 import type { Product } from "@/lib/product";
 import { formatMgOption } from "@/lib/i18n/translations";
-import { PRODUCT_IMAGE_FRAME_CLASS } from "@/lib/product-image-frame";
+import { isProductOnSale } from "@/lib/product-sale";
 import { isProductPurchasable, resolveEffectiveProductStockStatus } from "@/lib/product-stock";
 import StockStatusBadge from "@/components/StockStatusBadge";
-import IncludedItemsBadge from "@/components/IncludedItemsBadge";
 import VariantStockLabel, {
   isVariantPurchasableWithStock,
 } from "@/components/VariantStockLabel";
@@ -32,14 +31,16 @@ import {
   resolveVariantStockDisplay,
 } from "@/lib/stock-management";
 
-const qualityDisplay = Cormorant_Garamond({
+const productDisplay = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   display: "swap",
 });
 
+const qualityDisplay = productDisplay;
+
 const selectClassName =
-  "mt-2 w-full appearance-none rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-9 text-sm font-medium text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200";
+  "mt-2 w-full appearance-none rounded-xl border border-white/15 bg-[#181312] px-3 py-2.5 pr-9 text-sm font-medium text-[#ECE5D8] outline-none transition focus:border-[#ECE5D8]/40 focus:ring-1 focus:ring-[#ECE5D8]/20";
 
 type DisplayProduct = Product & {
   displayName: string;
@@ -79,21 +80,25 @@ export default function Products() {
   }
 
   return (
-    <section id="products" className="scroll-mt-24 bg-white py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="products" className="scroll-mt-24 bg-[#0F0C0B] py-16 md:py-24">
+      <div className="mx-auto max-w-7xl px-6 md:px-12">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
             {t.products.eyebrow}
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+          <h2
+            className={`${productDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white md:text-5xl`}
+          >
             {t.products.title}
           </h2>
-          <p className="mt-4 text-lg text-zinc-600">{t.products.subtitle}</p>
+          <p className="mt-4 text-sm leading-relaxed text-[#CFC4BD] md:text-base">
+            {t.products.subtitle}
+          </p>
         </div>
 
         <div
           aria-label={t.products.title}
-          className="mt-14 grid gap-6 sm:grid-cols-2 xl:grid-cols-4"
+          className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-4"
         >
           {displayProducts.map((product) => {
             const variantLabels = product.variantLabels ?? [];
@@ -143,126 +148,148 @@ export default function Products() {
                     ? t.products.soldOut
                     : t.products.addToCart;
 
+            const dosePill = hasNamedVariants
+              ? (activeStrength ?? variantLabels[0] ?? "")
+              : shouldShowSizeLabel(product.sizeLabel)
+                ? product.sizeLabel!.trim()
+                : formatMgOption(variantMg);
+            const onSale = isProductOnSale(product);
+
             return (
               <article
                 key={product.id}
-                className="group relative flex flex-col rounded-2xl border border-rose-100 bg-rose-50/30 p-5 text-left transition hover:border-rose-200 hover:bg-rose-50 hover:shadow-md sm:p-6"
+                className="group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/25"
               >
-                {product.badge && (
-                  <span className="absolute right-4 top-4 z-10 rounded-full bg-rose-400 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                    {t.products.badges[product.badge]}
-                  </span>
-                )}
-
-                <ProductSaleBadge
-                  basePrice={basePrice}
-                  saleSettings={product}
-                />
-
-                <div className="mb-4 flex items-center justify-end gap-2">
-                  <StockStatusBadge
-                    status={effectiveStatus}
-                    label={t.products.stockStatus[effectiveStatus]}
+                {/* Image stage with muted badges */}
+                <div className="relative mb-4 flex h-[240px] items-center justify-center overflow-hidden rounded-xl bg-[#181312] p-6">
+                  <ProductSaleBadge
+                    basePrice={basePrice}
+                    saleSettings={product}
                   />
-                </div>
 
-                <div
-                  className={`relative mb-5 flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
-                >
+                  {!onSale && product.badge ? (
+                    <span className="absolute left-3 top-3 z-10 rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white">
+                      {t.products.badges[product.badge]}
+                    </span>
+                  ) : null}
+
+                  <div className="absolute right-3 top-3 z-10">
+                    <StockStatusBadge
+                      status={effectiveStatus}
+                      label={t.products.stockStatus[effectiveStatus]}
+                    />
+                  </div>
+
                   <ProductImage
                     src={product.image}
                     alt={product.displayName}
                     fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                    className="object-contain p-4 mix-blend-multiply transition duration-300 group-hover:scale-105"
+                    framed={false}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-contain p-4 transition duration-300 group-hover:scale-105"
                   />
                 </div>
 
-                <h3 className="text-base font-semibold leading-snug text-zinc-900 sm:text-lg">
-                  {product.displayName}
-                </h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-600">
-                  {product.displayDescription}
-                </p>
-                <IncludedItemsBadge items={product.displayIncludedItems} />
-
-                {hasMultipleMgVariants ? (
-                  <div className="relative mt-4">
-                    <label
-                      htmlFor={`variant-${product.id}`}
-                      className="text-xs font-semibold uppercase tracking-wide text-zinc-500"
-                    >
-                      {t.products.variantLabel}
-                    </label>
-                    <select
-                      id={`variant-${product.id}`}
-                      value={variantMg}
-                      onChange={(event) =>
-                        setCardVariantMg(product.id, Number(event.target.value))
-                      }
-                      className={selectClassName}
-                    >
-                      {product.variants.map((variant) => (
-                        <option key={variant.mg} value={variant.mg}>
-                          {formatMgOption(variant.mg)} —{" "}
-                          {formatCurrency(
-                            getVariantPrice(product, variant.mg),
-                            localeCode,
-                          )}
-                        </option>
-                      ))}
-                    </select>
-                    <span
-                      className="pointer-events-none absolute bottom-3 right-3 text-zinc-400"
-                      aria-hidden
-                    >
-                      ▾
-                    </span>
-                  </div>
-                ) : hasMultipleNamedVariants ? (
-                  <StrengthSelector
-                    productId={product.id}
-                    strengths={variantLabels}
-                    activeStrength={activeStrength ?? variantLabels[0]}
-                    onSelect={(strength) => {
-                      const index = variantLabels.indexOf(strength);
-                      if (index >= 0) {
-                        setCardVariantMg(product.id, index);
-                      }
-                    }}
-                    label={t.products.variantLabel}
-                  />
-                ) : shouldShowSizeLabel(product.sizeLabel) ? (
-                  <p className="mt-4 text-sm font-medium text-rose-600">
-                    {product.sizeLabel!.trim()}
-                  </p>
-                ) : null}
-
-                <div className="mt-5 flex flex-col gap-3 border-t border-rose-100 pt-5">
-                  <VariantStockLabel display={stockDisplay} />
-                  <div className="flex items-end justify-between gap-3">
-                  <div>
-                    <ProductSalePrice
-                      basePrice={basePrice}
-                      saleSettings={product}
-                      locale={localeCode}
-                      size="md"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addToCart(
-                        product.id,
-                        variantMg,
-                        hasNamedVariants ? activeStrength : undefined,
-                      )
-                    }
-                    disabled={!purchasable}
-                    className="rounded-full bg-rose-400 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:hover:bg-zinc-300"
+                <div className="flex flex-1 flex-col">
+                  <h3
+                    className={`${productDisplay.className} text-lg font-serif tracking-tight text-white`}
                   >
-                    {buttonLabel}
-                  </button>
+                    {product.displayName}
+                  </h3>
+                  <p className="mt-1 line-clamp-1 text-xs text-[#CFC4BD]">
+                    {product.displayDescription}
+                  </p>
+
+                  {/* Compact dose / inclusions glass pills */}
+                  <div className="my-3 flex flex-wrap gap-2">
+                    {dosePill ? (
+                      <span className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-[#D4C8C2]">
+                        {dosePill}
+                      </span>
+                    ) : null}
+                    {product.displayIncludedItems ? (
+                      <span className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-[#D4C8C2]">
+                        Medföljer: {product.displayIncludedItems}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {hasMultipleMgVariants ? (
+                    <div className="relative">
+                      <label
+                        htmlFor={`variant-${product.id}`}
+                        className="text-[10px] font-semibold uppercase tracking-widest text-[#A89A92]"
+                      >
+                        {t.products.variantLabel}
+                      </label>
+                      <select
+                        id={`variant-${product.id}`}
+                        value={variantMg}
+                        onChange={(event) =>
+                          setCardVariantMg(product.id, Number(event.target.value))
+                        }
+                        className={selectClassName}
+                      >
+                        {product.variants.map((variant) => (
+                          <option key={variant.mg} value={variant.mg}>
+                            {formatMgOption(variant.mg)} —{" "}
+                            {formatCurrency(
+                              getVariantPrice(product, variant.mg),
+                              localeCode,
+                            )}
+                          </option>
+                        ))}
+                      </select>
+                      <span
+                        className="pointer-events-none absolute bottom-3 right-3 text-[#A89A92]"
+                        aria-hidden
+                      >
+                        ▾
+                      </span>
+                    </div>
+                  ) : hasMultipleNamedVariants ? (
+                    <StrengthSelector
+                      productId={product.id}
+                      strengths={variantLabels}
+                      activeStrength={activeStrength ?? variantLabels[0]}
+                      onSelect={(strength) => {
+                        const index = variantLabels.indexOf(strength);
+                        if (index >= 0) {
+                          setCardVariantMg(product.id, index);
+                        }
+                      }}
+                      label={t.products.variantLabel}
+                    />
+                  ) : null}
+
+                  <div className="mt-auto pt-4">
+                    <VariantStockLabel display={stockDisplay} />
+                    <div className="mt-2 flex items-center gap-2 text-base font-semibold text-[#ECE5D8]">
+                      <ProductSalePrice
+                        basePrice={basePrice}
+                        saleSettings={product}
+                        locale={localeCode}
+                        size="md"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        addToCart(
+                          product.id,
+                          variantMg,
+                          hasNamedVariants ? activeStrength : undefined,
+                        )
+                      }
+                      disabled={!purchasable}
+                      className={
+                        purchasable
+                          ? "mt-4 w-full rounded-xl bg-[#ECE5D8] py-3 text-xs font-medium uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
+                          : "mt-4 w-full cursor-not-allowed rounded-xl bg-white/10 py-3 text-xs font-medium uppercase tracking-wider text-neutral-400"
+                      }
+                    >
+                      {buttonLabel}
+                    </button>
                   </div>
                 </div>
               </article>
@@ -298,7 +325,6 @@ export function QualitySection() {
       className="scroll-mt-24 bg-[#0F0C0B] px-6 py-16 md:px-12 md:py-24"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        {/* Left — typography & branding */}
         <div className="lg:col-span-6">
           <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
             {t.quality.eyebrow}
@@ -313,7 +339,6 @@ export function QualitySection() {
           </p>
         </div>
 
-        {/* Right — frosted glass checklist card (cream checkmarks, no pink) */}
         <div className="lg:col-span-6">
           <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md md:p-8">
             <ul className="space-y-4">
@@ -359,25 +384,27 @@ export function Features() {
   }
 
   return (
-    <section id="features" className="scroll-mt-24 bg-rose-50/50 py-20 sm:py-24">
+    <section id="features" className="scroll-mt-24 bg-[#0F0C0B] py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-rose-600">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
             {t.features.eyebrow}
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
+          <h2
+            className={`${qualityDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white sm:text-4xl`}
+          >
             {t.features.title}
           </h2>
-          <p className="mt-4 text-lg text-zinc-600">{t.features.subtitle}</p>
+          <p className="mt-4 text-base text-[#CFC4BD]">{t.features.subtitle}</p>
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {t.features.items.map((feature, index) => (
             <article
               key={feature.title}
-              className="group rounded-2xl border border-rose-100 bg-white p-6 transition hover:border-rose-200 hover:shadow-lg hover:shadow-rose-100/50"
+              className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-white/25"
             >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-rose-400 text-white transition group-hover:bg-rose-500">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECE5D8]/15 text-[#ECE5D8] transition group-hover:bg-[#ECE5D8]/25">
                 <svg
                   className="h-5 w-5"
                   fill="none"
@@ -393,10 +420,10 @@ export function Features() {
                   />
                 </svg>
               </div>
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-semibold text-white">
                 {feature.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+              <p className="mt-2 text-sm leading-relaxed text-[#CFC4BD]">
                 {feature.description}
               </p>
             </article>

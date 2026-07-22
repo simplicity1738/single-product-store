@@ -18,9 +18,9 @@ export default function StrengthSelector({
   if (strengths.length <= 1) return null;
 
   return (
-    <div className="mt-4">
+    <div className="mt-2">
       {label ? (
-        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#A89A92]">
           {label}
         </p>
       ) : null}
@@ -40,8 +40,8 @@ export default function StrengthSelector({
               onClick={() => onSelect(strength)}
               className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
                 isActive
-                  ? "border-rose-400 bg-rose-400 text-white shadow-sm shadow-rose-200"
-                  : "border-rose-200 bg-white text-zinc-700 hover:border-rose-300 hover:bg-rose-50"
+                  ? "border-[#ECE5D8]/40 bg-[#ECE5D8] text-[#0F0C0B] shadow-sm"
+                  : "border-white/10 bg-white/5 text-[#D4C8C2] hover:border-white/25 hover:bg-white/10"
               }`}
             >
               {strength}

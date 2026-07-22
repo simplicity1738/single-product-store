@@ -14,9 +14,9 @@ type ProductSalePriceProps = {
 };
 
 const sizeClasses = {
-  sm: { sale: "text-base font-bold", original: "text-xs" },
-  md: { sale: "text-lg font-bold", original: "text-sm" },
-  lg: { sale: "text-xl font-bold", original: "text-sm" },
+  sm: { sale: "text-sm font-semibold", original: "text-xs" },
+  md: { sale: "text-base font-semibold", original: "text-xs" },
+  lg: { sale: "text-xl font-semibold", original: "text-sm" },
 };
 
 export default function ProductSalePrice({
@@ -31,20 +31,20 @@ export default function ProductSalePrice({
 
   if (!onSale || salePrice >= basePrice) {
     return (
-      <p className={`${classes.sale} text-zinc-900`}>
+      <p className={`${classes.sale} text-[#ECE5D8]`}>
         {formatCurrency(basePrice, locale)}
       </p>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+    <div className="flex flex-wrap items-center gap-2">
       <span
-        className={`${classes.original} font-normal text-gray-400 line-through`}
+        className={`${classes.original} font-normal text-neutral-500 line-through`}
       >
         {formatCurrency(basePrice, locale)}
       </span>
-      <span className={`${classes.sale} text-rose-500`}>
+      <span className={`${classes.sale} text-[#ECE5D8]`}>
         {formatCurrency(salePrice, locale)}
       </span>
     </div>
@@ -67,7 +67,7 @@ export function ProductSaleBadge({
 
   return (
     <span
-      className={`absolute left-4 top-4 z-10 rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-md ${className}`}
+      className={`absolute left-3 top-3 z-10 rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white ${className}`}
     >
       {label}
     </span>
