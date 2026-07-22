@@ -20,14 +20,14 @@ export default function StrengthSelector({
   return (
     <div className="mt-2">
       {label ? (
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#A89A92]">
+        <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#A89A92]">
           {label}
         </p>
       ) : null}
       <div
         role="radiogroup"
-        aria-label={label ?? "Välj styrka"}
-        className="mt-2 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
+        aria-label={label ?? "Välj mängd"}
+        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-thin"
       >
         {strengths.map((strength) => {
           const isActive = strength === activeStrength;

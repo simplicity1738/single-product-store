@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Cormorant_Garamond } from "next/font/google";
 import ProductImage from "@/components/ProductImage";
 import ProductDetailsDrawer from "@/components/ProductDetailsDrawer";
@@ -35,6 +35,9 @@ import {
 const carouselArrowClassName =
   "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-white shadow-md transition-all hover:bg-[#ECE5D8] hover:text-[#0F0C0B]";
 
+const variantFieldLabelClassName =
+  "mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#A89A92]";
+
 const productDisplay = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
@@ -44,7 +47,7 @@ const productDisplay = Cormorant_Garamond({
 const qualityDisplay = productDisplay;
 
 const selectClassName =
-  "mt-2 w-full appearance-none rounded-xl border border-white/15 bg-[#181312] px-3 py-2.5 pr-9 text-sm font-medium text-[#ECE5D8] outline-none transition focus:border-[#ECE5D8]/40 focus:ring-1 focus:ring-[#ECE5D8]/20";
+  "w-full appearance-none rounded-xl border border-white/15 bg-[#181312] px-3 py-2.5 pr-9 text-sm font-medium text-[#ECE5D8] outline-none transition focus:border-[#ECE5D8]/40 focus:ring-1 focus:ring-[#ECE5D8]/20";
 
 type DisplayProduct = Product & {
   displayName: string;
@@ -60,10 +63,11 @@ export default function Products() {
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
   const [detailsProductId, setDetailsProductId] = useState<string | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [activeSlide, setActiveSlide] = useState(0);
 
-  function scrollCarousel(direction: "left" | "right") {
+  function scrollCarousel(direction: "left" | "right", distance = 1000) {
     carouselRef.current?.scrollBy({
-      left: direction === "right" ? 1000 : -1000,
+      left: direction === "right" ? distance : -distance,
       behavior: "smooth",
     });
   }
@@ -83,6 +87,31 @@ export default function Products() {
       };
     });
   }, [catalogProducts, configProducts, locale]);
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+
+    function updateActiveSlide() {
+      if (!el) return;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0 || displayProducts.length <= 1) {
+        setActiveSlide(0);
+        return;
+      }
+      const progress = el.scrollLeft / maxScroll;
+      setActiveSlide(Math.round(progress * (displayProducts.length - 1)));
+    }
+
+    updateActiveSlide();
+    el.addEventListener("scroll", updateActiveSlide, { passive: true });
+    window.addEventListener("resize", updateActiveSlide);
+
+    return () => {
+      el.removeEventListener("scroll", updateActiveSlide);
+      window.removeEventListener("resize", updateActiveSlide);
+    };
+  }, [displayProducts.length]);
 
   const detailsProduct = useMemo(
     () => displayProducts.find((product) => product.id === detailsProductId) ?? null,
@@ -326,7 +355,7 @@ export default function Products() {
                     <div className="relative">
                       <label
                         htmlFor={`variant-${product.id}`}
-                        className="text-[10px] font-semibold uppercase tracking-widest text-[#A89A92]"
+                        className={variantFieldLabelClassName}
                       >
                         {t.products.variantLabel}
                       </label>
@@ -404,6 +433,30 @@ export default function Products() {
             );
           })}
         </div>
+
+        {displayProducts.length > 1 ? (
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex items-center gap-2" aria-hidden>
+              {displayProducts.map((product, index) => (
+                <span
+                  key={`dot-${product.id}`}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === activeSlide
+                      ? "w-6 bg-[#ECE5D8]"
+                      : "w-1.5 bg-white/20"
+                  }`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => scrollCarousel("right", 800)}
+              className="flex cursor-pointer items-center gap-2 rounded-full bg-[#ECE5D8] px-8 py-3.5 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-lg transition-all hover:bg-white"
+            >
+              {t.products.viewMoreProducts}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <ProductDetailsDrawer

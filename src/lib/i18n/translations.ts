@@ -62,7 +62,8 @@ export const translations = {
         ej_i_lager: "Ej i lager",
         kommer_snart: "Kommer snart",
       },
-      variantLabel: "Styrka",
+      variantLabel: "Mängd",
+      viewMoreProducts: "Visa fler produkter →",
       badges: {
         popular: "Bästsäljare",
         premium: "Premium",
@@ -715,7 +716,8 @@ export const translations = {
         ej_i_lager: "Out of Stock",
         kommer_snart: "Coming Soon",
       },
-      variantLabel: "Strength",
+      variantLabel: "Amount",
+      viewMoreProducts: "View more products →",
       badges: {
         popular: "Best Seller",
         premium: "Premium",
