@@ -496,54 +496,49 @@ export function QualitySection() {
   }
 
   return (
-    <section
-      id="quality"
-      className="scroll-mt-24 bg-[#0F0C0B] px-6 py-16 md:px-12 md:py-24"
-    >
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
+    <section id="quality" className="scroll-mt-24 bg-[#0F0C0B]">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2">
+        <div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#A89A92]">
             {t.quality.eyebrow}
           </p>
           <h2
-            className={`${qualityDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white leading-[1.15] md:text-5xl`}
+            className={`${qualityDisplay.className} mb-4 text-3xl font-serif leading-tight text-white md:text-4xl lg:text-5xl`}
           >
             {t.quality.title}
           </h2>
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-[#CFC4BD] md:text-base">
+          <p className="max-w-lg text-sm leading-relaxed text-[#CFC4BD]">
             {t.quality.description}
           </p>
         </div>
 
-        <div className="lg:col-span-6">
-          <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md md:p-8">
-            <ul className="space-y-4">
-              {t.quality.checklist.map((item) => (
-                <li
-                  key={item}
-                  className="flex items-center gap-3 text-sm font-medium text-neutral-200 md:text-base"
-                >
-                  <span className="flex shrink-0 items-center justify-center rounded-full bg-[#ECE5D8]/15 p-1.5 text-[#ECE5D8]">
-                    <svg
-                      className="h-3.5 w-3.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2.5}
-                      aria-hidden
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 12.75l6 6 9-13.5"
-                      />
-                    </svg>
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md md:p-8">
+          <ul className="space-y-4">
+            {t.quality.checklist.map((item) => (
+              <li
+                key={item}
+                className="flex items-center gap-3 text-xs font-medium text-white md:text-sm"
+              >
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[#ECE5D8]">
+                  <svg
+                    className="h-3 w-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 12.75l6 6 9-13.5"
+                    />
+                  </svg>
+                </span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

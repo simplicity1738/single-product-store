@@ -141,6 +141,22 @@ export const translations = {
         "Premiumförpackning för maximal hållbarhet",
       ],
     },
+    bundle: {
+      eyebrow: "Initial Compounds",
+      title: "Every Compound. One Sealed Set.",
+      subtitle:
+        "All five SimpliCity compounds in a single presentation case, each vial matched to its own Certificate of Analysis.",
+      priceCurrentSv: "5 790 kr",
+      priceOriginalSv: "7 250 kr",
+      priceCurrentEn: "$579.00",
+      priceOriginalEn: "$725.00",
+      breakdownSv: "Blir 1 158 kr per vial — dokumentation ingår.",
+      breakdownEn: "Works out to 1 158 kr per vial — documentation included.",
+      cta: "Add the set to cart",
+      disclaimer:
+        "Ships same-day · Individual batch COAs included · For research use only",
+      imageAlt: "SimpliCity presentation set with sealed compound vials",
+    },
     cart: {
       title: "Din varukorg",
       empty: "Din varukorg är tom.",
@@ -794,6 +810,22 @@ export const translations = {
         "Published results — see for yourself what you get",
         "Premium packaging for maximum shelf life",
       ],
+    },
+    bundle: {
+      eyebrow: "Initial Compounds",
+      title: "Every Compound. One Sealed Set.",
+      subtitle:
+        "All five SimpliCity compounds in a single presentation case, each vial matched to its own Certificate of Analysis.",
+      priceCurrentSv: "5 790 kr",
+      priceOriginalSv: "7 250 kr",
+      priceCurrentEn: "$579.00",
+      priceOriginalEn: "$725.00",
+      breakdownSv: "Blir 1 158 kr per vial — dokumentation ingår.",
+      breakdownEn: "Works out to 1 158 kr per vial — documentation included.",
+      cta: "Add the set to cart",
+      disclaimer:
+        "Ships same-day · Individual batch COAs included · For research use only",
+      imageAlt: "SimpliCity presentation set with sealed compound vials",
     },
     cart: {
       title: "Your cart",

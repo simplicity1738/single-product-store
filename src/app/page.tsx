@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Products, { QualitySection } from "@/components/Products";
+import BundleSection from "@/components/BundleSection";
 import OrderForm from "@/components/OrderForm";
 import Reviews from "@/components/Reviews";
 import Footer from "@/components/Footer";
@@ -11,13 +12,14 @@ export default async function Home() {
 
   return (
     <div className="min-h-full bg-white text-zinc-900">
-      {/* ONDO: cream header → cinematic hero → quality → products → checkout → reviews */}
+      {/* ONDO: cream header → cinematic hero → quality → products → bundle → checkout → reviews */}
       <Header />
       <Hero siteSettings={config.siteSettings} />
       <QualitySection />
 
       <main>
         <Products />
+        <BundleSection />
         <OrderForm />
         <Reviews />
       </main>
