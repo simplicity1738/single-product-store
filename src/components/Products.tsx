@@ -263,7 +263,7 @@ export default function Products() {
                 key={product.id}
                 className="group relative flex w-[85%] min-w-[280px] shrink-0 snap-start flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/25 lg:w-[calc(25%-18px)]"
               >
-                <div className="relative mb-4 flex h-[210px] w-full items-center justify-center overflow-hidden rounded-xl bg-[#181312] p-4">
+                <div className="relative mb-4 flex h-[210px] w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[#1C1715] p-4">
                   <ProductSaleBadge
                     basePrice={basePrice}
                     saleSettings={product}
@@ -288,7 +288,7 @@ export default function Products() {
                     fill
                     framed={false}
                     sizes="(max-width: 1024px) 85vw, 25vw"
-                    className="object-contain p-4 mix-blend-multiply transition duration-300 group-hover:scale-105"
+                    className="h-full w-full object-contain p-4 brightness-[0.92] contrast-[1.05] drop-shadow-lg transition-transform duration-300 group-hover:scale-105 group-hover:brightness-100"
                   />
                 </div>
 
