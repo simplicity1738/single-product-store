@@ -14,10 +14,10 @@ type ProductSaleFieldsProps = {
 };
 
 const inputClassName =
-  "mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
+  "mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none";
 
 const labelClassName =
-  "text-xs font-semibold uppercase tracking-wide text-zinc-500";
+  "text-xs font-semibold uppercase tracking-wider text-[#A89A92]";
 
 export default function ProductSaleFields({
   values,
@@ -28,8 +28,8 @@ export default function ProductSaleFields({
   }
 
   return (
-    <div className="rounded-xl border border-rose-100 bg-rose-50/40 p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-rose-600">
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-[#ECE5D8]">
         Produkt-Rea
       </p>
 
@@ -38,9 +38,9 @@ export default function ProductSaleFields({
           type="checkbox"
           checked={values.isOnSale}
           onChange={(event) => patch({ isOnSale: event.target.checked })}
-          className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
         />
-        <span className="text-sm font-medium text-zinc-800">
+        <span className="text-sm font-medium text-[#CFC4BD]">
           Aktivera direkt nedsatt pris (Rea)
         </span>
       </label>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Cormorant_Garamond } from "next/font/google";
 import ProductImage from "@/components/ProductImage";
 import ProductDetailsDrawer from "@/components/ProductDetailsDrawer";
@@ -32,6 +32,9 @@ import {
   resolveVariantStockDisplay,
 } from "@/lib/stock-management";
 
+const carouselArrowClassName =
+  "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-white shadow-md transition-all hover:bg-[#ECE5D8] hover:text-[#0F0C0B]";
+
 const productDisplay = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
@@ -56,6 +59,14 @@ export default function Products() {
   const { cardVariants, setCardVariantMg, addToCart } = useProductSelection();
   const localeCode = locale === "sv" ? "sv-SE" : "en-US";
   const [detailsProductId, setDetailsProductId] = useState<string | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  function scrollCarousel(direction: "left" | "right") {
+    carouselRef.current?.scrollBy({
+      left: direction === "right" ? 1000 : -1000,
+      behavior: "smooth",
+    });
+  }
 
   const displayProducts = useMemo<DisplayProduct[]>(() => {
     return catalogProducts.map((product) => {
@@ -152,24 +163,45 @@ export default function Products() {
 
   return (
     <section id="products" className="scroll-mt-24 bg-[#0F0C0B] py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-6 md:px-12">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
-            {t.products.eyebrow}
-          </p>
-          <h2
-            className={`${productDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white md:text-5xl`}
-          >
-            {t.products.title}
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-[#CFC4BD] md:text-base">
-            {t.products.subtitle}
-          </p>
+      <div className="mx-auto max-w-7xl px-4 md:px-12">
+        <div className="mx-auto mb-6 flex max-w-7xl items-center justify-between px-0">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[#ECE5D8] opacity-80">
+              {t.products.eyebrow}
+            </p>
+            <h2
+              className={`${productDisplay.className} mt-3 text-3xl font-serif tracking-tight text-white md:text-5xl`}
+            >
+              {t.products.title}
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#CFC4BD] md:text-base">
+              {t.products.subtitle}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
+            <button
+              type="button"
+              onClick={() => scrollCarousel("left")}
+              className={carouselArrowClassName}
+              aria-label="Scroll products left"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollCarousel("right")}
+              className={carouselArrowClassName}
+              aria-label="Scroll products right"
+            >
+              →
+            </button>
+          </div>
         </div>
 
         <div
+          ref={carouselRef}
           aria-label={t.products.title}
-          className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-8 lg:grid-cols-4"
+          className="no-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth py-4"
         >
           {displayProducts.map((product) => {
             const variantLabels = product.variantLabels ?? [];
@@ -229,21 +261,21 @@ export default function Products() {
             return (
               <article
                 key={product.id}
-                className="group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/25"
+                className="group relative flex w-[85%] min-w-[280px] shrink-0 snap-start flex-col justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/25 lg:w-[calc(25%-18px)]"
               >
-                <div className="relative mb-4 flex h-[240px] items-center justify-center overflow-hidden rounded-xl bg-[#181312] p-6">
+                <div className="relative mb-4 flex h-[210px] w-full items-center justify-center overflow-hidden rounded-xl bg-[#181312] p-4">
                   <ProductSaleBadge
                     basePrice={basePrice}
                     saleSettings={product}
                   />
 
                   {!onSale && product.badge ? (
-                    <span className="absolute left-3 top-3 z-10 rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white">
+                    <span className="absolute top-3 left-3 z-20 rounded-full bg-[#ECE5D8] px-2.5 py-1 text-[10px] font-bold tracking-wider text-[#0F0C0B] shadow-md">
                       {t.products.badges[product.badge]}
                     </span>
                   ) : null}
 
-                  <div className="absolute right-3 top-3 z-10">
+                  <div className="absolute top-3 right-3 z-20">
                     <StockStatusBadge
                       status={effectiveStatus}
                       label={t.products.stockStatus[effectiveStatus]}
@@ -255,8 +287,8 @@ export default function Products() {
                     alt={product.displayName}
                     fill
                     framed={false}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-contain p-4 transition duration-300 group-hover:scale-105"
+                    sizes="(max-width: 1024px) 85vw, 25vw"
+                    className="object-contain p-4 mix-blend-multiply transition duration-300 group-hover:scale-105"
                   />
                 </div>
 

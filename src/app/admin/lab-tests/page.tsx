@@ -205,12 +205,12 @@ export default function AdminLabTestsPage() {
   }
 
   return (
-    <div className="min-h-screen text-zinc-900">
+    <div className="min-h-screen text-white">
       {toast && (
         <div
           className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full px-6 py-3 text-sm font-semibold shadow-lg ${
             toast.type === "success"
-              ? "bg-emerald-500 text-white shadow-emerald-500/30"
+              ? "bg-[#ECE5D8] text-[#0F0C0B] shadow-md"
               : "bg-red-500 text-white shadow-red-500/30"
           }`}
           role="status"
@@ -219,21 +219,21 @@ export default function AdminLabTestsPage() {
         </div>
       )}
 
-      <header className="border-b border-rose-100 bg-white/90 px-4 py-5 backdrop-blur-md sm:px-6 lg:px-8">
+      <header className="border-b border-white/10 bg-[#0B0908]/90 px-4 py-5 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-rose-600 lg:hidden">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#ECE5D8] lg:hidden">
               Admin · Labbtester
             </p>
-            <h1 className="text-2xl font-bold text-zinc-900">Labbtester</h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h1 className="text-2xl font-bold text-white">Labbtester</h1>
+            <p className="mt-1 text-sm text-[#A89A92]">
               Hantera certifikat, renhetsdata och analysrapporter.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/admin"
-              className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:border-rose-300 hover:text-rose-700 lg:hidden"
+              className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white lg:hidden"
             >
               Översikt
             </Link>
@@ -241,7 +241,7 @@ export default function AdminLabTestsPage() {
               <button
                 type="button"
                 onClick={openCreate}
-                className="rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+                className="rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
               >
                 Lägg till labbtest
               </button>
@@ -249,7 +249,7 @@ export default function AdminLabTestsPage() {
               <button
                 type="button"
                 onClick={backToList}
-                className="rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-600 transition hover:border-rose-300"
+                className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white"
               >
                 Tillbaka till listan
               </button>
@@ -260,13 +260,13 @@ export default function AdminLabTestsPage() {
 
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {view === "list" ? (
-          <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-lg font-bold text-zinc-900">Certifikatgalleri</h2>
+          <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+            <h2 className="text-lg font-bold text-white">Certifikatgalleri</h2>
 
             {isLoading ? (
-              <p className="mt-6 text-sm text-zinc-500">Laddar labbtester…</p>
+              <p className="mt-6 text-sm text-[#A89A92]">Laddar labbtester…</p>
             ) : tests.length === 0 ? (
-              <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-10 text-center text-sm text-zinc-500">
+              <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-10 text-center text-sm text-[#A89A92]">
                 Inga labbtester ännu. Lägg till ditt första certifikat.
               </p>
             ) : (
@@ -274,25 +274,25 @@ export default function AdminLabTestsPage() {
                 {tests.map((test) => (
                   <article
                     key={test.id}
-                    className="rounded-2xl border border-rose-100 bg-rose-50/30 p-5"
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-5"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-bold text-zinc-900">
+                          <h3 className="text-base font-bold text-white">
                             {test.productName}
                           </h3>
-                          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                          <span className="rounded-full border border-white/10 bg-[#ECE5D8]/10 px-2.5 py-1 text-[10px] font-medium uppercase text-[#ECE5D8]">
                             {test.purity}
                           </span>
                         </div>
-                        <p className="mt-2 text-sm text-zinc-500">
+                        <p className="mt-2 text-sm text-[#A89A92]">
                           Batch: <span className="font-mono">{test.batchNumber}</span>
                         </p>
-                        <p className="mt-1 text-sm text-zinc-500">
+                        <p className="mt-1 text-sm text-[#A89A92]">
                           {test.labName} · {formatTestDate(test.testDate)}
                         </p>
-                        <p className="mt-1 truncate text-xs font-mono text-zinc-400">
+                        <p className="mt-1 truncate text-xs font-mono text-[#A89A92]">
                           {test.reportUrl}
                         </p>
                       </div>
@@ -300,14 +300,14 @@ export default function AdminLabTestsPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(test)}
-                          className="rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                          className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white"
                         >
                           Redigera
                         </button>
                         <button
                           type="button"
                           onClick={() => void handleDelete(test)}
-                          className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                          className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                         >
                           Ta bort
                         </button>
@@ -319,14 +319,14 @@ export default function AdminLabTestsPage() {
             )}
           </section>
         ) : (
-          <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-lg font-bold text-zinc-900">
+          <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+            <h2 className="text-lg font-bold text-white">
               {view === "edit" ? "Redigera labbtest" : "Skapa nytt labbtest"}
             </h2>
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
               <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Produktnamn
                 </span>
                 <input
@@ -335,12 +335,12 @@ export default function AdminLabTestsPage() {
                     setDraft((current) => ({ ...current, productName: event.target.value }))
                   }
                   placeholder="Melanotan 2"
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Renhet (%)
                 </span>
                 <input
@@ -349,12 +349,12 @@ export default function AdminLabTestsPage() {
                     setDraft((current) => ({ ...current, purity: event.target.value }))
                   }
                   placeholder="99.4%"
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Batchkod
                 </span>
                 <input
@@ -363,12 +363,12 @@ export default function AdminLabTestsPage() {
                     setDraft((current) => ({ ...current, batchNumber: event.target.value }))
                   }
                   placeholder="SP-MT2-2026"
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 font-mono text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Testdatum
                 </span>
                 <input
@@ -377,12 +377,12 @@ export default function AdminLabTestsPage() {
                   onChange={(event) =>
                     setDraft((current) => ({ ...current, testDate: event.target.value }))
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Labb
                 </span>
                 <input
@@ -390,12 +390,12 @@ export default function AdminLabTestsPage() {
                   onChange={(event) =>
                     setDraft((current) => ({ ...current, labName: event.target.value }))
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <div className="sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Analysrapport (PDF/bild)
                 </span>
                 <div className="mt-2 grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -405,9 +405,9 @@ export default function AdminLabTestsPage() {
                       setDraft((current) => ({ ...current, reportUrl: event.target.value }))
                     }
                     placeholder="/lab-reports/rapport.pdf eller https://…"
-                    className="w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 p-3 font-mono text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                   />
-                  <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100">
+                  <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white">
                     {isUploading ? "Laddar upp…" : "Ladda upp fil"}
                     <input
                       type="file"
@@ -429,7 +429,7 @@ export default function AdminLabTestsPage() {
               type="button"
               onClick={() => void handleSave()}
               disabled={isSaving}
-              className="mt-6 rounded-full bg-rose-400 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-6 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving ? "Sparar…" : view === "edit" ? "Spara ändringar" : "Publicera certifikat"}
             </button>

@@ -132,7 +132,7 @@ type OrderFulfillmentAction =
   | "waiting_pack";
 
 const orderFilterClassName =
-  "rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
+  "rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none";
 
 function matchesOrderSearch(order: AdminOrder, query: string): boolean {
   const needle = query.trim().toLowerCase();
@@ -341,15 +341,15 @@ function orderStatusClassName(status: OrderStatus): string {
     case ORDER_STATUS.APPROVED:
     case ORDER_STATUS.WAITING_PACK:
     case ORDER_STATUS.COMPLETED:
-      return "border-amber-200 bg-amber-50 text-amber-800";
+      return "border-white/10 bg-white/5 text-neutral-400";
     case ORDER_STATUS.PACKED:
-      return "border-sky-200 bg-sky-50 text-sky-700";
+      return "border-sky-500/20 bg-sky-500/10 text-sky-300";
     case ORDER_STATUS.DELIVERED:
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border-white/10 bg-[#ECE5D8]/10 text-[#ECE5D8]";
     case ORDER_STATUS.REFUNDED:
-      return "border-red-200 bg-red-50 text-red-700";
+      return "border-red-500/20 bg-red-500/10 text-red-300";
     default:
-      return "border-zinc-200 bg-zinc-50 text-zinc-600";
+      return "border-white/10 bg-white/5 text-neutral-400";
   }
 }
 
@@ -1547,19 +1547,19 @@ export default function AdminPage() {
 
   if (isLoading || !config) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-rose-50 text-zinc-600">
+      <div className="flex min-h-screen items-center justify-center bg-[#0F0C0B] text-[#CFC4BD]">
         Laddar adminpanel…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50 to-white text-zinc-900">
+    <div className="min-h-screen bg-[#0F0C0B] text-white">
       {toast && (
         <div
           className={`fixed top-6 right-6 z-50 max-w-sm rounded-2xl px-5 py-3 text-sm font-semibold shadow-lg ${
             toast.type === "success"
-              ? "bg-emerald-500 text-white shadow-emerald-500/30"
+              ? "bg-[#ECE5D8] text-[#0F0C0B] shadow-md"
               : toast.type === "error"
                 ? "bg-red-500 text-white shadow-red-500/30"
                 : "bg-zinc-800 text-white shadow-zinc-800/30"
@@ -1571,26 +1571,26 @@ export default function AdminPage() {
       )}
 
       {destructiveConfirm && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="destructive-confirm-title"
-            className="w-full max-w-md rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl"
+            className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0F0C0B] p-6 shadow-2xl"
           >
             <h2
               id="destructive-confirm-title"
-              className="text-lg font-bold text-zinc-900"
+              className="text-lg font-bold text-white"
             >
               Bekräfta åtgärd
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-600">
+            <p className="mt-3 text-sm leading-relaxed text-[#CFC4BD]">
               Är du säker på att du vill genomföra{" "}
               {destructiveConfirm.type === "refund"
                 ? "Återbetalning"
                 : "Borttagning"}{" "}
               för order{" "}
-              <span className="font-mono font-semibold text-zinc-900">
+              <span className="font-mono font-semibold text-white">
                 {destructiveConfirm.orderId}
               </span>{" "}
               ({formatSek(destructiveConfirm.amount)})?
@@ -1600,7 +1600,7 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => setDestructiveConfirm(null)}
                 disabled={isRefunding || deletingOrderId !== null}
-                className="rounded-full border border-zinc-200 bg-zinc-100 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:opacity-60"
+                className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white disabled:opacity-60"
               >
                 Avbryt
               </button>
@@ -1628,21 +1628,21 @@ export default function AdminPage() {
       )}
 
       {editingProductId && editProduct && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-product-title"
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-rose-100 bg-white p-6 shadow-2xl"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-white/10 bg-[#0F0C0B] p-6 shadow-2xl"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#ECE5D8]">
                   Redigera produkt
                 </p>
                 <h2
                   id="edit-product-title"
-                  className="mt-1 text-xl font-bold text-zinc-900"
+                  className="mt-1 text-xl font-bold text-white"
                 >
                   {editProduct.name_sv || "Produkt"}
                 </h2>
@@ -1650,7 +1650,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={closeEditProduct}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-lg font-semibold text-zinc-500 transition hover:bg-rose-100"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-lg font-semibold text-[#A89A92] transition hover:bg-white/10 hover:text-white"
                 aria-label="Stäng"
               >
                 ×
@@ -1658,7 +1658,7 @@ export default function AdminPage() {
             </div>
 
             <div
-              className={`relative mx-auto mt-5 flex h-36 w-36 items-center justify-center overflow-hidden rounded-2xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+              className={`relative mx-auto mt-5 flex h-36 w-36 items-center justify-center overflow-hidden rounded-2xl border border-white/10 ${PRODUCT_IMAGE_FRAME_CLASS}`}
             >
               <ProductImage
                 src={editProduct.image || "/logo.png"}
@@ -1671,7 +1671,7 @@ export default function AdminPage() {
 
             <div className="mt-6 space-y-4">
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Namn (SV)
                 </span>
                 <input
@@ -1683,12 +1683,12 @@ export default function AdminPage() {
                         : current,
                     )
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Namn (EN)
                 </span>
                 <input
@@ -1700,12 +1700,12 @@ export default function AdminPage() {
                         : current,
                     )
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Pris (kr)
                 </span>
                 <input
@@ -1719,7 +1719,7 @@ export default function AdminPage() {
                         : current,
                     )
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
@@ -1737,7 +1737,7 @@ export default function AdminPage() {
               />
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Beskrivning (SV)
                 </span>
                 <textarea
@@ -1750,12 +1750,12 @@ export default function AdminPage() {
                     )
                   }
                   rows={3}
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Beskrivning (EN)
                 </span>
                 <textarea
@@ -1768,12 +1768,12 @@ export default function AdminPage() {
                     )
                   }
                   rows={3}
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Medföljer (t.ex. BAC-vatten ingår, lämna tomt om inget extra
                   medföljer)
                 </span>
@@ -1787,12 +1787,12 @@ export default function AdminPage() {
                     )
                   }
                   placeholder="BAC-vatten ingår"
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Bild-URL
                 </span>
                 <input
@@ -1805,12 +1805,12 @@ export default function AdminPage() {
                     )
                   }
                   placeholder="/produkt.png"
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Styrka / Val
                 </span>
                 <input
@@ -1823,16 +1823,16 @@ export default function AdminPage() {
                     )
                   }
                   placeholder="10 mg:550, 20 mg:850, 50 mg:1200"
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
-                <p className="mt-1.5 text-xs text-zinc-500">
+                <p className="mt-1.5 text-xs text-[#A89A92]">
                   Ange varianter som namn:pris separerade med kommatecken (t.ex.
                   10 mg:550, 20 mg:850). Lämna tom om produkten saknar val.
                 </p>
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Lagerstatus
                 </span>
                 <select
@@ -1847,7 +1847,7 @@ export default function AdminPage() {
                         : current,
                     )
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 >
                   {PRODUCT_STOCK_STATUS_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -1858,7 +1858,7 @@ export default function AdminPage() {
               </label>
 
               <div className="flex flex-wrap gap-4">
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <label className="flex items-center gap-2 text-sm font-medium text-[#CFC4BD]">
                   <input
                     type="checkbox"
                     checked={editProduct.bestSeller}
@@ -1869,11 +1869,11 @@ export default function AdminPage() {
                           : current,
                       )
                     }
-                    className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                    className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                   />
                   Bästsäljare
                 </label>
-                <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <label className="flex items-center gap-2 text-sm font-medium text-[#CFC4BD]">
                   <input
                     type="checkbox"
                     checked={editProduct.premium}
@@ -1884,7 +1884,7 @@ export default function AdminPage() {
                           : current,
                       )
                     }
-                    className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                    className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                   />
                   Premium
                 </label>
@@ -1895,7 +1895,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={closeEditProduct}
-                className="rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-rose-50"
+                className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white"
               >
                 Avbryt
               </button>
@@ -1903,7 +1903,7 @@ export default function AdminPage() {
                 type="button"
                 onClick={() => void saveEditProduct()}
                 disabled={isSavingProduct || !editProduct.name_sv.trim()}
-                className="rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60"
+                className="rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:opacity-60"
               >
                 {isSavingProduct ? "Sparar…" : "Spara ändringar"}
               </button>
@@ -1912,22 +1912,22 @@ export default function AdminPage() {
         </div>
       )}
 
-      <header className="border-b border-rose-100 bg-white/90 backdrop-blur">
+      <header className="border-b border-white/10 bg-[#0B0908]/90 backdrop-blur">
         <div className="flex w-full max-w-none items-center justify-between px-4 py-4 md:px-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#ECE5D8]">
               SimpliCity Admin
             </p>
             <h1 className="text-2xl font-bold tracking-tight">
               Visuell butikspanel
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-[#A89A92]">
               Server-skyddad session — åtkomst verifieras av middleware.
             </p>
           </div>
           <Link
             href="/"
-            className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
+            className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white"
           >
             ← Till butiken
           </Link>
@@ -1938,7 +1938,7 @@ export default function AdminPage() {
         <aside className="mx-0 w-full shrink-0 px-0 sm:w-52">
           <nav
             aria-label="Admin-vyer"
-            className="sticky top-6 space-y-0.5 rounded-2xl border border-rose-100 bg-white p-3 shadow-sm"
+            className="sticky top-6 space-y-0.5 rounded-2xl border border-white/10 bg-white/[0.03] p-3 shadow-xl"
           >
             {ADMIN_TABS.map((tab) => {
               const selected = activeTab === tab.id;
@@ -1950,14 +1950,14 @@ export default function AdminPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full rounded-lg px-2.5 py-2 text-left transition ${
                     selected
-                      ? "bg-rose-400 text-white shadow-sm shadow-rose-200"
-                      : "text-zinc-700 hover:bg-rose-50"
+                      ? "bg-[#ECE5D8] text-[#0F0C0B] font-semibold shadow-md"
+                      : "text-[#CFC4BD] hover:bg-white/5 hover:text-white"
                   }`}
                 >
                   <span className="block text-sm font-semibold">{tab.label}</span>
                   <span
                     className={`mt-0.5 block text-xs ${
-                      selected ? "text-rose-50" : "text-zinc-500"
+                      selected ? "text-[#0F0C0B]/70" : "text-[#A89A92]"
                     }`}
                   >
                     {tab.hint}
@@ -1971,109 +1971,109 @@ export default function AdminPage() {
         <div className="min-w-0 w-full flex-1 space-y-6 p-4 md:p-6">
           {activeTab === "oversikt" ? (
             <>
-              <section className="rounded-3xl border border-rose-100 bg-gradient-to-r from-rose-50 via-white to-rose-50 p-6 shadow-sm sm:p-8">
+              <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-sm sm:p-8">
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Total Omsättning (SEK)
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#A89A92]">
                       Endast godkända order
                     </p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                    <p className="mt-2 text-3xl font-serif tracking-tight text-white">
                       {formatSek(analytics.totalRevenue)}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Denna vecka
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#A89A92]">
                       Senaste 7 dagarna · godkända
                     </p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                    <p className="mt-2 text-3xl font-serif tracking-tight text-white">
                       {formatSek(analytics.revenueThisWeek)}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Denna månad
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#A89A92]">
                       Innevarande månad · godkända
                     </p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                    <p className="mt-2 text-3xl font-serif tracking-tight text-white">
                       {formatSek(analytics.revenueThisMonth)}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Detta år
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#A89A92]">
                       Innevarande år · godkända
                     </p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                    <p className="mt-2 text-3xl font-serif tracking-tight text-white">
                       {formatSek(analytics.revenueThisYear)}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Antal Beställningar
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#A89A92]">
                       Endast godkända order
                     </p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                    <p className="mt-2 text-3xl font-serif tracking-tight text-white">
                       {analytics.orderCount}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-rose-100 bg-white/90 p-5 shadow-sm shadow-rose-100/60">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-rose-500">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Nyhetsbrevsprenumeranter
                     </p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-900">
+                    <p className="mt-2 text-3xl font-serif tracking-tight text-white">
                       {analytics.subscriberCount}
                     </p>
                   </div>
                 </div>
               </section>
 
-              <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-                <h2 className="text-lg font-bold text-zinc-900">Systemhälsa</h2>
-                <p className="mt-1 text-sm text-zinc-500">
+              <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+                <h2 className="text-lg font-bold text-white">Systemhälsa</h2>
+                <p className="mt-1 text-sm text-[#A89A92]">
                   Operativ överblick — försäljningstrender och prenumerationshastighet.
                 </p>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Beställningar idag
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                    <p className="mt-1 text-2xl font-bold text-white">
                       {analytics.ordersToday}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Beställningar (7 dagar)
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                    <p className="mt-1 text-2xl font-bold text-white">
                       {analytics.ordersThisWeek}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Nya prenumeranter idag
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                    <p className="mt-1 text-2xl font-bold text-white">
                       {analytics.signupsToday}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-xs uppercase tracking-wider text-[#A89A92]">
                       Nya prenumeranter (7 dagar)
                     </p>
-                    <p className="mt-1 text-2xl font-bold text-zinc-900">
+                    <p className="mt-1 text-2xl font-bold text-white">
                       {analytics.signupsThisWeek}
                     </p>
                   </div>
@@ -2084,9 +2084,9 @@ export default function AdminPage() {
 
           <div className="space-y-8">
           {activeTab === "oversikt" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Orderhantering</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Orderhantering</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Granska inkommande beställningar och godkänn betalningar manuellt
             innan de räknas in i total omsättning.
           </p>
@@ -2094,7 +2094,7 @@ export default function AdminPage() {
           <div className="mt-6 space-y-4">
             <div className="relative">
               <svg
-                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A89A92]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -2112,13 +2112,13 @@ export default function AdminPage() {
                 value={orderSearchQuery}
                 onChange={(event) => setOrderSearchQuery(event.target.value)}
                 placeholder="Sök namn, e-post, order-ID eller adress…"
-                className="w-full rounded-2xl border border-rose-200 bg-white py-3 pl-11 pr-4 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-11 pr-4 text-xs text-white outline-none transition-all placeholder:text-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Status
                 </span>
                 <select
@@ -2138,7 +2138,7 @@ export default function AdminPage() {
               </label>
 
               <label className="block">
-                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Betalmetod
                 </span>
                 <select
@@ -2157,7 +2157,7 @@ export default function AdminPage() {
               </label>
 
               <label className="block">
-                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Sortera
                 </span>
                 <select
@@ -2177,18 +2177,18 @@ export default function AdminPage() {
           </div>
 
           {orders.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+            <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
               Inga beställningar ännu.
             </p>
           ) : filteredOrders.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+            <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
               Inga beställningar matchar dina filter.
             </p>
           ) : (
-            <div className="mt-6 rounded-2xl border border-rose-100">
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden shadow-xl">
               <div className="block w-full min-w-full overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-rose-50/80 text-left text-xs uppercase tracking-wide text-zinc-500">
+                <thead className="bg-white/5 text-left text-[11px] font-semibold uppercase tracking-widest text-[#ECE5D8] border-b border-white/10">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Order-ID</th>
                     <th className="hidden px-4 py-3 font-semibold lg:table-cell">
@@ -2213,37 +2213,37 @@ export default function AdminPage() {
                   {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
-                        className="border-t border-rose-100 bg-white"
+                        className="border-b border-white/5 text-xs text-[#CFC4BD] hover:bg-white/[0.02] transition-colors"
                       >
-                        <td className="px-4 py-4 font-medium text-zinc-900">
+                        <td className="px-4 py-4 font-medium text-white">
                           <span className="font-mono text-xs">{order.id}</span>
-                          <span className="mt-1 block text-xs text-zinc-500 md:hidden">
+                          <span className="mt-1 block text-xs text-[#A89A92] md:hidden">
                             {formatOrderDate(order.placedAt)}
                           </span>
                           {(order.customerName || order.customerEmail) && (
-                            <span className="mt-1 block text-xs text-zinc-500 lg:hidden">
+                            <span className="mt-1 block text-xs text-[#A89A92] lg:hidden">
                               {order.customerName ?? order.customerEmail}
                             </span>
                           )}
                         </td>
                         <td className="hidden px-4 py-4 lg:table-cell">
-                          <p className="font-medium text-zinc-900">
+                          <p className="font-medium text-white">
                             {order.customerName ?? "—"}
                           </p>
                           {order.customerEmail && (
-                            <p className="mt-0.5 text-xs text-zinc-500">
+                            <p className="mt-0.5 text-xs text-[#A89A92]">
                               {order.customerEmail}
                             </p>
                           )}
                           {order.shippingAddress && (
                             <div className="mt-1 flex items-start gap-1.5">
-                              <p className="line-clamp-2 min-w-0 flex-1 text-xs text-zinc-400">
+                              <p className="line-clamp-2 min-w-0 flex-1 text-xs text-[#A89A92]">
                                 {order.shippingAddress}
                               </p>
                               <button
                                 type="button"
                                 onClick={() => void copyShippingAddress(order)}
-                                className="shrink-0 rounded-md border border-rose-100 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700"
+                                className="shrink-0 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold text-[#A89A92] transition hover:border-white/20 hover:bg-white/10 hover:text-white"
                                 title="Kopiera namn och adress"
                                 aria-label={`Kopiera leveransadress för ${order.id}`}
                               >
@@ -2252,10 +2252,10 @@ export default function AdminPage() {
                             </div>
                           )}
                         </td>
-                        <td className="hidden whitespace-nowrap px-4 py-4 text-zinc-500 md:table-cell">
+                        <td className="hidden whitespace-nowrap px-4 py-4 text-[#A89A92] md:table-cell">
                           {formatOrderDate(order.placedAt)}
                         </td>
-                        <td className="px-4 py-4 font-semibold text-zinc-900">
+                        <td className="px-4 py-4 font-semibold text-white">
                           {formatSek(order.total)}
                         </td>
                         <td className="hidden whitespace-nowrap px-4 py-4 lg:table-cell">
@@ -2288,7 +2288,7 @@ export default function AdminPage() {
                                       })
                                     }
                                     disabled={isRefunding}
-                                    className="block text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                                    className="block text-xs font-semibold text-red-300 hover:text-red-300 disabled:opacity-60"
                                   >
                                     Refund
                                   </button>
@@ -2314,7 +2314,7 @@ export default function AdminPage() {
                                   void updateOrderStatus(order.id, "approve")
                                 }
                                 disabled={updatingOrderId === order.id}
-                                className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
+                                className="rounded-full border border-white/10 bg-[#ECE5D8]/10 px-2.5 py-1 text-[10px] font-medium uppercase whitespace-nowrap text-[#ECE5D8] transition hover:bg-[#ECE5D8]/20 disabled:opacity-60"
                               >
                                 {updatingOrderId === order.id
                                   ? "Godkänner…"
@@ -2336,7 +2336,7 @@ export default function AdminPage() {
                                     updatingOrderId === order.id ||
                                     isWaitingForPackStatus(order.status)
                                   }
-                                  className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-800 transition hover:bg-amber-100 disabled:cursor-default disabled:opacity-50"
+                                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase whitespace-nowrap text-neutral-400 transition hover:bg-white/10 disabled:cursor-default disabled:opacity-50"
                                 >
                                   Väntar på packning
                                 </button>
@@ -2349,7 +2349,7 @@ export default function AdminPage() {
                                     updatingOrderId === order.id ||
                                     order.status === ORDER_STATUS.PACKED
                                   }
-                                  className="rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-sky-700 transition hover:bg-sky-100 disabled:cursor-default disabled:opacity-50"
+                                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase whitespace-nowrap text-neutral-400 transition hover:bg-white/10 disabled:cursor-default disabled:opacity-50"
                                 >
                                   Packad
                                 </button>
@@ -2362,7 +2362,7 @@ export default function AdminPage() {
                                     updatingOrderId === order.id ||
                                     order.status === ORDER_STATUS.DELIVERED
                                   }
-                                  className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-default disabled:opacity-50"
+                                  className="rounded-full border border-white/10 bg-[#ECE5D8]/10 px-2.5 py-1 text-[10px] font-medium uppercase whitespace-nowrap text-[#ECE5D8] transition hover:bg-[#ECE5D8]/20 disabled:cursor-default disabled:opacity-50"
                                 >
                                   Levererad
                                 </button>
@@ -2372,7 +2372,7 @@ export default function AdminPage() {
                             {isWaitingForPackStatus(order.status) ||
                             order.status === ORDER_STATUS.PACKED ? (
                               order.paymentMethod === PAYMENT_METHOD.STRIPE ? (
-                                <span className="text-xs text-zinc-400">
+                                <span className="text-xs text-[#A89A92]">
                                   Använd Refund
                                 </span>
                               ) : (
@@ -2382,7 +2382,7 @@ export default function AdminPage() {
                                     void updateOrderStatus(order.id, "revert")
                                   }
                                   disabled={updatingOrderId === order.id}
-                                  className="rounded-full border border-amber-200 bg-white px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-700 transition hover:bg-amber-50 disabled:opacity-60"
+                                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase whitespace-nowrap text-neutral-400 transition hover:bg-white/10 disabled:opacity-60"
                                 >
                                   {updatingOrderId === order.id
                                     ? "Återställer…"
@@ -2392,7 +2392,7 @@ export default function AdminPage() {
                             ) : null}
 
                             {order.status === ORDER_STATUS.REFUNDED ? (
-                              <span className="text-xs text-zinc-400">—</span>
+                              <span className="text-xs text-[#A89A92]">—</span>
                             ) : null}
 
                             <button
@@ -2405,7 +2405,7 @@ export default function AdminPage() {
                                 })
                               }
                               disabled={deletingOrderId === order.id}
-                              className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-red-600 transition hover:bg-red-100 disabled:opacity-60"
+                              className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-red-300 transition hover:bg-red-500/20 disabled:opacity-60"
                             >
                               {deletingOrderId === order.id
                                 ? "Tar bort…"
@@ -2424,22 +2424,22 @@ export default function AdminPage() {
           )}
 
         {activeTab === "system" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Nyhetsbrevsprenumeranter
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Alla e-postadresser som registrerats via nyhetsbrevet på startsidan.
           </p>
 
           {subscribers.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+            <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
               Inga prenumeranter ännu.
             </p>
           ) : (
-            <div className="mt-6 overflow-hidden rounded-2xl border border-rose-100">
+            <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] shadow-xl">
               <table className="w-full text-sm">
-                <thead className="bg-rose-50/80 text-left text-xs uppercase tracking-wide text-zinc-500">
+                <thead className="bg-white/5 text-left text-[11px] font-semibold uppercase tracking-widest text-[#ECE5D8] border-b border-white/10">
                   <tr>
                     <th className="px-4 py-3 font-semibold">E-post</th>
                     <th className="hidden px-4 py-3 font-semibold sm:table-cell">
@@ -2454,12 +2454,12 @@ export default function AdminPage() {
                   {subscribers.map((subscriber) => (
                     <tr
                       key={subscriber.email}
-                      className="border-t border-rose-100 bg-white"
+                      className="border-b border-white/5 text-xs text-[#CFC4BD] hover:bg-white/[0.02] transition-colors"
                     >
-                      <td className="px-4 py-4 font-medium text-zinc-900">
+                      <td className="px-4 py-4 font-medium text-white">
                         {subscriber.email}
                       </td>
-                      <td className="hidden px-4 py-4 text-zinc-500 sm:table-cell">
+                      <td className="hidden px-4 py-4 text-[#A89A92] sm:table-cell">
                         {formatSubscriberDate(subscriber.subscribedAt)}
                       </td>
                       <td className="px-4 py-4 text-right">
@@ -2469,7 +2469,7 @@ export default function AdminPage() {
                             void handleRemoveSubscriber(subscriber.email)
                           }
                           disabled={removingEmail === subscriber.email}
-                          className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                          className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20 disabled:opacity-60"
                         >
                           {removingEmail === subscriber.email
                             ? "Tar bort…"
@@ -2486,22 +2486,22 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Smarta Kampanjpaneler
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Konverteringsdriven global banner med roterande meddelanden, stil och
             nedräkning.
           </p>
 
           <div className="mt-6 space-y-4">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Aktiva banner-rader
               </span>
               {config.banner.activeLines.length === 0 ? (
-                <p className="mt-2 rounded-xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-6 text-center text-sm text-zinc-500">
+                <p className="mt-2 rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-6 text-center text-sm text-[#A89A92]">
                   Inga aktiva rader — lägg till ditt första meddelande nedan.
                 </p>
               ) : (
@@ -2509,15 +2509,15 @@ export default function AdminPage() {
                   {config.banner.activeLines.map((line, index) => (
                     <li
                       key={`${line}-${index}`}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-rose-100 bg-rose-50/40 px-4 py-3"
+                      className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3"
                     >
-                      <span className="text-sm font-medium text-zinc-800">
+                      <span className="text-sm font-medium text-white">
                         {line}
                       </span>
                       <button
                         type="button"
                         onClick={() => removeBannerLine(index)}
-                        className="shrink-0 rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                        className="shrink-0 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                       >
                         Ta bort
                       </button>
@@ -2530,7 +2530,7 @@ export default function AdminPage() {
                   value={newBannerLine}
                   onChange={(event) => setNewBannerLine(event.target.value)}
                   placeholder="T.ex. Fri frakt med PostNord!"
-                  className="flex-1 rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="flex-1 rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();
@@ -2541,7 +2541,7 @@ export default function AdminPage() {
                 <button
                   type="button"
                   onClick={addBannerLine}
-                  className="shrink-0 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+                  className="shrink-0 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
                 >
                   + Lägg till
                 </button>
@@ -2549,7 +2549,7 @@ export default function AdminPage() {
             </div>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Banner-stil
               </span>
               <select
@@ -2557,7 +2557,7 @@ export default function AdminPage() {
                 onChange={(event) =>
                   updateBanner("style", event.target.value as BannerStyle)
                 }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               >
                 {BANNER_STYLE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -2568,7 +2568,7 @@ export default function AdminPage() {
             </label>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Text &amp; Bakgrunds-animering
               </span>
               <select
@@ -2579,7 +2579,7 @@ export default function AdminPage() {
                     event.target.value as BannerAnimation,
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               >
                 {BANNER_ANIMATION_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -2596,15 +2596,15 @@ export default function AdminPage() {
                 onChange={(event) =>
                   updateBanner("countdownEnabled", event.target.checked)
                 }
-                className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
               />
-              <span className="text-sm font-medium text-zinc-800">
+              <span className="text-sm font-medium text-white">
                 Visa nedräkningstimer i bannern
               </span>
             </label>
 
-            <fieldset className="rounded-xl border border-rose-100 bg-rose-50/30 p-4">
-              <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <fieldset className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Tidsformat i bannern
               </legend>
               <div className="mt-2 space-y-2">
@@ -2613,8 +2613,8 @@ export default function AdminPage() {
                     key={option.value}
                     className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition ${
                       config.banner.timeDisplayMode === option.value
-                        ? "border-rose-300 bg-white shadow-sm"
-                        : "border-transparent bg-transparent hover:border-rose-200 hover:bg-white/70"
+                        ? "border-white/20 bg-white/10 shadow-sm"
+                        : "border-transparent bg-transparent hover:border-white/10 hover:bg-white/5"
                     }`}
                   >
                     <input
@@ -2625,9 +2625,9 @@ export default function AdminPage() {
                       onChange={() =>
                         updateBanner("timeDisplayMode", option.value)
                       }
-                      className="mt-0.5 h-4 w-4 border-rose-300 text-rose-500 focus:ring-rose-400"
+                      className="mt-0.5 h-4 w-4 border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                     />
-                    <span className="text-sm font-medium text-zinc-800">
+                    <span className="text-sm font-medium text-white">
                       {option.label}
                     </span>
                   </label>
@@ -2636,7 +2636,7 @@ export default function AdminPage() {
             </fieldset>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Anpassad text för slutdatum (t.ex. &apos;Söndag 23:59&apos; —
                 Lämna tom för att använda kalenderdatumet)
               </span>
@@ -2647,13 +2647,13 @@ export default function AdminPage() {
                   updateBanner("customDateString", event.target.value)
                 }
                 placeholder="Söndag kl 23:59"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
 
             {config.banner.countdownEnabled && (
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Nedräkning slutar
                 </span>
                 <input
@@ -2671,7 +2671,7 @@ export default function AdminPage() {
                         : "",
                     )
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
             )}
@@ -2680,18 +2680,18 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-zinc-900">Sajtkonfiguration</h2>
-              <p className="mt-1 text-sm text-zinc-500">
+              <h2 className="text-lg font-bold text-white">Sajtkonfiguration</h2>
+              <p className="mt-1 text-sm text-[#A89A92]">
                 Kampanj-hero, header-logotyp och butikskontakt styr den publika
                 startsidan.
               </p>
             </div>
             <Link
               href="/admin/site-settings"
-              className="text-sm font-medium text-rose-600 hover:text-rose-700"
+              className="text-sm font-medium text-[#ECE5D8] hover:text-white"
             >
               Fullständig sajtinställning →
             </Link>
@@ -2713,7 +2713,7 @@ export default function AdminPage() {
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Header Logo Path (bild-URL)
               </span>
               <input
@@ -2722,17 +2722,17 @@ export default function AdminPage() {
                   updateSiteSetting("logoPath", event.target.value)
                 }
                 placeholder="/logo.png"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
-              <p className="mt-2 rounded-xl border border-dashed border-rose-200 bg-rose-50/60 px-4 py-6 text-center text-xs text-zinc-500">
+              <p className="mt-2 rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-6 text-center text-xs text-[#A89A92]">
                 Logotyp-uppladdning: klistra in sökväg till fil i{" "}
-                <code className="rounded bg-white px-1">/public</code> (t.ex.{" "}
-                <code className="rounded bg-white px-1">/logo.png</code>)
+                <code className="rounded bg-white/10 px-1">/public</code> (t.ex.{" "}
+                <code className="rounded bg-white/10 px-1">/logo.png</code>)
               </p>
             </label>
 
             <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Butikens E-postadress
               </span>
               <input
@@ -2746,15 +2746,15 @@ export default function AdminPage() {
                   )
                 }
                 placeholder="hello@simplicity.se"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
-              <p className="mt-2 text-xs text-zinc-500">
+              <p className="mt-2 text-xs text-[#A89A92]">
                 Visas i kontaktsektionen och används för kundkommunikation.
               </p>
             </label>
 
             <label className="block sm:col-span-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 TELEGRAM SUPPORT HANDLE (Boutique länk)
               </span>
               <input
@@ -2767,9 +2767,9 @@ export default function AdminPage() {
                   )
                 }
                 placeholder="@simplicity"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
-              <p className="mt-2 text-xs text-zinc-500">
+              <p className="mt-2 text-xs text-[#A89A92]">
                 Visas i kontaktsektionen och länkar till din Telegram-boutique.
               </p>
             </label>
@@ -2778,15 +2778,15 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Fraktinställningar</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Fraktinställningar</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Styr standardfrakt och tröskelvärde för fri frakt i kassan.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Standard fraktavgift (SEK)
               </span>
               <input
@@ -2797,12 +2797,12 @@ export default function AdminPage() {
                 onChange={(event) =>
                   updateShipping("shippingFee", Number(event.target.value))
                 }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Tröskel för fri frakt (SEK)
               </span>
               <input
@@ -2816,7 +2816,7 @@ export default function AdminPage() {
                     Number(event.target.value),
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
           </div>
@@ -2825,7 +2825,7 @@ export default function AdminPage() {
             type="button"
             onClick={handleSaveShipping}
             disabled={isSavingShipping}
-            className="mt-6 inline-flex items-center justify-center rounded-full bg-rose-400 px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-6 inline-flex items-center justify-center rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSavingShipping ? "Sparar…" : "Spara ändringar"}
           </button>
@@ -2833,9 +2833,9 @@ export default function AdminPage() {
           )}
 
         {activeTab === "betalning" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Crypto Payout Wallets</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Crypto Payout Wallets</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Dessa adresser används i kassan och i Telegram-betalningslänkar.
           </p>
 
@@ -2849,18 +2849,18 @@ export default function AdminPage() {
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   {label}
                 </span>
                 <input
                   value={config.cryptoWallets[key]}
                   onChange={(event) => updateWallet(key, event.target.value)}
-                  className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                  className="mt-2 w-full rounded-xl border border-white/10 px-4 py-3 font-mono text-xs outline-none focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
             ))}
           </div>
-          <p className="mt-4 text-xs text-zinc-500">
+          <p className="mt-4 text-xs text-[#A89A92]">
             Klistra in en rå adress eller full betalningslänk. Hemsidan genererar
             automatiskt en ren, högupplöst QR-kod anpassad för kameror och Trust
             Wallet.
@@ -2869,9 +2869,9 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Products Manager</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Products Manager</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Lägg till eller ta bort produkter som visas i butiken.
           </p>
 
@@ -2879,10 +2879,10 @@ export default function AdminPage() {
             {config.products.map((product) => (
               <div
                 key={product.id}
-                className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div
-                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-rose-100 ${PRODUCT_IMAGE_FRAME_CLASS}`}
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-white/10 ${PRODUCT_IMAGE_FRAME_CLASS}`}
                 >
                   <ProductImage
                     src={product.image}
@@ -2893,16 +2893,16 @@ export default function AdminPage() {
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-zinc-900">
+                  <p className="font-semibold text-white">
                     {product.name_sv || product.title}
                   </p>
-                  <p className="text-sm text-zinc-600">
+                  <p className="text-sm text-[#CFC4BD]">
                     {product.description_sv || product.description}
                   </p>
-                  <p className="text-xs text-zinc-400">
+                  <p className="text-xs text-[#A89A92]">
                     EN: {product.name_en || "—"}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-[#A89A92]">
                     {product.price} SEK ·{" "}
                     {PRODUCT_STOCK_STATUS_OPTIONS.find(
                       (option) => option.value === product.status,
@@ -2910,21 +2910,21 @@ export default function AdminPage() {
                     · {product.image}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-4">
-                    <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                    <label className="flex items-center gap-2 text-sm font-medium text-[#CFC4BD]">
                       <input
                         type="checkbox"
                         checked={config.bestSellerProductIds.includes(product.id)}
                         onChange={() => toggleBestSeller(product.id)}
-                        className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                        className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                       />
                       Bästsäljare
                     </label>
-                    <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                    <label className="flex items-center gap-2 text-sm font-medium text-[#CFC4BD]">
                       <input
                         type="checkbox"
                         checked={config.premiumProductIds.includes(product.id)}
                         onChange={() => togglePremium(product.id)}
-                        className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                        className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                       />
                       Premium
                     </label>
@@ -2934,14 +2934,14 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => openEditProduct(product)}
-                    className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium uppercase text-[#CFC4BD] transition-all hover:bg-white/10 hover:text-white"
                   >
                     Redigera
                   </button>
                   <button
                     type="button"
                     onClick={() => removeProduct(product.id)}
-                    className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                   >
                     Ta bort
                   </button>
@@ -2950,8 +2950,8 @@ export default function AdminPage() {
             ))}
           </div>
 
-          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
-            <h3 className="text-sm font-semibold text-zinc-900">
+          <div className="mt-8 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">
               Lägg till ny produkt
             </h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -2964,7 +2964,7 @@ export default function AdminPage() {
                   }))
                 }
                 placeholder="Namn (SV)"
-                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
               <input
                 value={newProduct.name_en}
@@ -2975,7 +2975,7 @@ export default function AdminPage() {
                   }))
                 }
                 placeholder="Namn (EN)"
-                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
               <input
                 type="number"
@@ -2987,7 +2987,7 @@ export default function AdminPage() {
                   }))
                 }
                 placeholder="Pris (SEK)"
-                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
               <div className="sm:col-span-2">
                 <ProductSaleFields
@@ -3010,7 +3010,7 @@ export default function AdminPage() {
                   }))
                 }
                 placeholder="Bild-URL (t.ex. /produkt.png)"
-                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none sm:col-span-2"
               />
               <textarea
                 value={newProduct.description_sv}
@@ -3022,7 +3022,7 @@ export default function AdminPage() {
                 }
                 placeholder="Beskrivning (SV)"
                 rows={2}
-                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none sm:col-span-2"
               />
               <textarea
                 value={newProduct.description_en}
@@ -3034,12 +3034,12 @@ export default function AdminPage() {
                 }
                 placeholder="Beskrivning (EN)"
                 rows={2}
-                className="rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 sm:col-span-2"
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none sm:col-span-2"
               />
               <div className="sm:col-span-2">
                 <label
                   htmlFor="new-product-included-items"
-                  className="mb-1.5 block text-xs font-medium text-zinc-600"
+                  className="mb-1.5 block text-xs font-medium text-[#CFC4BD]"
                 >
                   Medföljer (t.ex. BAC-vatten ingår, lämna tomt om inget extra
                   medföljer)
@@ -3054,13 +3054,13 @@ export default function AdminPage() {
                     }))
                   }
                   placeholder="BAC-vatten ingår"
-                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </div>
               <div className="sm:col-span-2">
                 <label
                   htmlFor="new-product-size-label"
-                  className="mb-1.5 block text-xs font-medium text-zinc-600"
+                  className="mb-1.5 block text-xs font-medium text-[#CFC4BD]"
                 >
                   Styrka / Val
                 </label>
@@ -3074,9 +3074,9 @@ export default function AdminPage() {
                     }))
                   }
                   placeholder="10 mg:550, 20 mg:850, 50 mg:1200"
-                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
-                <p className="mt-1.5 text-xs text-zinc-500">
+                <p className="mt-1.5 text-xs text-[#A89A92]">
                   Ange varianter som namn:pris separerade med kommatecken (t.ex.
                   10 mg:550, 20 mg:850). Lämna tom om produkten saknar val.
                 </p>
@@ -3084,7 +3084,7 @@ export default function AdminPage() {
               <div className="sm:col-span-2">
                 <label
                   htmlFor="new-product-status"
-                  className="mb-1.5 block text-xs font-medium text-zinc-600"
+                  className="mb-1.5 block text-xs font-medium text-[#CFC4BD]"
                 >
                   Lagerstatus
                 </label>
@@ -3097,7 +3097,7 @@ export default function AdminPage() {
                       status: event.target.value as ProductStockStatus,
                     }))
                   }
-                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 >
                   {PRODUCT_STOCK_STATUS_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -3110,7 +3110,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={addProduct}
-              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+              className="mt-4 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
             >
               + Lägg till produkt
             </button>
@@ -3119,11 +3119,11 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Erbjudanden &amp; Kampanjregler
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Automatiska erbjudanden som &quot;3 för 2&quot; och &quot;Köp 2 få
             100 kr rabatt&quot;. Aktiveras direkt i varukorgen när kriterierna
             uppfylls.
@@ -3131,7 +3131,7 @@ export default function AdminPage() {
 
           <div className="mt-6 space-y-4">
             {(config.campaignRules ?? []).length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+              <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
                 Inga kampanjregler ännu.
               </p>
             ) : (
@@ -3154,14 +3154,14 @@ export default function AdminPage() {
                 return (
                   <div
                     key={rule.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="font-semibold text-zinc-900">{rule.name}</p>
-                      <p className="text-sm text-zinc-600">
+                      <p className="font-semibold text-white">{rule.name}</p>
+                      <p className="text-sm text-[#CFC4BD]">
                         {detail} · {scopeLabel}
                       </p>
-                      <p className="mt-1 text-xs text-zinc-500">
+                      <p className="mt-1 text-xs text-[#A89A92]">
                         {rule.active ? "Aktiv" : "Inaktiv"}
                       </p>
                     </div>
@@ -3171,8 +3171,8 @@ export default function AdminPage() {
                         onClick={() => toggleCampaignRule(rule.id)}
                         className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                           rule.active
-                            ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                            : "border border-rose-200 bg-white text-zinc-700 hover:bg-rose-50"
+                            ? "bg-[#ECE5D8] text-[#0F0C0B] hover:bg-white"
+                            : "border border-white/10 bg-white/5 text-[#CFC4BD] hover:bg-white/10 hover:text-white"
                         }`}
                       >
                         {rule.active ? "På" : "Av"}
@@ -3180,7 +3180,7 @@ export default function AdminPage() {
                       <button
                         type="button"
                         onClick={() => removeCampaignRule(rule.id)}
-                        className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                        className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                       >
                         Ta bort
                       </button>
@@ -3191,13 +3191,13 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
-            <h3 className="text-sm font-semibold text-zinc-900">
+          <div className="mt-8 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">
               Lägg till ny kampanjregel
             </h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <div className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Erbjudandetyp
                 </span>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -3219,8 +3219,8 @@ export default function AdminPage() {
                       }
                       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                         newCampaignRule.type === type
-                          ? "bg-rose-400 text-white"
-                          : "border border-rose-200 bg-white text-zinc-700 hover:bg-rose-50"
+                          ? "bg-[#ECE5D8] text-white"
+                          : "border border-white/10 bg-white/5 text-[#CFC4BD] hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {label}
@@ -3230,7 +3230,7 @@ export default function AdminPage() {
               </div>
 
               <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Visningsnamn (valfritt)
                 </span>
                 <input
@@ -3246,14 +3246,14 @@ export default function AdminPage() {
                       ? "3 för 2"
                       : "Köp 2 få 100 kr rabatt"
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               {newCampaignRule.type === "quantity_flat" ? (
                 <>
                   <label className="block">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                       Köp antal (X)
                     </span>
                     <input
@@ -3267,11 +3267,11 @@ export default function AdminPage() {
                         }))
                       }
                       placeholder="2"
-                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                       Rabatt i kronor (Y)
                     </span>
                     <input
@@ -3285,14 +3285,14 @@ export default function AdminPage() {
                         }))
                       }
                       placeholder="100"
-                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                     />
                   </label>
                 </>
               ) : (
                 <>
                   <label className="block">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                       Köp antal (t.ex. 3)
                     </span>
                     <input
@@ -3306,11 +3306,11 @@ export default function AdminPage() {
                         }))
                       }
                       placeholder="3"
-                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                     />
                   </label>
                   <label className="block">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                       Betala för (t.ex. 2)
                     </span>
                     <input
@@ -3324,14 +3324,14 @@ export default function AdminPage() {
                         }))
                       }
                       placeholder="2"
-                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                     />
                   </label>
                 </>
               )}
 
               <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Målprodukt
                 </span>
                 <select
@@ -3342,7 +3342,7 @@ export default function AdminPage() {
                       productScope: event.target.value,
                     }))
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 >
                   <option value="all">Alla produkter</option>
                   {config.products.map((product) => (
@@ -3363,9 +3363,9 @@ export default function AdminPage() {
                       active: event.target.checked,
                     }))
                   }
-                  className="h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                  className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                 />
-                <span className="text-sm font-medium text-zinc-700">
+                <span className="text-sm font-medium text-[#CFC4BD]">
                   Aktivera direkt när sparad
                 </span>
               </label>
@@ -3373,7 +3373,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={addCampaignRule}
-              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+              className="mt-4 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
             >
               + Lägg till kampanjregel
             </button>
@@ -3382,9 +3382,9 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Rabatthanterare</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Rabatthanterare</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Skapa och hantera aktiva kampanjkoder med produktomfång och
             användningsgränser.
           </p>
@@ -3401,19 +3401,19 @@ export default function AdminPage() {
               return (
                 <div
                   key={discount.id}
-                  className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-semibold text-zinc-900">
+                    <p className="font-semibold text-white">
                       {discount.code}
                     </p>
-                    <p className="text-sm text-zinc-600">
+                    <p className="text-sm text-[#CFC4BD]">
                       {discount.type === "percent"
                         ? `${discount.value}% rabatt`
                         : `${discount.value} SEK avdrag`}{" "}
                       · {scopeLabel}
                     </p>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#A89A92]">
                       Användning: {discount.usageCount}
                       {discount.usageLimit > 0
                         ? ` / ${discount.usageLimit}`
@@ -3423,7 +3423,7 @@ export default function AdminPage() {
                   <button
                     type="button"
                     onClick={() => removeDiscount(discount.id)}
-                    className="rounded-full border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                   >
                     Ta bort
                   </button>
@@ -3432,13 +3432,13 @@ export default function AdminPage() {
             })}
           </div>
 
-          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
-            <h3 className="text-sm font-semibold text-zinc-900">
+          <div className="mt-8 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">
               Lägg till ny rabattkod
             </h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Kupongnamn
                 </span>
                 <input
@@ -3450,12 +3450,12 @@ export default function AdminPage() {
                     }))
                   }
                   placeholder="SUMMER20"
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <div className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Rabatttyp
                 </span>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -3473,8 +3473,8 @@ export default function AdminPage() {
                       }
                       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                         newDiscount.type === type
-                          ? "bg-rose-400 text-white"
-                          : "border border-rose-200 bg-white text-zinc-700 hover:bg-rose-50"
+                          ? "bg-[#ECE5D8] text-white"
+                          : "border border-white/10 bg-white/5 text-[#CFC4BD] hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {label}
@@ -3484,7 +3484,7 @@ export default function AdminPage() {
               </div>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Värde
                 </span>
                 <input
@@ -3498,12 +3498,12 @@ export default function AdminPage() {
                     }))
                   }
                   placeholder={newDiscount.type === "percent" ? "20" : "100"}
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Användningsgräns (0 = obegränsat)
                 </span>
                 <input
@@ -3517,12 +3517,12 @@ export default function AdminPage() {
                     }))
                   }
                   placeholder="0"
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
 
               <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Produktomfång
                 </span>
                 <select
@@ -3533,7 +3533,7 @@ export default function AdminPage() {
                       productScope: event.target.value,
                     }))
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 >
                   <option value="all">Alla produkter</option>
                   {config.products.map((product) => (
@@ -3547,7 +3547,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={addDiscount}
-              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+              className="mt-4 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
             >
               + Lägg till rabattkod
             </button>
@@ -3556,24 +3556,24 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Influencer-samarbeten
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Spåra betalda TikTok-partnerskap via{" "}
-            <code className="rounded bg-rose-50 px-1">?ref=handle</code> och
+            <code className="rounded bg-white/10 px-1 text-[#ECE5D8]">?ref=handle</code> och
             kampanjkoder.
           </p>
 
           {config.influencers.length === 0 && influencerStats.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+            <p className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
               Inga influencers registrerade ännu.
             </p>
           ) : (
-            <div className="mt-6 overflow-hidden rounded-2xl border border-rose-100">
+            <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] shadow-xl">
               <table className="w-full text-sm">
-                <thead className="bg-rose-50/80 text-left text-xs uppercase tracking-wide text-zinc-500">
+                <thead className="bg-white/5 text-left text-[11px] font-semibold uppercase tracking-widest text-[#ECE5D8] border-b border-white/10">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Influencer</th>
                     <th className="px-4 py-3 font-semibold">Kampanjkod</th>
@@ -3594,28 +3594,28 @@ export default function AdminPage() {
                     return (
                       <tr
                         key={influencer.id}
-                        className="border-t border-rose-100 bg-white"
+                        className="border-b border-white/5 text-xs text-[#CFC4BD] hover:bg-white/[0.02] transition-colors"
                       >
-                        <td className="px-4 py-4 font-medium text-zinc-900">
+                        <td className="px-4 py-4 font-medium text-white">
                           {influencer.handle}
                         </td>
-                        <td className="px-4 py-4 font-mono text-xs text-zinc-600">
+                        <td className="px-4 py-4 font-mono text-xs text-[#CFC4BD]">
                           {influencer.promoCode || "—"}
                         </td>
-                        <td className="px-4 py-4 text-zinc-700">
+                        <td className="px-4 py-4 text-[#CFC4BD]">
                           {influencer.commissionPercent}%
                         </td>
-                        <td className="px-4 py-4 text-zinc-700">
+                        <td className="px-4 py-4 text-[#CFC4BD]">
                           {stats?.visits ?? 0}
                         </td>
-                        <td className="px-4 py-4 text-zinc-700">
+                        <td className="px-4 py-4 text-[#CFC4BD]">
                           {stats?.purchases ?? 0}
                         </td>
                         <td className="px-4 py-4 text-right">
                           <button
                             type="button"
                             onClick={() => removeInfluencer(influencer.id)}
-                            className="rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                            className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                           >
                             Ta bort
                           </button>
@@ -3628,13 +3628,13 @@ export default function AdminPage() {
             </div>
           )}
 
-          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
-            <h3 className="text-sm font-semibold text-zinc-900">
+          <div className="mt-8 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">
               Lägg till influencer
             </h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Influencer Handle/Namn
                 </span>
                 <input
@@ -3646,11 +3646,11 @@ export default function AdminPage() {
                     }))
                   }
                   placeholder="@linn_beauty"
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Tilldelad kampanjkod
                 </span>
                 <select
@@ -3661,7 +3661,7 @@ export default function AdminPage() {
                       promoCode: event.target.value,
                     }))
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 >
                   <option value="">Välj rabattkod…</option>
                   {config.discounts.map((discount) => (
@@ -3672,7 +3672,7 @@ export default function AdminPage() {
                 </select>
               </label>
               <label className="block">
-                <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                   Provision (%)
                 </span>
                 <input
@@ -3687,14 +3687,14 @@ export default function AdminPage() {
                       commissionPercent: Number(event.target.value),
                     }))
                   }
-                  className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                  className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                 />
               </label>
             </div>
             <button
               type="button"
               onClick={addInfluencer}
-              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+              className="mt-4 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
             >
               + Lägg till influencer
             </button>
@@ -3704,18 +3704,18 @@ export default function AdminPage() {
 
         {activeTab === "system" && (
         <>
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             System Integration Settings
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Telegram-botinställningar för ordernotiser. Sparas säkert i
             butikskonfigurationen — inget behov av att redigera .env manuellt.
           </p>
 
           <div className="mt-6 grid gap-4">
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Telegram Bot Token
               </span>
               <input
@@ -3729,12 +3729,12 @@ export default function AdminPage() {
                 }
                 placeholder="123456789:ABCdefGHI..."
                 autoComplete="off"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 px-4 py-3 font-mono text-xs outline-none focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Telegram Chat ID
               </span>
               <input
@@ -3743,9 +3743,9 @@ export default function AdminPage() {
                   updateSystemIntegration("telegramChatId", event.target.value)
                 }
                 placeholder="123456789"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-xs outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 px-4 py-3 font-mono text-xs outline-none focus:border-[#ECE5D8] focus:outline-none"
               />
-              <p className="mt-2 text-xs text-zinc-500">
+              <p className="mt-2 text-xs text-[#A89A92]">
                 Ditt personliga chat-ID dit ordermeddelanden skickas vid
                 checkout.
               </p>
@@ -3753,17 +3753,17 @@ export default function AdminPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Marknadsföring &amp; Spårning
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Analyspixlar laddas automatiskt i butikens publika layout.
           </p>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Google Analytics ID
               </span>
               <input
@@ -3775,12 +3775,12 @@ export default function AdminPage() {
                   )
                 }
                 placeholder="G-XXXXXXXXXX"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 font-mono text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 TikTok Pixel ID
               </span>
               <input
@@ -3789,7 +3789,7 @@ export default function AdminPage() {
                   updateMarketingTracking("tiktokPixelId", event.target.value)
                 }
                 placeholder="CXXXXXXXXXXXXXXX"
-                className="mt-2 w-full rounded-xl border border-rose-200 px-4 py-3 font-mono text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 font-mono text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
           </div>
@@ -3798,25 +3798,25 @@ export default function AdminPage() {
           )}
 
         {activeTab === "kampanj" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">FAQ-hantering</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">FAQ-hantering</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Hantera frågor och svar som visas i accordionen på startsidan.
           </p>
 
           <div className="mt-6 space-y-4">
             {config.faqs.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+              <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
                 Inga FAQ-poster ännu.
               </p>
             ) : (
               config.faqs.map((entry) => (
                 <div
                   key={entry.id}
-                  className="rounded-2xl border border-rose-100 bg-rose-50/40 p-4"
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
                 >
                   <label className="block">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                       Fråga
                     </span>
                     <input
@@ -3824,11 +3824,11 @@ export default function AdminPage() {
                       onChange={(event) =>
                         updateFaq(entry.id, "question", event.target.value)
                       }
-                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                     />
                   </label>
                   <label className="mt-3 block">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                       Svar
                     </span>
                     <textarea
@@ -3837,13 +3837,13 @@ export default function AdminPage() {
                         updateFaq(entry.id, "answer", event.target.value)
                       }
                       rows={3}
-                      className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                     />
                   </label>
                   <button
                     type="button"
                     onClick={() => removeFaq(entry.id)}
-                    className="mt-3 rounded-full border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                    className="mt-3 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-300 transition hover:bg-red-500/20"
                   >
                     Ta bort
                   </button>
@@ -3852,8 +3852,8 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div className="mt-8 rounded-2xl border border-dashed border-rose-200 bg-rose-50/30 p-5">
-            <h3 className="text-sm font-semibold text-zinc-900">
+          <div className="mt-8 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5">
+            <h3 className="text-sm font-semibold text-white">
               Lägg till ny FAQ
             </h3>
             <div className="mt-4 space-y-3">
@@ -3866,7 +3866,7 @@ export default function AdminPage() {
                   }))
                 }
                 placeholder="Fråga"
-                className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
               <textarea
                 value={newFaq.answer}
@@ -3878,13 +3878,13 @@ export default function AdminPage() {
                 }
                 placeholder="Svar"
                 rows={3}
-                className="w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </div>
             <button
               type="button"
               onClick={addFaq}
-              className="mt-4 rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+              className="mt-4 rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
             >
               + Lägg till FAQ
             </button>
@@ -3893,14 +3893,14 @@ export default function AdminPage() {
           )}
 
         {activeTab === "oversikt" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Systemloggar</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Systemloggar</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Senaste backend-fel från checkout och integrationer.
           </p>
 
           {systemLogs.length === 0 ? (
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700">
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#ECE5D8]/10 px-5 py-2.5 text-sm font-semibold text-[#ECE5D8]">
               🟢 Alla system fungerar perfekt
             </div>
           ) : (
@@ -3908,17 +3908,17 @@ export default function AdminPage() {
               {systemLogs.map((log) => (
                 <li
                   key={log.id}
-                  className="rounded-xl border border-red-100 bg-red-50/40 px-4 py-3"
+                  className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3"
                 >
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#A89A92]">
                     <span className="font-mono">
                       {formatLogTimestamp(log.timestamp)}
                     </span>
-                    <span className="rounded-full bg-red-100 px-2 py-0.5 font-semibold uppercase tracking-wide text-red-700">
+                    <span className="rounded-full bg-red-500/20 px-2 py-0.5 font-semibold uppercase tracking-wide text-red-300">
                       {log.source}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm font-medium text-zinc-800">
+                  <p className="mt-1 text-sm font-medium text-white">
                     {log.message}
                   </p>
                 </li>
@@ -3929,23 +3929,23 @@ export default function AdminPage() {
           )}
 
         {activeTab === "recensioner" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Kundrecensioner</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Kundrecensioner</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Granska inkomna recensioner. Endast godkända recensioner visas i butiken.
           </p>
 
           {isLoadingReviews ? (
-            <p className="mt-8 text-sm text-zinc-500">Laddar recensioner…</p>
+            <p className="mt-8 text-sm text-[#A89A92]">Laddar recensioner…</p>
           ) : customerReviews.length === 0 ? (
-            <p className="mt-8 text-sm text-zinc-500">
+            <p className="mt-8 text-sm text-[#A89A92]">
               Inga recensioner har skickats in ännu.
             </p>
           ) : (
             <div className="mt-8 overflow-x-auto">
-              <table className="min-w-full divide-y divide-rose-100 text-sm">
+              <table className="min-w-full divide-y divide-white/10 text-sm">
                 <thead>
-                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  <tr className="text-left text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                     <th className="px-3 py-3">Kund</th>
                     <th className="px-3 py-3">Produkt</th>
                     <th className="px-3 py-3">Betyg</th>
@@ -3955,7 +3955,7 @@ export default function AdminPage() {
                     <th className="px-3 py-3 text-right">Åtgärder</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-rose-50">
+                <tbody className="divide-y divide-white/5">
                   {customerReviews.map((review) => {
                     const isPending = review.status === REVIEW_STATUS.PENDING;
                     const isApproving = approvingReviewId === review.id;
@@ -3965,7 +3965,7 @@ export default function AdminPage() {
 
                     return (
                       <tr key={review.id} className="align-top">
-                        <td className="px-3 py-4 font-semibold text-zinc-900">
+                        <td className="px-3 py-4 font-semibold text-white">
                           {review.name}
                           {review.isVerified && (
                             <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-amber-700">
@@ -3973,22 +3973,22 @@ export default function AdminPage() {
                             </span>
                           )}
                           {review.email ? (
-                            <span className="mt-1 block text-xs font-medium text-zinc-500">
+                            <span className="mt-1 block text-xs font-medium text-[#A89A92]">
                               {review.email}
                             </span>
                           ) : (
-                            <span className="mt-1 block text-[10px] font-medium text-zinc-400">
+                            <span className="mt-1 block text-[10px] font-medium text-[#A89A92]">
                               Ingen e-post
                             </span>
                           )}
                         </td>
                         <td className="px-3 py-4">
                           {review.productTag ? (
-                            <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                            <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#ECE5D8]">
                               {review.productTag}
                             </span>
                           ) : (
-                            <span className="text-xs text-zinc-400">—</span>
+                            <span className="text-xs text-[#A89A92]">—</span>
                           )}
                         </td>
                         <td className="px-3 py-4">
@@ -3997,16 +3997,16 @@ export default function AdminPage() {
                             <span aria-hidden>★</span>
                           </span>
                         </td>
-                        <td className="max-w-xs px-3 py-4 text-zinc-600">
+                        <td className="max-w-xs px-3 py-4 text-[#CFC4BD]">
                           <p className="line-clamp-4 whitespace-pre-wrap">
                             {review.text}
                           </p>
                           {review.adminReply ? (
-                            <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50/70 px-3 py-2">
-                              <p className="text-[10px] font-bold uppercase tracking-wide text-rose-700">
+                            <div className="mt-3 rounded-xl border border-white/10 bg-white/5/70 px-3 py-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-[#ECE5D8]">
                                 Admin-svar
                               </p>
-                              <p className="mt-1 text-xs leading-relaxed text-zinc-700 whitespace-pre-wrap">
+                              <p className="mt-1 text-xs leading-relaxed text-[#CFC4BD] whitespace-pre-wrap">
                                 {review.adminReply}
                               </p>
                             </div>
@@ -4028,7 +4028,7 @@ export default function AdminPage() {
                                 rows={4}
                                 maxLength={2000}
                                 placeholder="Skriv ditt svar till kunden…"
-                                className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-[#ECE5D8] focus:outline-none"
                               />
                               <div className="flex flex-wrap gap-2">
                                 <button
@@ -4037,7 +4037,7 @@ export default function AdminPage() {
                                     void handleReplyToReview(review.id)
                                   }
                                   disabled={isSavingReply}
-                                  className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-60"
+                                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-[#ECE5D8] transition hover:bg-white/10 disabled:opacity-60"
                                 >
                                   {isSavingReply ? "Sparar…" : "Skicka svar"}
                                 </button>
@@ -4045,7 +4045,7 @@ export default function AdminPage() {
                                   type="button"
                                   onClick={() => setReplyingReviewId(null)}
                                   disabled={isSavingReply}
-                                  className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-bold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-60"
+                                  className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-[#CFC4BD] transition hover:bg-white/10 hover:text-white disabled:opacity-60"
                                 >
                                   Avbryt
                                 </button>
@@ -4053,7 +4053,7 @@ export default function AdminPage() {
                             </div>
                           ) : null}
                         </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-zinc-500">
+                        <td className="whitespace-nowrap px-3 py-4 text-[#A89A92]">
                           {new Date(review.createdAt).toLocaleDateString("sv-SE", {
                             year: "numeric",
                             month: "short",
@@ -4062,11 +4062,11 @@ export default function AdminPage() {
                         </td>
                         <td className="px-3 py-4">
                           {isPending ? (
-                            <span className="inline-flex rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-700">
+                            <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase text-neutral-400">
                               Väntar på godkännande
                             </span>
                           ) : (
-                            <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                            <span className="inline-flex rounded-full border border-white/10 bg-[#ECE5D8]/10 px-2.5 py-1 text-[10px] font-medium uppercase text-[#ECE5D8]">
                               Godkänd
                             </span>
                           )}
@@ -4078,7 +4078,7 @@ export default function AdminPage() {
                                 type="button"
                                 onClick={() => void handleApproveReview(review.id)}
                                 disabled={isApproving || isDeleting || isSavingReply}
-                                className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-60"
+                                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-[#ECE5D8]/10 px-4 py-2 text-xs font-bold uppercase text-[#ECE5D8] transition hover:bg-[#ECE5D8]/20 disabled:opacity-60"
                               >
                                 {isApproving ? "Godkänner…" : "Godkänn"}
                               </button>
@@ -4097,7 +4097,7 @@ export default function AdminPage() {
                                   }));
                                 }}
                                 disabled={isApproving || isDeleting || isSavingReply}
-                                className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-50 disabled:opacity-60"
+                                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-[#ECE5D8] transition hover:bg-white/5 disabled:opacity-60"
                               >
                                 Svara
                               </button>
@@ -4106,7 +4106,7 @@ export default function AdminPage() {
                               type="button"
                               onClick={() => void handleDeleteReview(review.id)}
                               disabled={isApproving || isDeleting || isSavingReply}
-                              className="inline-flex items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                              className="inline-flex items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs font-bold text-red-300 transition hover:bg-red-500/20 disabled:opacity-60"
                             >
                               {isDeleting ? "Tar bort…" : "Ta bort"}
                             </button>
@@ -4123,20 +4123,20 @@ export default function AdminPage() {
         )}
 
         {activeTab === "lager" && config && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Lagerhantering</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Lagerhantering</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Ange lagerantal per produktvariant. Aktivera synlighet för att visa
             lagerstatus för köpare på produktsidan.
           </p>
 
           <div className="mt-6 space-y-6">
-            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-rose-100 bg-rose-50/40 px-4 py-4">
+            <label className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
               <div>
-                <span className="block text-sm font-semibold text-zinc-900">
+                <span className="block text-sm font-semibold text-white">
                   Visa lagerstatus för köpare
                 </span>
-                <span className="mt-1 block text-xs text-zinc-500">
+                <span className="mt-1 block text-xs text-[#A89A92]">
                   Visar pulserande lageretikett vid lågt lager och &quot;Slutsåld&quot; vid 0.
                 </span>
               </div>
@@ -4146,12 +4146,12 @@ export default function AdminPage() {
                 onChange={(event) =>
                   updateStockManagement("showStockToBuyers", event.target.checked)
                 }
-                className="h-5 w-5 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                className="h-5 w-5 rounded border-white/20 text-[#ECE5D8] focus:ring-[#ECE5D8]"
               />
             </label>
 
             <label className="block max-w-xs">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Tröskel för lågt lager
               </span>
               <input
@@ -4164,35 +4164,35 @@ export default function AdminPage() {
                     Number(event.target.value),
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
-              <span className="mt-1 block text-xs text-zinc-500">
+              <span className="mt-1 block text-xs text-[#A89A92]">
                 Vid detta antal eller lägre visas &quot;Endast X kvar i lager!&quot;
               </span>
             </label>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-zinc-900">Lager per variant</h3>
+              <h3 className="text-sm font-bold text-white">Lager per variant</h3>
               {buildAdminVariantStockRows(config).length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-8 text-center text-sm text-zinc-500">
+                <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-8 text-center text-sm text-[#A89A92]">
                   Lägg till produkter under Kampanj för att hantera lager.
                 </p>
               ) : (
                 buildAdminVariantStockRows(config).map((row) => (
                   <div
                     key={row.key}
-                    className="flex flex-col gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 sm:flex-row sm:items-center sm:justify-between"
+                    className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-semibold text-zinc-900">
+                      <p className="text-sm font-semibold text-white">
                         {row.productName}
                       </p>
-                      <p className="text-xs font-medium uppercase tracking-wide text-rose-600">
+                      <p className="text-xs font-medium uppercase tracking-wide text-[#ECE5D8]">
                         {row.variantLabel}
                       </p>
                     </div>
                     <label className="flex items-center gap-3 sm:min-w-[10rem]">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                         Antal
                       </span>
                       <input
@@ -4205,7 +4205,7 @@ export default function AdminPage() {
                             Number(event.target.value),
                           )
                         }
-                        className="w-full rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-rose-400 sm:w-28"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm outline-none focus:border-[#ECE5D8] sm:w-28"
                       />
                     </label>
                   </div>
@@ -4217,9 +4217,9 @@ export default function AdminPage() {
         )}
 
         {activeTab === "navigation" && (
-        <section className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Navigation</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Navigation</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Styr synlighet och visningsnamn för menylänkar och widgets.
           </p>
 
@@ -4231,49 +4231,49 @@ export default function AdminPage() {
               return (
                 <div
                   key={key}
-                  className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5"
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5"
                 >
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900">
+                    <h3 className="text-sm font-bold text-white">
                       {meta.title}
                     </h3>
-                    <p className="mt-1 text-xs text-zinc-500">{meta.hint}</p>
+                    <p className="mt-1 text-xs text-[#A89A92]">{meta.hint}</p>
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                    <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                       <input
                         type="checkbox"
                         checked={item.hide_navbar}
                         onChange={(event) =>
                           updateNavItem(key, "hide_navbar", event.target.checked)
                         }
-                        className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                       />
-                      <span className="text-sm leading-snug text-zinc-700">
-                        <span className="block font-semibold text-zinc-900">
+                      <span className="text-sm leading-snug text-[#CFC4BD]">
+                        <span className="block font-semibold text-white">
                           Dölj endast i toppmenyn
                         </span>
-                        <span className="mt-0.5 block text-xs text-zinc-500">
+                        <span className="mt-0.5 block text-xs text-[#A89A92]">
                           Länken försvinner från header och mobilmeny.
                         </span>
                       </span>
                     </label>
 
-                    <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                    <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                       <input
                         type="checkbox"
                         checked={item.hide_section}
                         onChange={(event) =>
                           updateNavItem(key, "hide_section", event.target.checked)
                         }
-                        className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                        className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                       />
-                      <span className="text-sm leading-snug text-zinc-700">
-                        <span className="block font-semibold text-zinc-900">
+                      <span className="text-sm leading-snug text-[#CFC4BD]">
+                        <span className="block font-semibold text-white">
                           Dölj helt från hemsidan
                         </span>
-                        <span className="mt-0.5 block text-xs text-zinc-500">
+                        <span className="mt-0.5 block text-xs text-[#A89A92]">
                           Sektionen eller widgeten renderas inte på startsidan.
                         </span>
                       </span>
@@ -4282,7 +4282,7 @@ export default function AdminPage() {
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <label className="block">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                         Visningsnamn (SV)
                       </span>
                       <input
@@ -4292,12 +4292,12 @@ export default function AdminPage() {
                           updateNavItem(key, "label_sv", event.target.value)
                         }
                         placeholder={meta.title}
-                        className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                       />
                     </label>
 
                     <label className="block">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                         Display name (EN)
                       </span>
                       <input
@@ -4307,7 +4307,7 @@ export default function AdminPage() {
                           updateNavItem(key, "label_en", event.target.value)
                         }
                         placeholder={meta.title}
-                        className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                        className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                       />
                     </label>
                   </div>
@@ -4323,7 +4323,7 @@ export default function AdminPage() {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex h-14 items-center justify-center rounded-full bg-rose-400 px-10 text-base font-bold text-white shadow-lg shadow-rose-400/30 transition hover:bg-rose-500 disabled:opacity-60"
+            className="inline-flex h-14 items-center justify-center rounded-full bg-[#ECE5D8] px-10 text-base font-bold text-white shadow-lg shadow-black/40 transition hover:bg-white/50 disabled:opacity-60"
           >
             {isSaving ? "Sparar…" : "Spara ändringar"}
           </button>

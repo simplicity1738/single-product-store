@@ -11,10 +11,10 @@ type HeroCampaignFormProps = {
 };
 
 const inputClassName =
-  "mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100";
+  "mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none";
 
 const labelClassName =
-  "text-xs font-semibold uppercase tracking-wide text-zinc-500";
+  "text-xs font-semibold uppercase tracking-wider text-[#A89A92]";
 
 export default function HeroCampaignForm({
   siteSettings,
@@ -65,11 +65,11 @@ export default function HeroCampaignForm({
     activeProducts.length > 0 ? activeProducts : products;
 
   return (
-    <div className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5">
-      <h2 className="text-sm font-bold text-zinc-900">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5">
+      <h2 className="text-sm font-bold text-white">
         Hjälte-Kampanj (Hero Showcase)
       </h2>
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="mt-1 text-xs text-[#A89A92]">
         Styr säsongskampanj, rubriker och utvald produkt på startsidans hero.
       </p>
 
@@ -175,23 +175,23 @@ export default function HeroCampaignForm({
         </label>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-rose-100 bg-white/80 p-4 sm:p-5">
-        <h3 className="text-sm font-bold text-zinc-900">
+      <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
+        <h3 className="text-sm font-bold text-white">
           Kampanj-addons &amp; Tillbehör
         </h3>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-1 text-xs text-[#A89A92]">
           Bygg en obegränsad lista med tillbehör för kampanjkortet på startsidan.
         </p>
 
-        <label className="mt-4 flex items-start gap-3 rounded-xl border border-rose-100 bg-rose-50/40 px-4 py-3">
+        <label className="mt-4 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
           <input
             type="checkbox"
             checked={siteSettings.showAddons}
             onChange={(event) => patch({ showAddons: event.target.checked })}
-            className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
           />
-          <span className="text-sm leading-snug text-zinc-700">
-            <span className="block font-semibold text-zinc-900">
+          <span className="text-sm leading-snug text-[#CFC4BD]">
+            <span className="block font-semibold text-white">
               Aktivera merförsäljning (Add-ons) på startsidan
             </span>
           </span>
@@ -199,23 +199,23 @@ export default function HeroCampaignForm({
 
         <div className="mt-4 space-y-3">
           {siteSettings.campaignAddons.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-rose-200 bg-rose-50/40 px-4 py-6 text-center text-xs text-zinc-500">
+            <p className="rounded-xl border border-dashed border-white/10 bg-white/[0.02] px-4 py-6 text-center text-xs text-[#A89A92]">
               Inga tillbehör ännu. Lägg till ditt första tillbehör nedan.
             </p>
           ) : (
             siteSettings.campaignAddons.map((addon, index) => (
               <div
                 key={addon.id}
-                className="rounded-xl border border-rose-100 bg-white p-4"
+                className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#A89A92]">
                     Tillbehör {index + 1}
                   </p>
                   <button
                     type="button"
                     onClick={() => removeAddon(addon.id)}
-                    className="rounded-lg px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700"
+                    className="rounded-lg px-2 py-1 text-xs font-semibold text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
                   >
                     🗑 Ta bort tillbehör
                   </button>
@@ -260,15 +260,15 @@ export default function HeroCampaignForm({
         <button
           type="button"
           onClick={addAddon}
-          className="mt-4 w-full rounded-full bg-rose-400 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500"
+          className="mt-4 w-full rounded-xl bg-[#ECE5D8] px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white"
         >
           ➕ Lägg till nytt tillbehör
         </button>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-rose-100 bg-white/80 p-4 sm:p-5">
-        <h3 className="text-sm font-bold text-zinc-900">Urgency Ticker</h3>
-        <p className="mt-1 text-xs text-zinc-500">
+      <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
+        <h3 className="text-sm font-bold text-white">Urgency Ticker</h3>
+        <p className="mt-1 text-xs text-[#A89A92]">
           Text som visas vid nedräkningsmätaren under kampanjlayouten.
         </p>
 

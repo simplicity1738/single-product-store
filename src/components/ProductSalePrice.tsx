@@ -67,7 +67,7 @@ export function ProductSaleBadge({
 
   return (
     <span
-      className={`absolute left-3 top-3 z-10 rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-white ${className}`}
+      className={`absolute top-3 left-3 z-20 rounded-full bg-[#ECE5D8] px-2.5 py-1 text-[10px] font-bold tracking-wider text-[#0F0C0B] shadow-md ${className}`}
     >
       {label}
     </span>

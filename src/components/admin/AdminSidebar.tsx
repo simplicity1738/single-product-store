@@ -41,17 +41,17 @@ export default function AdminSidebar() {
 
   return (
     <aside
-      className={`hidden shrink-0 border-r border-rose-100 bg-white/90 transition-[width] duration-300 ease-out lg:block ${
+      className={`hidden shrink-0 border-r border-white/10 bg-[#0B0908] text-white transition-[width] duration-300 ease-out lg:block ${
         collapsed ? "w-16" : "w-48"
       }`}
     >
       <div className="sticky top-0 flex h-screen flex-col p-3">
         <div className={`px-1 ${collapsed ? "text-center" : ""}`}>
-          <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#ECE5D8]">
             {collapsed ? "SC" : "Admin"}
           </p>
           {!collapsed ? (
-            <p className="mt-1 text-sm font-bold text-zinc-900">SimpliCity</p>
+            <p className="mt-1 text-sm font-bold text-white">SimpliCity</p>
           ) : null}
         </div>
 
@@ -70,12 +70,12 @@ export default function AdminSidebar() {
                 key={item.href}
                 href={item.href}
                 title={item.label}
-                className={`block rounded-lg text-sm font-semibold transition ${
-                  collapsed ? "px-0 py-2 text-center" : "px-2.5 py-2"
+                className={`block rounded-xl text-xs font-medium uppercase tracking-wider transition-all ${
+                  collapsed ? "px-0 py-2.5 text-center" : "px-4 py-2.5"
                 } ${
                   active
-                    ? "bg-rose-50 text-rose-700 shadow-sm shadow-rose-100"
-                    : "text-zinc-600 hover:bg-rose-50/60 hover:text-rose-700"
+                    ? "bg-[#ECE5D8] font-semibold text-[#0F0C0B] shadow-md"
+                    : "text-[#CFC4BD] hover:bg-white/5 hover:text-white"
                 }`}
               >
                 {collapsed ? item.short : item.label}
@@ -88,7 +88,7 @@ export default function AdminSidebar() {
           {!collapsed ? (
             <Link
               href="/"
-              className="block text-sm font-medium text-zinc-500 transition hover:text-rose-600"
+              className="block text-sm font-medium text-[#A89A92] transition hover:text-white"
             >
               ← Tillbaka till butiken
             </Link>
@@ -96,7 +96,7 @@ export default function AdminSidebar() {
             <Link
               href="/"
               title="Tillbaka till butiken"
-              className="block text-center text-sm font-medium text-zinc-500 transition hover:text-rose-600"
+              className="block text-center text-sm font-medium text-[#A89A92] transition hover:text-white"
             >
               ←
             </Link>
@@ -107,7 +107,7 @@ export default function AdminSidebar() {
             onClick={toggleCollapsed}
             aria-label={collapsed ? "Expandera sidomeny" : "Minimera sidomeny"}
             title={collapsed ? "Expandera" : "Minimera"}
-            className="flex w-full items-center justify-center rounded-lg border border-rose-100 bg-rose-50/50 py-2 text-sm font-bold text-rose-700 transition hover:bg-rose-100"
+            className="flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/5 py-2 text-sm font-bold text-[#CFC4BD] transition hover:bg-white/10 hover:text-white"
           >
             {collapsed ? ">" : "<"}
           </button>

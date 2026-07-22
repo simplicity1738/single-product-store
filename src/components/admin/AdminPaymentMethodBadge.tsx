@@ -11,7 +11,7 @@ import {
 function KlarnaIcon() {
   return (
     <span
-      className="inline-flex h-4 items-center justify-center rounded-full bg-[#FFB3C7] px-1.5 text-[8px] font-black uppercase tracking-wider text-[#0A0A0A]"
+      className="inline-flex h-4 items-center justify-center rounded-full border border-white/10 bg-[#ECE5D8]/20 px-1.5 text-[8px] font-black uppercase tracking-wider text-[#ECE5D8]"
       aria-hidden
     >
       K
@@ -38,7 +38,7 @@ function VisaMiniIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" aria-hidden>
       <path
-        fill="#1A1F71"
+        fill="#CFC4BD"
         d="M9.112 8.262 5.97 15.758H3.92L2.374 9.775c-.094-.368-.175-.503-.461-.658C1.447 8.864.677 8.627 0 8.479l.046-.217h3.3a.904.904 0 0 1 .894.764l.817 4.338 2.018-5.102zm8.033 5.049c.008-1.979-2.736-2.088-2.717-2.972.006-.269.262-.555.822-.628a3.66 3.66 0 0 1 1.913.336l.34-1.59a5.207 5.207 0 0 0-1.814-.333c-1.917 0-3.266 1.02-3.278 2.479-.012 1.079.963 1.68 1.698 2.04.756.367 1.01.603 1.006.931-.005.504-.602.725-1.16.734-.975.015-1.54-.263-1.992-.473l-.351 1.642c.453.208 1.289.39 2.156.398 2.037 0 3.37-1.006 3.377-2.564m5.061 2.447H24l-1.565-7.496h-1.656a.883.883 0 0 0-.826.55l-2.909 6.946h2.036l.405-1.12h2.488zm-2.163-2.656 1.02-2.815.588 2.815zm-8.16-4.84-1.603 7.496H8.34l1.605-7.496z"
       />
     </svg>
@@ -82,14 +82,14 @@ function LinkMiniIcon() {
 function badgeTone(paymentMethod?: PaymentMethod, stripePaymentType?: StripePaymentType) {
   if (paymentMethod === PAYMENT_METHOD.STRIPE) {
     if (stripePaymentType === STRIPE_PAYMENT_TYPE.KLARNA) {
-      return "border-[#FFB3C7] bg-[#FFF0F4] text-[#0A0A0A]";
+      return "border-white/10 bg-[#ECE5D8]/10 text-[#ECE5D8]";
     }
     if (stripePaymentType === STRIPE_PAYMENT_TYPE.LINK) {
-      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+      return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
     }
-    return "border-indigo-200 bg-indigo-50 text-indigo-700";
+    return "border-white/10 bg-white/5 text-[#CFC4BD]";
   }
-  return "border-orange-200 bg-orange-50 text-orange-700";
+  return "border-orange-500/20 bg-orange-500/10 text-orange-300";
 }
 
 function PaymentIcons({
@@ -131,7 +131,7 @@ export default function AdminPaymentMethodBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeTone(method, stripePaymentType)}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase ${badgeTone(method, stripePaymentType)}`}
     >
       <PaymentIcons
         paymentMethod={method}

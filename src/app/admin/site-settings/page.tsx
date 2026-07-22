@@ -126,13 +126,13 @@ export default function AdminSiteSettingsPage() {
       <div className="mx-auto max-w-4xl">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-rose-600">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#ECE5D8]">
               Sajtinställningar
             </p>
-            <h1 className="mt-2 text-2xl font-bold text-zinc-900">
+            <h1 className="mt-2 text-2xl font-bold text-white">
               Sajtkonfiguration
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-600">
+            <p className="mt-2 max-w-2xl text-sm text-[#CFC4BD]">
               Anpassa kampanj-hero, navigation och synlighet för den publika
               startsidan.
             </p>
@@ -142,7 +142,7 @@ export default function AdminSiteSettingsPage() {
             type="button"
             onClick={() => void handleSave()}
             disabled={isSaving || isLoading || !config}
-            className="rounded-full bg-rose-400 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:opacity-60"
+            className="rounded-xl bg-[#ECE5D8] px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:opacity-60"
           >
             {isSaving ? "Sparar…" : "Spara ändringar"}
           </button>
@@ -152,24 +152,24 @@ export default function AdminSiteSettingsPage() {
           <p
             className={`mt-4 rounded-xl px-4 py-3 text-sm ${
               toast.type === "success"
-                ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border border-red-200 bg-red-50 text-red-800"
+                ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                : "border border-red-500/20 bg-red-500/10 text-red-300"
             }`}
           >
             {toast.message}
           </p>
         )}
 
-        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Hjälte-Kampanj (Hero Showcase)
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Kampanjmotor för startsidans split-layout med utvald produkt.
           </p>
 
           {isLoading || !config ? (
-            <p className="mt-6 text-sm text-zinc-500">Laddar kampanjinställningar…</p>
+            <p className="mt-6 text-sm text-[#A89A92]">Laddar kampanjinställningar…</p>
           ) : (
             <div className="mt-6">
               <HeroCampaignForm
@@ -181,14 +181,14 @@ export default function AdminSiteSettingsPage() {
           )}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">Navigation</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">Navigation</h2>
+          <p className="mt-1 text-sm text-[#A89A92]">
             Styr synlighet och visningsnamn för menylänkar och widgets.
           </p>
 
           {isLoading ? (
-            <p className="mt-6 text-sm text-zinc-500">Laddar sajtinställningar…</p>
+            <p className="mt-6 text-sm text-[#A89A92]">Laddar sajtinställningar…</p>
           ) : (
             <div className="mt-6 space-y-4">
               {SITE_NAV_KEYS.map((key) => {
@@ -198,49 +198,49 @@ export default function AdminSiteSettingsPage() {
                 return (
                   <div
                     key={key}
-                    className="rounded-2xl border border-rose-100 bg-rose-50/30 p-4 sm:p-5"
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5"
                   >
                     <div>
-                      <h2 className="text-sm font-bold text-zinc-900">
+                      <h2 className="text-sm font-bold text-white">
                         {meta.title}
                       </h2>
-                      <p className="mt-1 text-xs text-zinc-500">{meta.hint}</p>
+                      <p className="mt-1 text-xs text-[#A89A92]">{meta.hint}</p>
                     </div>
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                         <input
                           type="checkbox"
                           checked={item.hide_navbar}
                           onChange={(event) =>
                             updateNavItem(key, "hide_navbar", event.target.checked)
                           }
-                          className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                         />
-                        <span className="text-sm leading-snug text-zinc-700">
-                          <span className="block font-semibold text-zinc-900">
+                        <span className="text-sm leading-snug text-[#CFC4BD]">
+                          <span className="block font-semibold text-white">
                             Dölj endast i toppmenyn
                           </span>
-                          <span className="mt-0.5 block text-xs text-zinc-500">
+                          <span className="mt-0.5 block text-xs text-[#A89A92]">
                             Länken försvinner från header och mobilmeny.
                           </span>
                         </span>
                       </label>
 
-                      <label className="flex items-start gap-3 rounded-xl border border-rose-100 bg-white px-4 py-3">
+                      <label className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                         <input
                           type="checkbox"
                           checked={item.hide_section}
                           onChange={(event) =>
                             updateNavItem(key, "hide_section", event.target.checked)
                           }
-                          className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-500 focus:ring-rose-400"
+                          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 text-[#ECE5D8] focus:ring-[#ECE5D8]"
                         />
-                        <span className="text-sm leading-snug text-zinc-700">
-                          <span className="block font-semibold text-zinc-900">
+                        <span className="text-sm leading-snug text-[#CFC4BD]">
+                          <span className="block font-semibold text-white">
                             Dölj helt från hemsidan
                           </span>
-                          <span className="mt-0.5 block text-xs text-zinc-500">
+                          <span className="mt-0.5 block text-xs text-[#A89A92]">
                             Sektionen eller widgeten renderas inte på startsidan.
                           </span>
                         </span>
@@ -249,7 +249,7 @@ export default function AdminSiteSettingsPage() {
 
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                           Visningsnamn (SV)
                         </span>
                         <input
@@ -259,12 +259,12 @@ export default function AdminSiteSettingsPage() {
                             updateNavItem(key, "label_sv", event.target.value)
                           }
                           placeholder={meta.title}
-                          className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                          className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                         />
                       </label>
 
                       <label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                           Display name (EN)
                         </span>
                         <input
@@ -274,7 +274,7 @@ export default function AdminSiteSettingsPage() {
                             updateNavItem(key, "label_en", event.target.value)
                           }
                           placeholder={meta.title}
-                          className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                          className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
                         />
                       </label>
                     </div>
@@ -285,21 +285,21 @@ export default function AdminSiteSettingsPage() {
           )}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-rose-100 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold text-zinc-900">
+        <section className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6 shadow-xl backdrop-blur-md sm:p-8">
+          <h2 className="text-lg font-bold text-white">
             Orderbekräftelse via e-post
           </h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#A89A92]">
             Anpassa ämne och brödtext för orderbekräftelser. Placeholders:{" "}
-            <code className="rounded bg-rose-50 px-1">{`{{orderId}}`}</code>,{" "}
-            <code className="rounded bg-rose-50 px-1">{`{{customerName}}`}</code>,{" "}
-            <code className="rounded bg-rose-50 px-1">{`{{total}}`}</code>,{" "}
-            <code className="rounded bg-rose-50 px-1">{`{{cartSummary}}`}</code>
+            <code className="rounded bg-white/10 px-1 text-[#ECE5D8]">{`{{orderId}}`}</code>,{" "}
+            <code className="rounded bg-white/10 px-1 text-[#ECE5D8]">{`{{customerName}}`}</code>,{" "}
+            <code className="rounded bg-white/10 px-1 text-[#ECE5D8]">{`{{total}}`}</code>,{" "}
+            <code className="rounded bg-white/10 px-1 text-[#ECE5D8]">{`{{cartSummary}}`}</code>
           </p>
 
           <div className="mt-6 space-y-4">
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Ämne för orderbekräftelse
               </span>
               <input
@@ -310,12 +310,12 @@ export default function AdminSiteSettingsPage() {
                     emailSubject: event.target.value,
                   }))
                 }
-                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
 
             <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#A89A92]">
                 Text för orderbekräftelse
               </span>
               <textarea
@@ -327,14 +327,14 @@ export default function AdminSiteSettingsPage() {
                   }))
                 }
                 rows={8}
-                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-4 py-3 text-sm leading-relaxed outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"
+                className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-white outline-none transition-all placeholder-neutral-500 focus:border-[#ECE5D8] focus:outline-none"
               />
             </label>
           </div>
         </section>
 
-        <p className="mt-6 text-sm text-zinc-500">
-          <Link href="/admin" className="font-medium text-rose-600 hover:text-rose-700">
+        <p className="mt-6 text-sm text-[#A89A92]">
+          <Link href="/admin" className="font-medium text-[#ECE5D8] hover:text-white">
             ← Tillbaka till adminöversikten
           </Link>
         </p>

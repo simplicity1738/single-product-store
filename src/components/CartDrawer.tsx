@@ -68,7 +68,7 @@ export default function CartDrawer() {
   return (
     <>
       <div
-        className={`fixed inset-0 z-[70] bg-black/40 backdrop-blur-md transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${
           isCartOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -78,7 +78,7 @@ export default function CartDrawer() {
       />
 
       <aside
-        className={`fixed inset-y-0 right-0 z-[80] flex w-full max-w-md flex-col border-l border-rose-100 bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 right-0 z-[80] flex w-full max-w-md flex-col justify-between border-l border-white/10 bg-[#181312] text-white shadow-2xl transition-transform duration-300 ease-out ${
           isCartOpen ? "translate-x-0" : "translate-x-full"
         }`}
         role="dialog"
@@ -86,16 +86,16 @@ export default function CartDrawer() {
         aria-labelledby="cart-drawer-title"
         aria-hidden={!isCartOpen}
       >
-        <div className="flex items-center justify-between border-b border-rose-100 px-5 py-5 sm:px-6">
+        <div className="flex items-center justify-between border-b border-white/10 px-5 py-5 sm:px-6">
           <div>
             <h2
               id="cart-drawer-title"
-              className="text-xl font-bold text-zinc-900"
+              className="text-2xl font-serif text-white"
             >
               {t.cart.title}
             </h2>
             {cartItemCount > 0 && (
-              <p className="mt-0.5 text-sm text-zinc-500">
+              <p className="mt-0.5 text-sm text-[#CFC4BD]">
                 {cartItemCount}{" "}
                 {cartItemCount === 1 ? t.cart.itemSingular : t.cart.itemPlural}
               </p>
@@ -104,30 +104,17 @@ export default function CartDrawer() {
           <button
             type="button"
             onClick={closeCart}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-rose-100 text-zinc-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-zinc-900"
+            className="flex h-10 w-10 items-center justify-center text-lg text-neutral-400 transition hover:text-white"
             aria-label={t.cart.close}
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              aria-hidden
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            ✕
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6">
           {cart.length === 0 ? (
-            <div className="flex h-full min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-rose-200 bg-rose-50/40 px-6 py-10 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 text-rose-500">
+            <div className="flex h-full min-h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-10 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-[#ECE5D8]/10 text-[#ECE5D8]">
                 <svg
                   className="h-7 w-7"
                   fill="none"
@@ -143,12 +130,12 @@ export default function CartDrawer() {
                   />
                 </svg>
               </div>
-              <p className="mt-4 text-sm font-medium text-zinc-600">
+              <p className="mt-4 text-sm font-medium text-[#CFC4BD]">
                 {t.cart.empty}
               </p>
             </div>
           ) : (
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               {summary.lineItems.map((line) => {
                 const label = getLineLabel(
                   line.productId,
@@ -180,10 +167,10 @@ export default function CartDrawer() {
                 return (
                   <li
                     key={`${line.productId}-${line.variantMg}-${line.selectedStrength ?? ""}-${line.campaignAddonId ?? ""}`}
-                    className="flex gap-4 rounded-2xl border border-rose-100 bg-rose-50/30 p-4"
+                    className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 text-white"
                   >
                     <div
-                      className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-rose-100 bg-white ${PRODUCT_IMAGE_FRAME_CLASS}`}
+                      className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5 ${PRODUCT_IMAGE_FRAME_CLASS}`}
                     >
                       <ProductImage
                         src={productImage}
@@ -195,13 +182,13 @@ export default function CartDrawer() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-zinc-900">{label}</p>
+                      <p className="font-semibold text-white">{label}</p>
                       {line.selectedStrength && (
-                        <p className="mt-0.5 text-xs text-zinc-500">
+                        <p className="mt-0.5 text-xs text-[#CFC4BD]">
                           {line.selectedStrength}
                         </p>
                       )}
-                      <p className="mt-1 text-sm font-medium text-rose-600">
+                      <p className="mt-1 text-sm font-medium text-[#ECE5D8]">
                         {formatCurrency(line.unitPrice, localeCode)}
                       </p>
 
@@ -217,12 +204,12 @@ export default function CartDrawer() {
                               line.campaignAddonId,
                             )
                           }
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50"
+                          className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-sm font-medium text-white transition hover:bg-white/20"
                           aria-label={`${t.order.decreaseQty}: ${label}`}
                         >
                           −
                         </button>
-                        <span className="min-w-[2rem] text-center text-sm font-semibold text-zinc-900">
+                        <span className="min-w-[2rem] text-center text-sm font-semibold text-white">
                           {line.quantity}
                         </span>
                         <button
@@ -237,20 +224,20 @@ export default function CartDrawer() {
                             )
                           }
                           disabled={atMaxStock}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 bg-white text-sm font-medium text-zinc-700 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-sm font-medium text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40"
                           aria-label={`${t.order.increaseQty}: ${label}`}
                         >
                           +
                         </button>
                       </div>
                       {atMaxStock ? (
-                        <p className="mt-2 text-xs font-medium text-amber-700">
+                        <p className="mt-2 text-xs font-medium text-amber-300">
                           {t.cart.maxStockReached}
                         </p>
                       ) : null}
                     </div>
 
-                    <p className="shrink-0 text-sm font-bold text-zinc-900">
+                    <p className="shrink-0 text-sm font-bold text-white">
                       {formatCurrency(line.lineSubtotal, localeCode)}
                     </p>
                   </li>
@@ -260,33 +247,35 @@ export default function CartDrawer() {
           )}
         </div>
 
-        <div className="border-t border-rose-100 bg-white px-5 py-5 sm:px-6">
+        <div className="border-t border-white/10 bg-[#181312] px-5 py-5 sm:px-6">
           {summary.appliedCampaigns.length > 0 && (
-            <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+            <div className="mb-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200">
               🎉 Kampanj tillämpad: {appliedCampaignLabel}!
             </div>
           )}
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-zinc-600">{t.cart.subtotal}</span>
-            <span className="text-lg font-bold text-zinc-900">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[#CFC4BD]">
+              {t.cart.subtotal}
+            </span>
+            <span className="text-lg font-semibold text-white">
               {formatCurrency(subtotal, localeCode)}
             </span>
           </div>
 
           {campaignDiscount > 0 && (
-            <div className="mt-2 flex items-center justify-between text-sm text-emerald-700">
+            <div className="mt-2 flex items-center justify-between text-sm text-emerald-300">
               <span className="font-medium">Kampanjrabatt</span>
-              <span className="font-bold">
+              <span className="font-semibold">
                 {formatCurrency(-campaignDiscount, localeCode)}
               </span>
             </div>
           )}
 
           {campaignDiscount > 0 && (
-            <div className="mt-3 flex items-center justify-between border-t border-rose-100 pt-3 text-sm">
-              <span className="font-semibold text-zinc-900">Att betala</span>
-              <span className="text-lg font-bold text-zinc-900">
+            <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+              <span className="font-semibold text-white">Att betala</span>
+              <span className="text-lg font-semibold text-white">
                 {formatCurrency(cartNet, localeCode)}
               </span>
             </div>
@@ -296,12 +285,12 @@ export default function CartDrawer() {
             type="button"
             onClick={handleCheckout}
             disabled={cart.length === 0}
-            className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full bg-rose-400 text-sm font-bold text-white shadow-lg shadow-rose-400/25 transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-4 w-full rounded-xl bg-[#ECE5D8] py-4 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] shadow-md transition-all hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             {t.cart.checkout}
           </button>
 
-          <CheckoutTrustSignals className="mt-6" />
+          <CheckoutTrustSignals className="mt-4" />
 
           <PaymentTrustBadges className="mt-5" hideLabel />
         </div>
