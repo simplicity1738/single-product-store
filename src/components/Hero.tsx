@@ -55,7 +55,7 @@ function HeroShowcase({ alt }: { alt: string }) {
   return (
     <div
       ref={sectionRef}
-      className="relative flex h-full w-full items-center justify-end bg-transparent [perspective:1400px]"
+      className="relative my-4 flex w-full items-center justify-center bg-transparent lg:my-0 lg:h-full lg:max-h-[70vh] lg:justify-end [perspective:1400px]"
     >
       <motion.div
         style={{
@@ -65,7 +65,7 @@ function HeroShowcase({ alt }: { alt: string }) {
           y: translateY,
           transformStyle: "preserve-3d",
         }}
-        className="relative z-10 flex h-full w-full items-center justify-end bg-transparent will-change-transform"
+        className="relative z-10 flex w-full items-center justify-center bg-transparent will-change-transform lg:h-full lg:justify-end"
       >
         <Image
           src="/simplicity-hero-showcase.png"
@@ -73,8 +73,8 @@ function HeroShowcase({ alt }: { alt: string }) {
           width={1600}
           height={1280}
           priority
-          sizes="(max-width: 1024px) 100vw, 58vw"
-          className="h-full w-full scale-100 bg-transparent object-contain object-right drop-shadow-[0_32px_64px_rgba(0,0,0,0.45)] lg:scale-105"
+          sizes="(max-width: 640px) 320px, (max-width: 1024px) 450px, 58vw"
+          className="h-auto w-full max-w-[320px] bg-transparent object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.45)] sm:max-w-[450px] lg:max-h-full lg:max-w-none lg:scale-105 lg:object-right"
         />
       </motion.div>
     </div>
@@ -121,40 +121,40 @@ export default function Hero({ siteSettings }: HeroProps) {
 
       <HeroThemeDecorations theme={campaignTheme} />
 
-      {/* Exact viewport fit: remaining screen height under sand navbar */}
-      <div className="relative z-10 flex h-[calc(100vh-4rem)] w-full flex-col justify-between overflow-hidden p-6 md:h-[calc(100vh-5rem)] md:p-12 lg:p-16">
-        <div className="mx-auto my-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-12">
-          {/* Left — CMS-bound copy & CTA */}
-          <div className="z-10 max-w-lg space-y-5 lg:col-span-5">
+      {/* Mobile: natural scroll height · Desktop: viewport-fit under sand navbar */}
+      <div className="relative z-10 flex min-h-[100dvh] h-auto w-full flex-col justify-between p-4 sm:p-6 lg:h-[calc(100vh-5rem)] lg:overflow-hidden lg:p-12">
+        <div className="mx-auto my-auto flex w-full max-w-7xl flex-col items-center gap-6 lg:grid lg:grid-cols-12 lg:gap-8">
+          {/* Copy & CTA — stacks above showcase on mobile */}
+          <div className="z-10 w-full max-w-lg lg:col-span-5">
             <h1
-              className={`${heroDisplay.className} text-5xl font-serif tracking-tight text-white leading-[1.05] lg:text-7xl`}
+              className={`${heroDisplay.className} text-3xl font-serif tracking-tight text-white leading-[1.1] sm:text-4xl md:text-6xl lg:text-7xl`}
             >
               {headline}
             </h1>
 
-            <p className="max-w-md text-xs leading-relaxed text-[#D1C5BD] md:text-sm">
+            <p className="mt-3 max-w-md text-xs leading-relaxed text-[#D1C5BD] sm:text-sm md:text-base">
               {bodyCopy}
             </p>
 
             <a
               href="#products"
-              className="inline-flex items-center gap-2 rounded-md bg-[#ECE5D8] px-7 py-3 text-xs font-semibold uppercase tracking-wider text-[#0F0C0B] transition-all hover:bg-white"
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#ECE5D8] px-6 py-3 text-xs font-medium uppercase tracking-wider text-[#0F0C0B] transition-all hover:bg-white sm:w-auto"
             >
               {ctaLabel}
               <span aria-hidden>→</span>
             </a>
           </div>
 
-          {/* Right — cinematic showcase with 3D tilt */}
-          <div className="relative flex h-full max-h-[60vh] items-center justify-end lg:col-span-7 lg:max-h-[70vh]">
+          {/* Showcase — below text on mobile, right column on desktop */}
+          <div className="relative flex w-full items-center justify-center lg:col-span-7 lg:h-full lg:max-h-[70vh] lg:justify-end">
             <HeroShowcase alt={`${t.brand} product showcase`} />
           </div>
         </div>
 
-        {/* Bottom trust badges — single horizontal line, CMS i18n labels */}
-        <div className="mt-auto flex flex-row items-center gap-8 whitespace-nowrap border-t border-white/10 pt-4 text-[11px] uppercase tracking-widest text-[#A89A92]">
+        {/* Trust badges — compact scrollable row on mobile */}
+        <div className="mt-6 flex w-full flex-row items-center justify-between gap-4 overflow-x-auto whitespace-nowrap border-t border-white/10 pt-4 text-[10px] uppercase tracking-widest text-[#A89A92] sm:gap-8 sm:text-[11px] lg:mt-auto lg:justify-start">
           {trustItems.map((item) => (
-            <div key={item.key} className="flex items-center gap-2.5">
+            <div key={item.key} className="flex shrink-0 items-center gap-2">
               <span className="text-[#A89A92]" aria-hidden>
                 {item.icon === "shield" ? (
                   <svg
