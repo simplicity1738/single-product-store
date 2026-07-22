@@ -75,23 +75,37 @@ export default function HeroCampaignForm({
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
-          <span className={labelClassName}>Kampanjetikett</span>
+          <span className={labelClassName}>Hero-rubrik (stor titel)</span>
           <input
-            value={siteSettings.campaignTag}
-            onChange={(event) => patch({ campaignTag: event.target.value })}
-            placeholder="Säsongskampanj"
+            value={siteSettings.campaignHeadline}
+            onChange={(event) =>
+              patch({
+                campaignHeadline: event.target.value,
+                heroTitle: event.target.value,
+              })
+            }
+            placeholder="Ren Forskning & Peptider"
             className={inputClassName}
           />
         </label>
 
         <label className="block sm:col-span-2">
-          <span className={labelClassName}>Kampanjrubrik</span>
+          <span className={labelClassName}>Hero-brödtext</span>
+          <textarea
+            value={siteSettings.heroSubtitle}
+            onChange={(event) => patch({ heroSubtitle: event.target.value })}
+            placeholder="Din resa! Högkvalitativa peptider för forskning…"
+            rows={3}
+            className={inputClassName}
+          />
+        </label>
+
+        <label className="block sm:col-span-2">
+          <span className={labelClassName}>Kampanjetikett (valfri)</span>
           <input
-            value={siteSettings.campaignHeadline}
-            onChange={(event) =>
-              patch({ campaignHeadline: event.target.value })
-            }
-            placeholder="Gör dig redo för sommar!"
+            value={siteSettings.campaignTag}
+            onChange={(event) => patch({ campaignTag: event.target.value })}
+            placeholder="Säsongskampanj"
             className={inputClassName}
           />
         </label>

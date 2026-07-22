@@ -19,17 +19,22 @@ export const translations = {
     hero: {
       badge: "SUPPORT 24/7",
       intake: "Premiumingredienser för forskning",
-      headline: "Kvalitet utan kompromisser",
-      tagline: "Renhet och kvalitet i fokus",
+      headline: "Ren Forskning & Peptider",
+      tagline: "Din resa!",
       subtitle:
-        "SimpliCity är byggt för kunder som förväntar sig mer — noggrant utvalda peptider, verifierad renhet och en premiumupplevelse utan kompromisser.",
-      ctaPrimary: "Utforska sortiment",
+        "Din resa! Högkvalitativa peptider för forskning — verifierad renhet, spårbara batcher och en premiumupplevelse utan kompromisser.",
+      ctaPrimary: "Utforska peptider",
       ctaCampaign: "Till erbjudandet",
       ctaSecondary: "Se fördelar",
       stats: {
         purity: { label: "Renhet", value: "100%" },
         shipping: { label: "Leverans", value: "24h" },
         support: { label: "Support", value: "24/7" },
+      },
+      trust: {
+        tested: "Tredjepartstestad",
+        traceable: "Spårbar batch",
+        research: "Endast för forskning",
       },
       featuredLabel: "Utvald produkt",
       imagePlaceholder: "Produktbild",
@@ -659,17 +664,22 @@ export const translations = {
     hero: {
       badge: "SUPPORT 24/7",
       intake: "Premium ingredients for research",
-      headline: "Quality without compromise",
-      tagline: "Purity and quality in focus",
+      headline: "Pure Research & Peptides",
+      tagline: "Your journey!",
       subtitle:
-        "SimpliCity is built for customers who expect more — carefully selected peptides, verified purity, and a premium experience without compromise.",
-      ctaPrimary: "Explore collection",
+        "Your journey! High-quality peptides for research — verified purity, traceable batches, and a premium experience without compromise.",
+      ctaPrimary: "Explore peptides",
       ctaCampaign: "View the offer",
       ctaSecondary: "See Benefits",
       stats: {
         purity: { label: "Purity", value: "100%" },
         shipping: { label: "Shipping", value: "24h" },
         support: { label: "Support", value: "24/7" },
+      },
+      trust: {
+        tested: "Third-party tested",
+        traceable: "Batch traceability",
+        research: "Research only",
       },
       featuredLabel: "Featured product",
       imagePlaceholder: "Product image",

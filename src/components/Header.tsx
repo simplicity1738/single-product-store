@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { Cormorant_Garamond } from "next/font/google";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,6 +12,12 @@ import {
   isSiteNavLinkVisible,
   SITE_NAV_ROUTES,
 } from "@/lib/site-navigation";
+
+const brandDisplay = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
 
 function isStandalonePage(href: string) {
   return href.startsWith("/") && !href.includes("#");
@@ -25,7 +31,7 @@ function NavLinkItem({
   label: string;
 }) {
   const className =
-    "text-sm font-medium text-zinc-600 transition-colors hover:text-rose-600";
+    "text-[10px] font-medium uppercase tracking-[0.22em] text-stone-600 transition-colors hover:text-stone-900 sm:text-[11px]";
 
   if (isStandalonePage(href)) {
     return (
@@ -42,10 +48,42 @@ function NavLinkItem({
   );
 }
 
+function BrandMark({ name }: { name: string }) {
+  return (
+    <Link
+      href="/"
+      className="group flex flex-col items-center justify-center text-center"
+      aria-label={name}
+    >
+      <span className="mb-0.5 text-rose-400/90" aria-hidden>
+        <svg
+          viewBox="0 0 28 14"
+          className="h-3 w-6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.35"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M14 8.5c-2.2-3.6-6.2-4.4-8.2-2.6C3.8 7.6 4.6 10.2 7 11c2.1.7 4.5-.2 7-2.5 2.5 2.3 4.9 3.2 7 2.5 2.4-.8 3.2-3.4 1.2-5.1C20.2 4.1 16.2 4.9 14 8.5z" />
+          <path d="M14 8.5V12.5" />
+        </svg>
+      </span>
+      <span
+        className={`${brandDisplay.className} text-[1.35rem] font-semibold leading-none tracking-[0.04em] text-stone-900 transition group-hover:text-stone-700 sm:text-[1.55rem]`}
+      >
+        {name}
+      </span>
+    </Link>
+  );
+}
+
 export default function Header() {
   const { locale, t } = useLanguage();
   const { siteSettings, banner, siteNavigation } = useStoreConfig();
   const { cartItemCount, openCart } = useProductSelection();
+
+  const brandName = siteSettings.heroBrandText.trim() || t.brand;
 
   const visibleNavLinks = SITE_NAV_ROUTES.filter((route) =>
     isSiteNavLinkVisible(siteNavigation, route.key),
@@ -57,33 +95,28 @@ export default function Header() {
   return (
     <>
       <AnnouncementBanner banner={banner} />
-      <header className="sticky top-0 z-50 border-b border-rose-100 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:h-24 sm:px-6 lg:px-8">
-          <Link href="/" className="flex shrink-0 items-center">
-            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-pink-200 bg-rose-50 shadow-md shadow-rose-100 sm:h-20 sm:w-20">
-              <Image
-                src={siteSettings.logoPath || "/logo.png"}
-                alt={t.brand}
-                width={200}
-                height={200}
-                className="h-[115%] w-[115%] object-cover object-center"
-                priority
-              />
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
+      <header className="sticky top-0 z-50 border-b border-stone-200/80 bg-[#F7F4F0]/90 backdrop-blur-md">
+        <div className="relative mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:h-[4.5rem] sm:px-6 lg:px-8">
+          {/* Left nav — CMS-bound */}
+          <nav className="hidden min-w-0 items-center gap-4 overflow-x-auto lg:flex xl:gap-6">
             {visibleNavLinks.map((link) => (
               <NavLinkItem key={link.key} href={link.href} label={link.label} />
             ))}
           </nav>
+          <div className="lg:hidden" />
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Center brand */}
+          <div className="flex justify-center">
+            <BrandMark name={brandName} />
+          </div>
+
+          {/* Right icons */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2">
             <LanguageSwitcher />
             <button
               type="button"
               onClick={openCart}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-rose-100 bg-white text-zinc-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-stone-700 transition hover:bg-stone-200/60 hover:text-stone-900 sm:h-10 sm:w-10"
               aria-label={t.cart.openCart}
             >
               <svg
@@ -91,7 +124,7 @@ export default function Header() {
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth={1.75}
+                strokeWidth={1.5}
                 aria-hidden
               >
                 <path
@@ -101,23 +134,16 @@ export default function Header() {
                 />
               </svg>
               {cartItemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-400 px-1 text-[10px] font-bold text-white shadow-sm shadow-rose-300 motion-safe:animate-pulse">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-stone-800 px-1 text-[9px] font-bold text-white">
                   {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               )}
-            </button>
-            <button
-              type="button"
-              onClick={openCart}
-              className="hidden h-10 items-center justify-center rounded-full bg-rose-400 px-4 text-sm font-semibold text-white transition hover:bg-rose-500 sm:inline-flex sm:px-5"
-            >
-              {t.nav.buyNow}
             </button>
           </div>
         </div>
 
         {visibleNavLinks.length > 0 && (
-          <nav className="flex flex-wrap gap-x-4 gap-y-2 border-t border-rose-100 px-4 py-3 lg:hidden sm:px-6">
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 border-t border-stone-200/70 px-4 py-2.5 lg:hidden sm:px-6">
             {visibleNavLinks.map((link) => (
               <NavLinkItem key={link.key} href={link.href} label={link.label} />
             ))}
